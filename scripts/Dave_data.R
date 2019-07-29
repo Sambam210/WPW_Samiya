@@ -1,6 +1,6 @@
 library(dplyr)
 
-Dave <- read.csv("Dave data/UptodateDB.csv")
+Dave <- read.csv("Dave_data/UptodateDB.csv")
 
 ### I want to create a list of all the species in Dave's DB and figure out how many of the 49 traits they have values for
 
@@ -22,7 +22,7 @@ DaveNew2 <- DaveNew %>%
 
 head(DaveNew2)
 
-write.csv(DaveNew2,"Dave data/traitcompleteness.csv",row.names=FALSE)
+write.csv(DaveNew2,"Dave_data_output/traitcompleteness.csv",row.names=FALSE)
 
 hist(DaveNew2$`total_traits/49`) # graph the data
 
@@ -36,7 +36,7 @@ ten_twenty_whatwehave <- left_join(species_missing, DaveNew, by = "newspecies") 
 
 ten_twenty_whatwehave <- select(ten_twenty_whatwehave, -source, -value)
 
-write.csv(ten_twenty_whatwehave,"Dave data/ten_twenty_whatwehave.csv", row.names = FALSE)
+write.csv(ten_twenty_whatwehave,"Dave_data_output/ten_twenty_whatwehave.csv", row.names = FALSE)
 
 ### create a full matrix of traits and species 
 
@@ -60,12 +60,12 @@ ten_twenty_alltraits <- ten_twenty_alltraits %>%
 
 ten_twenty_missing <- setdiff(ten_twenty_alltraits, ten_twenty_whatwehave) # the traits that we are missing
 
-write.csv(ten_twenty_missing,"Dave data/ten_twenty_missing.csv", row.names = FALSE)
+write.csv(ten_twenty_missing,"Dave_data_output/ten_twenty_missing.csv", row.names = FALSE)
 
 ten_twenty_missing_freq <- ten_twenty_missing %>%
   count(trait_name, sort = TRUE, name = "missing_frequency")
 
-write.csv(ten_twenty_missing_freq,"Dave data/ten_twenty_missing_freq.csv", row.names = FALSE)
+write.csv(ten_twenty_missing_freq,"Dave_data_output/ten_twenty_missing_freq.csv", row.names = FALSE)
 
 #######################################################################################################################################
 
@@ -77,7 +77,7 @@ library(dplyr)
 install.packages("stringr")
 library(stringr)
 
-Dave <- read.csv("Dave data/UptodateDB.csv")
+Dave <- read.csv("Dave_data/UptodateDB.csv")
 
 species <- Dave %>%
   select(newspecies) # only select the species column
@@ -102,7 +102,7 @@ onlyspecies <- y %>%
 
 library(dplyr)
 
-Dave <- read.csv("Dave data/UptodateDB.csv")
+Dave <- read.csv("Dave_data/UptodateDB.csv")
 
 DaveNew <- Dave %>%
   select(newspecies)
@@ -134,11 +134,11 @@ DaveNew <- Dave %>%
 
 glspeciesdata<-left_join(Renee, DaveNew, by = "newspecies") # merge the two datasets
 
-write.csv(glspeciesdata,"Data/glspeciestraits.csv", row.names = FALSE)
+write.csv(glspeciesdata,"Dave_data_output/glspeciestraits.csv", row.names = FALSE)
 
 ##### let's find out what we don't know for each species out of the 49 traits
 
-glspeciestraits <- read.csv("Data/glspeciestraits.csv")
+glspeciestraits <- read.csv("Dave_data_output/glspeciestraits.csv")
 
 glspeciestraits <- glspeciestraits %>%
   select(newspecies, trait_name) %>% # let's subset for the variables we are interested in
@@ -170,7 +170,7 @@ whatweneed <- whatweneed %>%
 whatweneed <- whatweneed %>%
   mutate(trait_count = (49 - missing_trait_count)) # how many traits we actually have
 
-write.csv(whatweneed, "Data/whatweneed.csv", row.names = FALSE)
+write.csv(whatweneed, "Dave_data_output/whatweneed.csv", row.names = FALSE)
 
 whatweneed <- whatweneed %>%
   distinct(newspecies, .keep_all = TRUE) # let's only have one trait per species combo

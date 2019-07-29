@@ -85,7 +85,7 @@ SamiyaandReneeandHugh[[60,5]] <- "" # replacing the NA with a blank
 SamiyaandReneeandHugh[[60,8]] <- "-0.88"
 SamiyaandReneeandHugh[[60,9]] <- "-1.05"
 
-write.csv(SamiyaandReneeandHugh,"Data/SamiyaandReneeandHugh.csv",row.names=FALSE) # save as csv into "Data" folder
+write.csv(SamiyaandReneeandHugh,"Data_output/SamiyaandReneeandHugh.csv",row.names=FALSE) # save as csv into "Data" folder
 
 #####################################################################################################################################
 
@@ -94,7 +94,7 @@ write.csv(SamiyaandReneeandHugh,"Data/SamiyaandReneeandHugh.csv",row.names=FALSE
 library(dplyr)
 
 pots <- read.csv("Data/List_Of_Pots.csv")
-mylist <- read.csv("Data/SamiyaandReneeandHugh.csv")
+mylist <- read.csv("Data_output/SamiyaandReneeandHugh.csv")
 
 mylist <- mylist %>%
   select(Species)
