@@ -32,14 +32,20 @@ Reneeful<-read.csv("Data/RankingTraits_Control_2019_Renee.csv") # uploading Rene
 
 
 Samiya <- Samiya %>%
-  rename(Species=searchTaxon) # changing the column name of my dataset to match Renee's
+  rename(Species=searchTaxon,
+         Deciduous_or_evergreen=Deciduous.or.evergreen,
+         Leaf_senescence_in_response_to_drought=Leaf.senescence.in.response.to.drought,
+         Water_storage=Water.storage,
+         Hairs=Trichomes.hairs) # changing the column name of my dataset to match Renee's & getting rid of spaces
 
 names(Samiya)
 
 Samiyanew <- Samiya %>%
   select(Species, 
-         Deciduous.or.evergreen, 
-         Leaf.senescence.in.response.to.drought) # subsetting my data so it only contains the 'species' and evergreen/deciduous' info
+         Deciduous_or_evergreen, 
+         Leaf_senescence_in_response_to_drought,
+         Water_storage,
+         Hairs) # subsetting my data
 
 names(Samiyanew)
 
@@ -51,10 +57,15 @@ SamiyaandRenee <- newdata %>%
          Origin,
          Growth_Form,
          Native_Woody,
-         Deciduous.or.evergreen,
-         Leaf.senescence.in.response.to.drought,
-         OsmPot_MPa,
-         TLP_MPa) # reordering the columns so they are tidyer
+         Deciduous_or_evergreen,
+         Leaf_senescence_in_response_to_drought,
+         Water_storage,
+         Hairs) # reordering the columns so they are tidyer, getting rid of osmotic potential data becasue it's old
+
+## adding on the glasshouse data
+
+# Osmotic potential
+
 
 Hughfull<-read.csv("Data/niche.data.HB.csv") # uploading Hugh's full dataset
 
@@ -69,13 +80,10 @@ HughAI <- Hughfull %>%
 
 SamiyaandReneeandHugh <- left_join(SamiyaandRenee, HughAI, by = "Species") # combining all the data
 
-write.csv(SamiyaandReneeandHugh,"Data/SamiyaandReneeandHugh.csv",row.names=FALSE) # save as csv into "Data" folder
-
-
 SamiyaandReneeandHugh[rowSums(is.na(SamiyaandReneeandHugh)) > 0,] # find NAs in dataset, there are 2 species
                                                                   # https://stackoverflow.com/questions/7980622/subset-of-rows-containing-na-missing-values-in-a-chosen-column-of-a-data-frame
 
-# R has somehow lost the infor for 'Kennedia beckxiana' during the merge of Samiya and Renee data
+# R has somehow lost the info for 'Kennedia beckxiana' during the merge of Samiya and Renee data
 
 # Replacing the 'Kennedia beckxiana' missing values
 SamiyaandReneeandHugh[[60,2]] <- "Kebe"
