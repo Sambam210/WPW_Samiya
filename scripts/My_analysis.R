@@ -79,6 +79,19 @@ OsmPot <- OsmPot %>%
 
 SamiyaandRenee <- left_join(SamiyaandRenee, OsmPot, by = "Species_Code") # joining the osmotic potential data
 
+# T leaf
+
+Tleaf <- read.csv("GH_data/WPW_GH_TLEAF_clean.csv") # the 'clean' version is the one without the 422 outlier
+
+Tleaf <- Tleaf %>%
+  filter(Treatment == 'C') %>% # filter for only the controls
+  select(Species_Code, Tleaf_C_Avg, Tleaf_C_Max) %>% # select relevant columns
+  group_by(Species_Code) %>% # group by species code
+  summarise(Tleaf_C_Avg = mean(Tleaf_C_Avg, na.rm = TRUE),
+            Tleaf_C_Max_Avg = mean(Tleaf_C_Max, na.rm = TRUE)) # removes the NAs so the means work
+
+SamiyaandRenee <- left_join(SamiyaandRenee, Tleaf, by = "Species_Code") # joining the Tleaf data
+
 ################################################################################################################################################
 
 ######################################################## adding climate data ###################################################################
