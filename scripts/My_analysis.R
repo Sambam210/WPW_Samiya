@@ -69,7 +69,7 @@ SamiyaandRenee <- newdata %>%
 
 # Osmotic potential
 
-OsmPot <- read.csv("GH_data/WPW_GH_OSMPOT.csv")
+OsmPot <- read.csv("GH_data/WPW_GH_OSMPOT.csv") # Renee said it was clean therefore there is no 'clean' file
 
 OsmPot <- OsmPot %>%
   filter(Treatment == 'C') %>% # filter for only the controls
@@ -85,12 +85,27 @@ Tleaf <- read.csv("GH_data/WPW_GH_TLEAF_clean.csv") # the 'clean' version is the
 
 Tleaf <- Tleaf %>%
   filter(Treatment == 'C') %>% # filter for only the controls
-  select(Species_Code, Tleaf_C_Avg, Tleaf_C_Max) %>% # select relevant columns
+  select(Species_Code, Tleaf_C_Avg, Tleaf_C_Max_Avg) %>% # select relevant columns
   group_by(Species_Code) %>% # group by species code
   summarise(Tleaf_C_Avg = mean(Tleaf_C_Avg, na.rm = TRUE),
             Tleaf_C_Max_Avg = mean(Tleaf_C_Max, na.rm = TRUE)) # removes the NAs so the means work
 
 SamiyaandRenee <- left_join(SamiyaandRenee, Tleaf, by = "Species_Code") # joining the Tleaf data
+
+# LMA, thickness, succulence
+
+LMA <- read.csv("GH_data/WPW_GH_LMA_clean.csv") # Renee uploaded an updated version of the LMA data with errors fixed
+
+LMA <- LMA %>%
+  filter(Treatment == 'C') %>% # filter for only the controls
+  select(Species_Code, Fresh_Weight_g, Dry_Weight_g, Thickness_mm_Avg, LMA_gm2) %>% # select relevant columns
+  mutate(Weight_diff_g = Fresh_Weight_g - Dry_Weight_g) %>% # calculate index of succulence
+  group_by(Species_Code) %>% # group by species code
+  summarise(mean_LMA_gm2 = mean(LMA_gm2, na.rm = TRUE),
+            Thickness_mm_Avg = mean(Thickness_mm_Avg, na.rm = TRUE),
+            mean_succulance_g = mean(Weight_diff_g, na.rm = TRUE)) # removes the NAs so the means work
+
+SamiyaandRenee <- left_join(SamiyaandRenee, LMA, by = "Species_Code") # joining the Tleaf data
 
 ################################################################################################################################################
 
@@ -120,6 +135,9 @@ SamiyaandReneeandHugh[[60,3]] <- "Native"
 SamiyaandReneeandHugh[[60,4]] <- "Climber/Groundcover"
 SamiyaandReneeandHugh[[60,5]] <- "" # replacing the NA with a blank
 SamiyaandReneeandHugh[[60,10]] <- "-0.882" # osmotic potential value
+SamiyaandReneeandHugh[[60,13]] <- "43.272" # LMA value
+SamiyaandReneeandHugh[[60,14]] <- "0.179" # thickness value
+SamiyaandReneeandHugh[[60,15]] <- "0.53442" # succulence value
 
 write.csv(SamiyaandReneeandHugh,"Data_output/SamiyaandReneeandHugh.csv",row.names=FALSE) # save as csv into "Data" folder
 
