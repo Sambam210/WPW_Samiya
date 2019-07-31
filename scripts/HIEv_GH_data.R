@@ -204,6 +204,76 @@ filter(LMA_weight_fix_Bt3_fixed, weight_diff > 15) # Magr5D
 
 write.csv(LMA_weight_fix_Bt3_fixed,"GH_data/LMA_weight_fix_Bt3_fixed.csv",row.names=FALSE)
 
+################################################## Checking the new LMA data on HIEv (added 30th July) ###################################
+
+
+library("dplyr")
+
+LMA<-read.csv("GH_data/WPW_GH_LMA_clean.csv")
+
+str(LMA)
+
+# check if the species code matches the first 4 letters of sample ID
+
+LMA$Sample_ID_short<-c(substr(LMA$Sample_ID,1,4)) # extract the first 4 letters of Sample ID
+head(LMA)
+Species_Code <- LMA %>%
+  select(Species_Code) %>%
+  rename(Check=Species_Code)
+
+Sample_ID_short <- LMA %>%
+  select(Sample_ID_short) %>%
+  rename(Check=Sample_ID_short)
+
+setdiff(Species_Code,Sample_ID_short) # no differences
+
+# subset for only the control and drought pots and columns I am interested in
+
+LMA <- LMA %>%
+  filter(Treatment == "C" | Treatment == "D") %>%
+  select(Glasshouse, Experiment, Batch, Species, Species_Code, Treatment, 
+         Sample_ID, Area_cm2, Fresh_Weight_g, Dry_Weight_g, Thickness_mm_Avg, LMA_gm2)
+
+# looks for outliers in the LMA data
+
+plot(LMA_gm2~Thickness_mm_Avg, LMA) # looks good!
+
+# look to see if any dry and fresh weights have been swapped around
+
+weight_check <- LMA %>%
+  mutate(diff = Fresh_Weight_g - Dry_Weight_g) %>%
+  filter(diff < 0) # 0 errors!
+
+# plot fresh and dry weight
+plot(Fresh_Weight_g~Dry_Weight_g, LMA) # looks good
+
+library(ggplot2)
+
+ggplot(LMA, aes(x = Dry_Weight_g, y = Fresh_Weight_g, colour = Batch)) +
+  geom_point() +
+  theme_bw() # looks good
+
+ggplot(LMA, aes(x = Batch, y = Fresh_Weight_g)) +
+  geom_boxplot() +
+  theme_bw() # looks good
+
+plot(Fresh_Weight_g~LMA_gm2, LMA) # looks good
+
+plot(Dry_Weight_g~LMA_gm2, LMA) # looks good
+
+plot(Dry_Weight_g~Area_cm2, LMA) # looks good
+
+#let's calculate LMA and see if they did it right
+
+# let's check which ones differ
+LMA <- LMA %>%
+  mutate(LMA_new = (Dry_Weight_g/Area_cm2)*10000) %>%
+  mutate(diff = LMA_new - LMA_gm2)
+
+filter(LMA, diff > 3) # none differed!
+
+LMA <- select(LMA, -diff, -LMA_new) # remove columns
+
 ########################################################## OSM POT #######################################################################
 
 library(dplyr)
