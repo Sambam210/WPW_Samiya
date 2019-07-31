@@ -24,6 +24,7 @@ anti_join(Renee,Hugh) # returns the species that are different
                                     # COMBINING HUGH'S CLIMATE, RENEE'S PHYSIOLOGY AND MY EVERGREEN DATA #
 ###################################################################################################################################
 
+#################################################### adding manually collected traits #############################################
 
 Samiya<-read.csv("Data/Leaf drop_Samiya.csv") # uploading my deciduous/evergreen data
 
@@ -62,10 +63,25 @@ SamiyaandRenee <- newdata %>%
          Water_storage,
          Hairs) # reordering the columns so they are tidyer, getting rid of osmotic potential data becasue it's old
 
-## adding on the glasshouse data
+################################################################################################################################################
+
+######################################################### adding on the glasshouse data ########################################################
 
 # Osmotic potential
 
+OsmPot <- read.csv("GH_data/WPW_GH_OSMPOT.csv")
+
+OsmPot <- OsmPot %>%
+  filter(Treatment == 'C') %>% # filter for only the controls
+  select(Species_Code, OsmPot_MPa) %>% # select relevant columns
+  group_by(Species_Code) %>% # group by species code
+  summarise(mean_OsmPot = mean(OsmPot_MPa, na.rm = TRUE)) # removes the NAs so the means work
+
+SamiyaandRenee <- left_join(SamiyaandRenee, OsmPot, by = "Species_Code") # joining the osmotic potential data
+
+################################################################################################################################################
+
+######################################################## adding climate data ###################################################################
 
 Hughfull<-read.csv("Data/niche.data.HB.csv") # uploading Hugh's full dataset
 
@@ -90,8 +106,7 @@ SamiyaandReneeandHugh[[60,2]] <- "Kebe"
 SamiyaandReneeandHugh[[60,3]] <- "Native"
 SamiyaandReneeandHugh[[60,4]] <- "Climber/Groundcover"
 SamiyaandReneeandHugh[[60,5]] <- "" # replacing the NA with a blank
-SamiyaandReneeandHugh[[60,8]] <- "-0.88"
-SamiyaandReneeandHugh[[60,9]] <- "-1.05"
+SamiyaandReneeandHugh[[60,10]] <- "-0.882" # osmotic potential value
 
 write.csv(SamiyaandReneeandHugh,"Data_output/SamiyaandReneeandHugh.csv",row.names=FALSE) # save as csv into "Data" folder
 
