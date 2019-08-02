@@ -79,18 +79,6 @@ OsmPot <- OsmPot %>%
 
 SamiyaandRenee <- left_join(SamiyaandRenee, OsmPot, by = "Species_Code") # joining the osmotic potential data
 
-# T leaf
-
-Tleaf <- read.csv("GH_data/WPW_GH_TLEAF_clean.csv") # the 'clean' version is the one without the 422 outlier
-
-Tleaf <- Tleaf %>%
-  filter(Treatment == 'C') %>% # filter for only the controls
-  select(Species_Code, Tleaf_C_Avg, Tleaf_C_Max_Avg) %>% # select relevant columns
-  group_by(Species_Code) %>% # group by species code
-  summarise(Tleaf_C_Avg = mean(Tleaf_C_Avg, na.rm = TRUE),
-            Tleaf_C_Max_Avg = mean(Tleaf_C_Max, na.rm = TRUE)) # removes the NAs so the means work
-
-SamiyaandRenee <- left_join(SamiyaandRenee, Tleaf, by = "Species_Code") # joining the Tleaf data
 
 # LMA, thickness, succulence
 
@@ -105,7 +93,7 @@ LMA <- LMA %>%
             Thickness_mm_Avg = mean(Thickness_mm_Avg, na.rm = TRUE),
             mean_succulance_g = mean(Weight_diff_g, na.rm = TRUE)) # removes the NAs so the means work
 
-SamiyaandRenee <- left_join(SamiyaandRenee, LMA, by = "Species_Code") # joining the Tleaf data
+SamiyaandRenee <- left_join(SamiyaandRenee, LMA, by = "Species_Code") # joining the LMA data
 
 ################################################################################################################################################
 
@@ -135,9 +123,9 @@ SamiyaandReneeandHugh[[60,3]] <- "Native"
 SamiyaandReneeandHugh[[60,4]] <- "Climber/Groundcover"
 SamiyaandReneeandHugh[[60,5]] <- "" # replacing the NA with a blank
 SamiyaandReneeandHugh[[60,10]] <- "-0.882" # osmotic potential value
-SamiyaandReneeandHugh[[60,13]] <- "43.272" # LMA value
-SamiyaandReneeandHugh[[60,14]] <- "0.179" # thickness value
-SamiyaandReneeandHugh[[60,15]] <- "0.53442" # succulence value
+SamiyaandReneeandHugh[[60,11]] <- "43.272" # LMA value
+SamiyaandReneeandHugh[[60,12]] <- "0.179" # thickness value
+SamiyaandReneeandHugh[[60,13]] <- "0.53442" # succulence value
 
 write.csv(SamiyaandReneeandHugh,"Data_output/SamiyaandReneeandHugh.csv",row.names=FALSE) # save as csv into "Data" folder
 
