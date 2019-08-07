@@ -216,34 +216,32 @@ fviz_pca_ind(res.pca,
              col.ind = practise_PCA$Growth_Form, # color by growth form
              palette = c("Dark2"),
              addEllipses = TRUE, # Concentration ellipses
-             legend.title = "Growth form"
-)
+             legend.title = "Growth form")
 
 fviz_pca_ind(res.pca,
              geom.ind = "point", # show points only (but not "text")
              col.ind = practise_PCA$Origin, # color by origin
              palette = c("Dark2"),
              addEllipses = TRUE, # Concentration ellipses
-             legend.title = "Origin"
-)
+             legend.title = "Origin")
 
 # confidence ellipses (prob better)
+# shows 95% confidence ellipse, see ?coord.ellipse()
 
 fviz_pca_ind(res.pca,
              geom.ind = "point", # show points only (but not "text")
              col.ind = practise_PCA$Growth_Form, # color by growth form
              palette = c("Dark2"),
              addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipses
-             legend.title = "Growth form"
-) # grasses look sign different from everything else
+             legend.title = "Growth form") # grasses look sign different from everything else
 
 fviz_pca_ind(res.pca,
              geom.ind = "point", # show points only (but not "text")
              col.ind = practise_PCA$Origin, # color by origin
              palette = c("Dark2"),
              addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipses
-             legend.title = "Origin"
-) # doesn't look different
+             legend.title = "Origin") # doesn't look different
+
 
 # biplot
 
