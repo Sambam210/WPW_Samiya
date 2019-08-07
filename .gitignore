@@ -30,3 +30,6 @@ Dave_data/*.csv
 GH_data/*.csv
 Data_output/*.csv
 Dave_data_output/*.csv
+MFA_data/*.csv
+MFA_data_output
+

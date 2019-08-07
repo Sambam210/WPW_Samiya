@@ -70,11 +70,26 @@ quanti.var
 # https://stats.stackexchange.com/questions/5774/can-principal-component-analysis-be-applied-to-datasets-containing-a-mix-of-cont
 # also check out all the other types of multivariate analyses
 # http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/
-# esp PCA analysis
+
+#######################################################################################################################################################################
+############################################################ Practice PCA analysis ####################################################################################
+#######################################################################################################################################################################
+
 # http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/112-pca-principal-component-analysis-essentials/
 
+# load my practise dataset, this is a subset of the variables I have (only the physiological stuff) + corrected growth form
 
+practise_PCA <- read.csv("MFA_data/PCA_practise_GH_variables.csv")
 
 # FIRST STEP IN PCA ANALYSIS
 # NEED TO CONVERT SPECIES CODE INTO ROW NAMES
 # https://stackoverflow.com/questions/5555408/convert-the-values-in-a-column-into-row-names-in-an-existing-data-frame-in-r
+
+library(tidyverse)
+
+practise_PCA <- practise_PCA %>%
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code")
+
+
+
