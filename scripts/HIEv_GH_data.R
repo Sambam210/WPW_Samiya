@@ -35,6 +35,8 @@ filter(cbind_check, Check == FALSE) # Poel doesn't match!
 
 # check that the treatment code matches the last letter of the species code
 
+PotDets <- read.csv("GH_data/WPW_GH_POTDETAILS.csv")
+
 # start with baseline
 PotDets_baseline <- filter(PotDets, Treatment == "C" | Treatment == "D")
 
@@ -83,7 +85,36 @@ diff <- as.data.frame(Treatment_short == Treatment_Code) # TRUE of FALSE for whe
 
 cbind_check <- cbind(PotDets_heatwave$Sample_ID, diff) # bind the two data frames together so I can have a species code
 
-filter(cbind_check, Check == FALSE) # all the same as baseline!
+filter(cbind_check, Check == FALSE) # lots of differences!
+
+# Check to see that the sample_id matches perfectly for baseline and heatwave plants
+
+rm(list=ls()) # clear the environment
+
+PotDets <- read.csv("GH_data/WPW_GH_POTDETAILS.csv")
+
+# subset into baseline and heatwave
+baseline <- filter(PotDets, Treatment == "C" | Treatment == "D")
+heatwave <- filter(PotDets, Treatment == "C_HW" | Treatment == "D_HW")
+
+# subset each dataset again
+baseline <- baseline %>%
+  select(Species_Code, Treatment, Sample_ID)
+
+heatwave <- heatwave %>%
+  select(Species_Code, Treatment, Sample_ID) %>%
+  rename(Species_Code2=Species_Code, Treatment2=Treatment, Sample_ID2=Sample_ID) # need to rename the columns so they are different to baseline
+
+# merge the datasets
+baseline_heatwave <- cbind(baseline,heatwave)
+
+baseline_heatwave$diff_Sample_ID <- (baseline_heatwave$Sample_ID == baseline_heatwave$Sample_ID2) # create a new column TRUE or FALSE if baseline equals heatwave sample id
+
+filter(baseline_heatwave, diff_Sample_ID == FALSE) # both the same
+
+baseline_heatwave$diff_Species_Code <- (baseline_heatwave$Species_Code == baseline_heatwave$Species_Code2) # create a new column TRUE or FALSE if baseline equals heatwave species code
+
+filter(baseline_heatwave, diff_Species_Code == FALSE) # both the same!
 
 ########################################################## LMA #######################################################################
 
