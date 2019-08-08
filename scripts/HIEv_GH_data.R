@@ -2,6 +2,89 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
+############################################################ Pot details #############################################################
+
+library("dplyr")
+
+PotDets <- read.csv("GH_data/WPW_GH_POTDETAILS.csv")
+
+# check if the species code matches the first 4 letters of sample ID (after I fixed Poel)
+
+PotDets$Sample_ID_short<-c(substr(PotDets$Sample_ID,1,4)) # extract the first 4 letters of Sample ID
+head(PotDets)
+Species_Code <- PotDets %>%
+  select(Species_Code) %>%
+  rename(Check=Species_Code)
+
+Sample_ID_short <- PotDets %>%
+  select(Sample_ID_short) %>%
+  rename(Check=Sample_ID_short)
+
+str(Sample_ID_short)
+str(Species_Code) # need to change to character
+Species_Code$Check <- as.character(Species_Code$Check)
+str(Species_Code)
+
+diff <- as.data.frame(Sample_ID_short == Species_Code) # TRUE of FALSE for whether they are different
+
+cbind_check <- cbind(Species_Code, diff) # bind the two data frames together so I can have a species code
+colnames(cbind_check) <- c("Species", "Check") # rename col names as both were called 'check'
+
+filter(cbind_check, Check == FALSE) # Poel doesn't match!
+
+
+# check that the treatment code matches the last letter of the species code
+
+# start with baseline
+PotDets_baseline <- filter(PotDets, Treatment == "C" | Treatment == "D")
+
+PotDets_baseline$Treatment_short<-c(substr(PotDets_baseline$Sample_ID,6,6)) # extract the last letter of Sample ID
+head(PotDets_baseline)
+Treatment_Code <- PotDets_baseline %>%
+  select(Treatment) %>%
+  rename(Check=Treatment)
+
+Treatment_short <- PotDets_baseline %>%
+  select(Treatment_short) %>%
+  rename(Check=Treatment_short)
+
+str(Treatment_short)
+str(Treatment_Code) # need to change to character
+Treatment_Code$Check <- as.character(Treatment_Code$Check)
+str(Treatment_Code)
+
+diff <- as.data.frame(Treatment_short == Treatment_Code) # TRUE of FALSE for whether they are different
+
+cbind_check <- cbind(PotDets_baseline$Sample_ID, diff) # bind the two data frames together so I can have a species code
+
+filter(cbind_check, Check == FALSE) # lots doesn't match!
+
+# now heatwave
+PotDets_heatwave <- filter(PotDets, Treatment == "C_HW" | Treatment == "D_HW")
+
+PotDets_heatwave$Treatment_short<-c(substr(PotDets_heatwave$Sample_ID,6,6)) # extract the last letter of Sample ID
+PotDets_heatwave$Treatment_new<-c(substr(PotDets_heatwave$Treatment,1,1)) # extract the first letter of treatment
+
+head(PotDets_heatwave)
+Treatment_Code <- PotDets_heatwave %>%
+  select(Treatment_new) %>%
+  rename(Check=Treatment_new)
+
+Treatment_short <- PotDets_heatwave %>%
+  select(Treatment_short) %>%
+  rename(Check=Treatment_short)
+
+str(Treatment_short)
+str(Treatment_Code) # need to change to character
+Treatment_Code$Check <- as.character(Treatment_Code$Check)
+str(Treatment_Code)
+
+diff <- as.data.frame(Treatment_short == Treatment_Code) # TRUE of FALSE for whether they are different
+
+cbind_check <- cbind(PotDets_heatwave$Sample_ID, diff) # bind the two data frames together so I can have a species code
+
+filter(cbind_check, Check == FALSE) # all the same as baseline!
+
 ########################################################## LMA #######################################################################
 
 ### QC/QA
@@ -13,20 +96,6 @@ library("dplyr")
 LMA<-read.csv("GH_data/WPW_GH_LMA.csv")
 
 str(LMA)
-
-# check if the species code matches the first 4 letters of sample ID
-
-LMA$Sample_ID_short<-c(substr(LMA$Sample_ID,1,4)) # extract the first 4 letters of Sample ID
-head(LMA)
-Species_Code <- LMA %>%
-  select(Species_Code) %>%
-  rename(Check=Species_Code)
-
-Sample_ID_short <- LMA %>%
-  select(Sample_ID_short) %>%
-  rename(Check=Sample_ID_short)
-
-setdiff(Species_Code,Sample_ID_short) # no differences
 
 # subset for only the control and drought pots and columns I am interested in
 
