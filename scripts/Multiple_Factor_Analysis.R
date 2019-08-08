@@ -97,7 +97,7 @@ library("factoextra")
 
 # subset the data to remove the categorical variables, these will be used later to colour by groups
 
-practise_PCA_cont_var <- select(practise_PCA, -Origin, -Growth_Form)
+practise_PCA_cont_var <- select(practise_PCA, -Origin, -Growth_Form, -Woody)
 
 ## scaling the data
 # data need to be in the same scale before analysis
@@ -163,7 +163,7 @@ fviz_contrib(res.pca, choice = "var", axes = 2, top = 4)
 fviz_contrib(res.pca, choice = "var", axes = 3, top = 4)
 
 # dimension description
-# ID the most significanlty associated variables for a given PC
+# identify the most significanlty associated variables for a given PC
 
 res.desc <- dimdesc(res.pca, axes = c(1,2), proba = 0.05)
 # Description of dimension 1
@@ -224,6 +224,13 @@ fviz_pca_ind(res.pca,
              palette = c("Dark2"),
              addEllipses = TRUE, # Concentration ellipses
              legend.title = "Origin")
+
+fviz_pca_ind(res.pca,
+             geom.ind = "point", # show points only (but not "text")
+             col.ind = practise_PCA$Woody, # color by origin
+             palette = c("Dark2"),
+             addEllipses = TRUE, # Concentration ellipses
+             legend.title = "Woody")
 
 # confidence ellipses (prob better)
 # shows 95% confidence ellipse, see ?coord.ellipse()

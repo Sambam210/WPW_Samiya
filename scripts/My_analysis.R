@@ -79,7 +79,6 @@ OsmPot <- OsmPot %>%
 
 SamiyaandRenee <- left_join(SamiyaandRenee, OsmPot, by = "Species_Code") # joining the osmotic potential data
 
-
 # LMA, thickness, succulence
 
 LMA <- read.csv("GH_data/WPW_GH_LMA_clean.csv") # Renee uploaded an updated version of the LMA data with errors fixed
