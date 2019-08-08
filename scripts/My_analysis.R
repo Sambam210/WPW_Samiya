@@ -57,7 +57,7 @@ SamiyaandRenee <- newdata %>%
          Species_Code,
          Origin,
          Growth_Form,
-         Native_Woody,
+         Woody,
          Deciduous_or_evergreen,
          Leaf_senescence_in_response_to_drought,
          Water_storage,
@@ -119,8 +119,8 @@ SamiyaandReneeandHugh[rowSums(is.na(SamiyaandReneeandHugh)) > 0,] # find NAs in 
 # Replacing the 'Kennedia beckxiana' missing values
 SamiyaandReneeandHugh[[60,2]] <- "Kebe"
 SamiyaandReneeandHugh[[60,3]] <- "Native"
-SamiyaandReneeandHugh[[60,4]] <- "Climber/Groundcover"
-SamiyaandReneeandHugh[[60,5]] <- "" # replacing the NA with a blank
+SamiyaandReneeandHugh[[60,4]] <- "Climber"
+SamiyaandReneeandHugh[[60,5]] <- "yes"
 SamiyaandReneeandHugh[[60,10]] <- "-0.882" # osmotic potential value
 SamiyaandReneeandHugh[[60,11]] <- "43.272" # LMA value
 SamiyaandReneeandHugh[[60,12]] <- "0.179" # thickness value
