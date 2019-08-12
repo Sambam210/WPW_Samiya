@@ -288,15 +288,12 @@ head(cor.mat[, 1:6])
 corrplot(cor.mat, type="upper", order="hclust", 
          tl.col="black", tl.srt=45) # HOLY COW THERE IS TOO MANY VARIABLES TO SEE THE PLOT!
 
-## LET'S TRY AND SUBSET HUGH'S DATA TO ONLY INCLUDE THE MEANS AND RANGES FOR EACH WORDCLIM VARIABLE
-
-Hugh_data_short <- Hugh_data %>%
-  select(ends_with("mean"), ends_with("range")) # still to many variables (almost 50)
-
 ## LET'S SEE WHICH VARIABLES ARE MOST CORRELATED (POSITIVELY AND NEGATIVELY) WITH THE GLASSHOUSE VARIABLES AND ONLY USE THOSE
 
 Hugh_data <- read.csv("MFA_data/niche.data.HB.csv")
 
+practise_PCA <- read.csv("MFA_data/PCA_practise_GH_variables.csv")
+
 Hugh_data <- Hugh_data %>%
   select(-searchTaxon.20, -AOO, -Global_records) %>%
   rename(Species=searchTaxon)
@@ -309,38 +306,133 @@ practise_PCA_enviro <- select(practise_PCA_enviro, -Species_Code, -Species, -Ori
 
 # correlation matrix
 
-cor.mat <- round(cor(practise_PCA_enviro),2) # doesn't work, porbably because of the NAs caused by Kebe and Phro
-
-# let's remove those
-
-Hugh_data <- read.csv("MFA_data/niche.data.HB.csv")
-
-Hugh_data <- Hugh_data %>%
-  select(-searchTaxon.20, -AOO, -Global_records) %>%
-  rename(Species=searchTaxon)
-
-practise_PCA_enviro <- left_join(practise_PCA, Hugh_data, by = "Species")
-
-practise_PCA_enviro <- filter(practise_PCA_enviro, Species_Code != "Kebe", Species_Code != "Phro") # remove the two species
-
-# remove the categorical variables
-
-practise_PCA_enviro <- select(practise_PCA_enviro, -Species_Code, -Species, -Origin, -Growth_Form, -Woody)
-
-# correlation matrix
-
-cor.mat <- round(cor(practise_PCA_enviro),2)
-
-install.packages("corrr")
+install.packages("corrr") # using this package as it is easier to filter, does the same spearman correlation as 'cor' package
 library(corrr)
 tidy_cor <- correlate(practise_PCA_enviro)
 
-# show only the glasshouse variables
+tidy_cor <- tidy_cor[1:4,] # select only the glasshouse variables
 
-cor.mat <- cor.mat[1:4,]
+tidy_cor_filter <- tidy_cor %>%  
+  gather(-rowname, key = "colname", value = "cor") %>% 
+  filter(abs(cor) > 0.25 | abs(cor) == 0.25) # abs is absolute value
+# filtering a correlation matrix
+# https://www.datanovia.com/en/blog/easy-correlation-matrix-analysis-in-r-using-corrr-package/
 
-cor.mat <- as.data.frame(cor.mat) # save as data frame
+# select those variables in Hugh's data that have >0.25 correlation with the glasshouse variables
 
-cor.mat_filter <- cor.mat[cor.mat > 0.25 | cor.mat == 0.25]
+practise_PCA_enviro_short <- practise_PCA_enviro %>%
+  select(mean_OsmPot, mean_LMA_gm2, Thickness_mm_Avg, mean_succulance_g, Temp_seasonality_median, Temp_seasonality_mean, Max_temp_warm_month_median, Max_temp_warm_month_mode,
+         Temp_annual_range_min, Temp_annual_range_median, Temp_annual_range_mode, Temp_annual_range_mean, Temp_annual_range_q05,
+         Annual_precip_q95, Annual_precip_q95_q05, Annual_precip_q98_q02, Precip_wet_month_q95_q05, Precip_dry_month_q98_q02,
+         Precip_dry_qu_q98_q02)
 
-cor.mat_filter <- as.data.frame(cor.mat_filter)
+# need to put in the species code again
+
+practise_PCA_enviro_short <- cbind(practise_PCA$Species_Code, practise_PCA_enviro_short)
+
+# need to make the species code the row name
+
+practise_PCA_enviro_short <- practise_PCA_enviro_short %>%
+  remove_rownames %>%
+  column_to_rownames(var="practise_PCA$Species_Code")
+
+library("FactoMineR")
+library("factoextra")
+
+## scaling the data
+# data need to be in the same scale before analysis
+# PCA() in FActoMineR does this automatically
+
+# doing the PCA
+
+res.pca <- PCA(practise_PCA_enviro_short, graph = FALSE)
+
+print(res.pca)
+
+# looking at the eigenvalues
+
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+# first three PCs explain 71% of the data
+
+# let's look at the scree plot
+
+fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 60))
+
+# let's look at the variables
+
+var <- get_pca_var(res.pca)
+var
+
+# plot the variables
+
+fviz_pca_var(res.pca, col.var = "black", repel = TRUE)
+
+# dimension description
+# identify the most significanlty associated variables for a given PC
+
+res.desc <- dimdesc(res.pca, axes = c(1,2), proba = 0.05)
+# Description of dimension 1
+res.desc$Dim.1
+# Description of dimension 2
+res.desc$Dim.2
+
+# graph of individuals
+
+ind <- get_pca_ind(res.pca)
+ind
+
+# plot the individuals
+
+fviz_pca_ind(res.pca, repel = TRUE)
+
+# colour by groups
+
+fviz_pca_ind(res.pca,
+             geom.ind = "point", # show points only (but not "text")
+             col.ind = practise_PCA$Growth_Form, # color by growth form
+             palette = c("Dark2"),
+             addEllipses = TRUE, # Concentration ellipses
+             legend.title = "Growth form")
+
+fviz_pca_ind(res.pca,
+             geom.ind = "point", # show points only (but not "text")
+             col.ind = practise_PCA$Origin, # color by origin
+             palette = c("Dark2"),
+             addEllipses = TRUE, # Concentration ellipses
+             legend.title = "Origin")
+
+fviz_pca_ind(res.pca,
+             geom.ind = "point", # show points only (but not "text")
+             col.ind = practise_PCA$Woody, # color by origin
+             palette = c("Dark2"),
+             addEllipses = TRUE, # Concentration ellipses
+             legend.title = "Woody")
+
+# confidence ellipses (prob better)
+# shows 95% confidence ellipse, see ?coord.ellipse()
+
+fviz_pca_ind(res.pca,
+             geom.ind = "point", # show points only (but not "text")
+             col.ind = practise_PCA$Growth_Form, # color by growth form
+             palette = c("Dark2"),
+             addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipses
+             legend.title = "Growth form")
+
+fviz_pca_ind(res.pca,
+             geom.ind = "point", # show points only (but not "text")
+             col.ind = practise_PCA$Origin, # color by origin
+             palette = c("Dark2"),
+             addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipses
+             legend.title = "Origin")
+
+# biplot
+
+fviz_pca_biplot(res.pca, 
+                col.ind = practise_PCA$Growth_Form, palette = "jco", 
+                addEllipses = TRUE, ellipse.type = "confidence", label = "var",
+                col.var = "black", repel = TRUE,
+                legend.title = "Growth Form")
+
+################################################## CLIMATE VARIABLES MAKE EVERYTHING MESSY!!! ######################################################
+
