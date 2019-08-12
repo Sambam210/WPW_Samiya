@@ -97,7 +97,7 @@ library("factoextra")
 
 # subset the data to remove the categorical variables, these will be used later to colour by groups
 
-practise_PCA_cont_var <- select(practise_PCA, -Origin, -Growth_Form, -Woody)
+practise_PCA_cont_var <- select(practise_PCA, -Species, -Origin, -Growth_Form, -Woody)
 
 ## scaling the data
 # data need to be in the same scale before analysis
@@ -258,6 +258,56 @@ fviz_pca_biplot(res.pca,
                 col.var = "black", repel = TRUE,
                 legend.title = "Growth Form")
 
+######################################################################################################################################################
+######################################## Let's try a PCA with all Hugh's environmental variables #####################################################
+######################################################################################################################################################
 
+practise_PCA <- read.csv("MFA_data/PCA_practise_GH_variables.csv")
 
+library(tidyverse)
+
+# adding Hugh's data
+Hugh_data <- read.csv("MFA_data/niche.data.HB.csv")
+
+# getting rid of column I don't need and renaming the species column to match mine
+Hugh_data <- Hugh_data %>%
+  select(-searchTaxon.20, -AOO, -Global_records) %>%
+  rename(Species=searchTaxon)
+
+# visualise correlations between variables
+
+Hugh_data_cor <- select(Hugh_data, -Species) # need to remove the categorical variable first
+
+str(Hugh_data_cor)
+
+library("corrplot")
+
+cor.mat <- round(cor(Hugh_data_cor),2)
+head(cor.mat[, 1:6])
+
+corrplot(cor.mat, type="upper", order="hclust", 
+         tl.col="black", tl.srt=45) # HOLY COW THERE IS TOO MANY VARIABLES TO SEE THE PLOT!
+
+## LET'S TRY AND SUBSET HUGH'S DATA TO ONLY INCLUDE THE MEANS AND RANGES FOR EACH WORDCLIM VARIABLE
+
+Hugh_data_short <- Hugh_data %>%
+  select(ends_with("mean"), ends_with("range"))
+
+# need to join the species column back
+Hugh_data_short <- cbin(Hugh_data$Species, Hugh_data_short)
+
+# joining my data with Hugh's data
+practise_PCA_enviro <- left_join(practise_PCA, Hugh_data_short, by = "Species")
+
+# making species code the row name
+practise_PCA_enviro <- practise_PCA_enviro %>%
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code")
+
+library("FactoMineR")
+library("factoextra")
+
+# subset the data to remove the categorical variables, these will be used later to colour by groups
+
+practise_PCA_enviro_cont_var <- select(practise_PCA_enviro, -Species, -Origin, -Growth_Form, -Woody)
 
