@@ -314,7 +314,7 @@ tidy_cor <- tidy_cor[1:4,] # select only the glasshouse variables
 
 tidy_cor_filter <- tidy_cor %>%  
   gather(-rowname, key = "colname", value = "cor") %>% 
-  filter(abs(cor) > 0.25 | abs(cor) == 0.25) # abs is absolute value
+  filter(abs(cor) > 0.25 | abs(cor) == 0.25) # abs is absolute value (doesn't matter if pos. or neg.)
 # filtering a correlation matrix
 # https://www.datanovia.com/en/blog/easy-correlation-matrix-analysis-in-r-using-corrr-package/
 
