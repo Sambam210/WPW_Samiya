@@ -291,23 +291,56 @@ corrplot(cor.mat, type="upper", order="hclust",
 ## LET'S TRY AND SUBSET HUGH'S DATA TO ONLY INCLUDE THE MEANS AND RANGES FOR EACH WORDCLIM VARIABLE
 
 Hugh_data_short <- Hugh_data %>%
-  select(ends_with("mean"), ends_with("range"))
+  select(ends_with("mean"), ends_with("range")) # still to many variables (almost 50)
 
-# need to join the species column back
-Hugh_data_short <- cbin(Hugh_data$Species, Hugh_data_short)
+## LET'S SEE WHICH VARIABLES ARE MOST CORRELATED (POSITIVELY AND NEGATIVELY) WITH THE GLASSHOUSE VARIABLES AND ONLY USE THOSE
 
-# joining my data with Hugh's data
-practise_PCA_enviro <- left_join(practise_PCA, Hugh_data_short, by = "Species")
+Hugh_data <- read.csv("MFA_data/niche.data.HB.csv")
 
-# making species code the row name
-practise_PCA_enviro <- practise_PCA_enviro %>%
-  remove_rownames %>%
-  column_to_rownames(var="Species_Code")
+Hugh_data <- Hugh_data %>%
+  select(-searchTaxon.20, -AOO, -Global_records) %>%
+  rename(Species=searchTaxon)
 
-library("FactoMineR")
-library("factoextra")
+practise_PCA_enviro <- left_join(practise_PCA, Hugh_data, by = "Species")
 
-# subset the data to remove the categorical variables, these will be used later to colour by groups
+# remove the categorical variables
 
-practise_PCA_enviro_cont_var <- select(practise_PCA_enviro, -Species, -Origin, -Growth_Form, -Woody)
+practise_PCA_enviro <- select(practise_PCA_enviro, -Species_Code, -Species, -Origin, -Growth_Form, -Woody)
 
+# correlation matrix
+
+cor.mat <- round(cor(practise_PCA_enviro),2) # doesn't work, porbably because of the NAs caused by Kebe and Phro
+
+# let's remove those
+
+Hugh_data <- read.csv("MFA_data/niche.data.HB.csv")
+
+Hugh_data <- Hugh_data %>%
+  select(-searchTaxon.20, -AOO, -Global_records) %>%
+  rename(Species=searchTaxon)
+
+practise_PCA_enviro <- left_join(practise_PCA, Hugh_data, by = "Species")
+
+practise_PCA_enviro <- filter(practise_PCA_enviro, Species_Code != "Kebe", Species_Code != "Phro") # remove the two species
+
+# remove the categorical variables
+
+practise_PCA_enviro <- select(practise_PCA_enviro, -Species_Code, -Species, -Origin, -Growth_Form, -Woody)
+
+# correlation matrix
+
+cor.mat <- round(cor(practise_PCA_enviro),2)
+
+install.packages("corrr")
+library(corrr)
+tidy_cor <- correlate(practise_PCA_enviro)
+
+# show only the glasshouse variables
+
+cor.mat <- cor.mat[1:4,]
+
+cor.mat <- as.data.frame(cor.mat) # save as data frame
+
+cor.mat_filter <- cor.mat[cor.mat > 0.25 | cor.mat == 0.25]
+
+cor.mat_filter <- as.data.frame(cor.mat_filter)
