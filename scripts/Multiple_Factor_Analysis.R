@@ -87,17 +87,12 @@ practise_PCA <- read.csv("MFA_data/PCA_practise_GH_variables.csv")
 # https://stackoverflow.com/questions/5555408/convert-the-values-in-a-column-into-row-names-in-an-existing-data-frame-in-r
 
 library(tidyverse)
-
-practise_PCA <- practise_PCA %>%
-  remove_rownames %>%
-  column_to_rownames(var="Species_Code")
-
 library("FactoMineR")
 library("factoextra")
 
 # subset the data to remove the categorical variables, these will be used later to colour by groups
 
-practise_PCA_cont_var <- select(practise_PCA, -Species, -Origin, -Growth_Form, -Woody)
+practise_PCA_cont_var <- select(practise_PCA, -Species_Code, -Species, -Origin, -Growth_Form, -Woody)
 
 # let's see if the data are linearly related
 
@@ -111,6 +106,16 @@ practise_PCA_cont_var <- practise_PCA_cont_var %>%
 practise_PCA_cont_var <- select(practise_PCA_cont_var, -mean_succulance_g) # remove the untransformed variable
 
 pairs(practise_PCA_cont_var) # looks better
+
+# add back the Species_Code
+
+practise_PCA_cont_var <- cbind(practise_PCA$Species_Code, practise_PCA_cont_var)
+
+# make species code the row name
+
+practise_PCA_cont_var <- practise_PCA_cont_var %>%
+  remove_rownames %>%
+  column_to_rownames(var="practise_PCA$Species_Code")
 
 ## scaling the data
 # data need to be in the same scale before analysis
@@ -197,8 +202,7 @@ fviz_pca_ind(res.pca, repel = TRUE)
 
 fviz_pca_ind(res.pca, col.ind = "cos2", 
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE # Avoid text overlapping (slow if many points)
-)
+             repel = TRUE) # Avoid text overlapping (slow if many points)
 
 # colour individuals by a custom continuous variable
 # let's try mean aridity index
@@ -261,7 +265,6 @@ fviz_pca_ind(res.pca,
              palette = c("Dark2"),
              addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipses
              legend.title = "Origin") # doesn't look different
-
 
 # biplot
 
