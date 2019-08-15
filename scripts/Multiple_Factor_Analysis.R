@@ -99,6 +99,19 @@ library("factoextra")
 
 practise_PCA_cont_var <- select(practise_PCA, -Species, -Origin, -Growth_Form, -Woody)
 
+# let's see if the data are linearly related
+
+pairs(practise_PCA_cont_var)
+
+# might need to transform the mean_succulance variable
+
+practise_PCA_cont_var <- practise_PCA_cont_var %>%
+  mutate(log_mean_succulance_g = log(mean_succulance_g))
+
+practise_PCA_cont_var <- select(practise_PCA_cont_var, -mean_succulance_g) # remove the untransformed variable
+
+pairs(practise_PCA_cont_var) # looks better
+
 ## scaling the data
 # data need to be in the same scale before analysis
 # PCA() in FActoMineR does this automatically
