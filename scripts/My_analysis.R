@@ -71,6 +71,23 @@ SamiyaandRenee <- newdata %>%
 
 OsmPot <- read.csv("GH_data/WPW_GH_OSMPOT.csv") # Renee said it was clean therefore there is no 'clean' file
 
+# looking for outliers
+OsmPot <- OsmPot %>%
+  filter(Treatment == 'C') %>% # filter for only the controls
+  select(Species_Code, Batch, OsmPot_MPa) %>% # select relevant columns
+  group_by(Species_Code, Batch) %>% # group by species code and batch
+  summarise(mean_OsmPot = mean(OsmPot_MPa, na.rm = TRUE)) # removes the NAs so the means work
+
+library(ggplot2)
+
+ggplot(OsmPot, aes(x = Batch, y = mean_OsmPot)) +
+  geom_boxplot() +
+  theme_bw()
+
+# adding the data to the master spreadsheet
+
+OsmPot <- read.csv("GH_data/WPW_GH_OSMPOT.csv") # Renee said it was clean therefore there is no 'clean' file
+
 OsmPot <- OsmPot %>%
   filter(Treatment == 'C') %>% # filter for only the controls
   select(Species_Code, OsmPot_MPa) %>% # select relevant columns
@@ -80,6 +97,33 @@ OsmPot <- OsmPot %>%
 SamiyaandRenee <- left_join(SamiyaandRenee, OsmPot, by = "Species_Code") # joining the osmotic potential data
 
 # LMA, thickness, succulence
+
+LMA <- read.csv("GH_data/WPW_GH_LMA_clean.csv") # Renee uploaded an updated version of the LMA data with errors fixed
+
+# looking for outliers
+
+LMA <- LMA %>%
+  filter(Treatment == 'C') %>% # filter for only the controls
+  select(Species_Code, Batch, Fresh_Weight_g, Dry_Weight_g, Thickness_mm_Avg, LMA_gm2) %>% # select relevant columns
+  mutate(Weight_diff_g = Fresh_Weight_g - Dry_Weight_g) %>% # calculate index of succulence
+  group_by(Species_Code, Batch) %>% # group by species code and batch
+  summarise(mean_LMA_gm2 = mean(LMA_gm2, na.rm = TRUE),
+            Thickness_mm_Avg = mean(Thickness_mm_Avg, na.rm = TRUE),
+            mean_succulance_g = mean(Weight_diff_g, na.rm = TRUE)) # removes the NAs so the means work
+
+ggplot(LMA, aes(x = Batch, y = mean_LMA_gm2)) +
+  geom_boxplot() +
+  theme_bw()
+
+ggplot(LMA, aes(x = Batch, y = Thickness_mm_Avg)) +
+  geom_boxplot() +
+  theme_bw()
+
+ggplot(LMA, aes(x = Batch, y = mean_succulance_g)) +
+  geom_boxplot() +
+  theme_bw()
+
+# adding the data to the master spreadsheet
 
 LMA <- read.csv("GH_data/WPW_GH_LMA_clean.csv") # Renee uploaded an updated version of the LMA data with errors fixed
 
