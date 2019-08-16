@@ -452,3 +452,25 @@ fviz_pca_biplot(res.pca,
 
 ################################################## CLIMATE VARIABLES MAKE EVERYTHING MESSY!!! ######################################################
 
+####################################################################################################################################################
+####################################################### Factor analysis of mixed data ##############################################################
+############################################### using glasshouse variables and my scraped data #####################################################
+####################################################################################################################################################
+
+# following this tutorial
+
+# http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/115-famd-factor-analysis-of-mixed-data-in-r-essentials/
+
+library(tidyverse)
+
+# Load the data, this includes the glasshouse variables + my scrapped variables (I have modified them to be more informative)
+FAMD_data <- read.csv("MFA_data/FAMD_data.csv")
+
+# need to transform the succulance variable to make it linear
+FAMD_data <- FAMD_data %>%
+  mutate(log_mean_succulance_g = log(mean_succulance_g)) %>%
+  select(-mean_succulance_g)
+
+
+
+
