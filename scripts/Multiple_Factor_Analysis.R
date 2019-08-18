@@ -469,8 +469,55 @@ FAMD_data <- read.csv("MFA_data/FAMD_data.csv")
 # need to transform the succulance variable to make it linear
 FAMD_data <- FAMD_data %>%
   mutate(log_mean_succulance_g = log(mean_succulance_g)) %>%
-  select(-mean_succulance_g)
+  select(-mean_succulance_g) %>%
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code") # make species code the row names
 
+# remove the categorical vaiables that aren't needed/used to colour points later
+
+FAMD_data_analysis <- select(FAMD_data, -Species, -Origin, -Growth_Form, -Growth_structure)
+
+library("FactoMineR")
+library("factoextra")
+
+str(FAMD_data_analysis)
+
+# running the FAMD analysis
+
+res.famd <- FAMD(FAMD_data_analysis, graph = FALSE)
+
+# extract the eigenvalues
+
+eig.val <- get_eigenvalue(res.famd)
+head(eig.val) # first 3 dimensions explain 43% of the data
+
+# draw the scree plot
+fviz_screeplot(res.famd)
+
+### graph of variables
+
+## all variables
+
+var <- get_famd_var(res.famd)
+
+# plot of variables
+fviz_famd_var(res.famd, repel = TRUE)
+
+# contribution to the 1st dimension
+fviz_contrib(res.famd, "var", axes = 1) # leaf drop traits contribute most to dimension 1
+
+# contribution to 2nd dimension
+fviz_contrib(res.famd, "var", axes = 2) # lead drop and water storage contribute most to dimension 2
+
+## quantitative variables
+
+quanti.var <- get_famd_var(res.famd, "quanti.var")
+
+# plot the quantitative variables
+
+fviz_famd_var(res.famd, "quanti.var", repel = TRUE, col.var = "black")
+
+## qualitative variables
 
 
 
