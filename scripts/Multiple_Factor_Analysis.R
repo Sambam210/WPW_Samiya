@@ -515,7 +515,7 @@ quanti.var <- get_famd_var(res.famd, "quanti.var")
 
 # plot the quantitative variables
 
-fviz_famd_var(res.famd, "quanti.var", repel = TRUE, col.var = "black")
+quanti.plot <- fviz_famd_var(res.famd, "quanti.var", repel = TRUE, col.var = "black")
 
 ## qualitative variables
 
@@ -523,7 +523,7 @@ quali.var <- get_famd_var(res.famd, "quali.var")
 
 # plot the qualitative variables
 
-fviz_famd_var(res.famd, "quali.var", repel = TRUE, col.var = "black")
+quali.plot <- fviz_famd_var(res.famd, "quali.var", repel = TRUE, col.var = "black")
 
 ### graph of individuals
 
@@ -569,7 +569,14 @@ all_variables <- fviz_add(quanti, res.famd$quali.var$coord,
 
 all_variables
 
-# plotting a subset of the quantitative variables so biplot doesn't look so messy
+# save the output
+pdf("MFA_data_output/FAMD_scraped_glasshouse.pdf") # Create a new pdf device
+print(quanti.plot)
+print(quali.plot)
+print(individuals)
+dev.off() # Close the pdf device
+
+## plotting a subset of the quantitative variables so biplot doesn't look so messy
 
 individuals <- fviz_famd_ind(res.famd, 
                              geom = "point", # show points only (but not "text")
@@ -614,5 +621,77 @@ all_variables <- fviz_add(quanti, res.famd$quali.var$coord,
 
 all_variables
 
+##############################################################################################################################################################
+####################################### Let's try PCA with glasshouse, scrapped, and all niche variables #####################################################
+############################################################### using MFA ####################################################################################
+##############################################################################################################################################################
 
+# http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/116-mfa-multiple-factor-analysis-in-r-essentials/
+
+library(tidyverse)
+
+hugh.data <- read.csv("MFA_data/niche.data.HB.csv")
+
+other.variables <- read.csv("MFA_data/FAMD_data.csv")
+
+# need to transform the succulance variable to make it linear
+other.variables <- other.variables %>%
+  mutate(log_mean_succulance_g = log(mean_succulance_g)) %>%
+  select(-mean_succulance_g) 
+
+hugh.data <- hugh.data %>%
+  select(-searchTaxon.20, -AOO, -Global_records) %>%
+  rename(Species=searchTaxon)
+
+all.data <- left_join(other.variables, hugh.data, by = "Species")
+
+# all.data <- filter(all.data, Species_Code != "Mero", Species_Code != "Kebe", Species_Code != "Phro") # remove species with NA in dataset
+
+all.data <- all.data %>%
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code") # make species code the row names
+
+# remove the categorical vaiables that aren't needed/used to colour points later
+
+all.data.analysis <- select(all.data, -Species, -Origin, -Growth_Form)
+
+library("FactoMineR")
+library("factoextra")
+
+str(all.data.analysis)
+
+# conducting the mfa
+
+res.mfa <- MFA(all.data.analysis,
+               group = c(5, 4, 110, 80, 10, 10),
+               type = c("n", rep("s",5)), # used ?MFA to figure this out
+               name.group = c("morphology", "physiology", "temp", "precip", "evapotranspiration", "aridity"),
+               graph = FALSE)
+
+print(res.mfa)
+
+# eigenvalues
+
+eig.val <- get_eigenvalue(res.mfa)
+head(eig.val) # first 3 dimensions explain 45% of the data
+
+# scree plot
+fviz_screeplot(res.mfa)
+
+# groups of variables
+group <- get_mfa_var(res.mfa, "group")
+group
+
+# plot the groups
+fviz_mfa_var(res.mfa, "group")
+
+# Contribution to the first dimension
+fviz_contrib(res.mfa, "group", axes = 1) # evaportranspiration and temp
+
+# Contribution to the second dimension
+fviz_contrib(res.mfa, "group", axes = 2) # aridity and precip
+
+# quantitative variables
+quanti.var <- get_mfa_var(res.mfa, "quanti.var")
+quanti.var
 
