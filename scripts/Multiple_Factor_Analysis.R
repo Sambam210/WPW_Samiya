@@ -535,16 +535,8 @@ fviz_famd_ind(res.famd, col.ind = "cos2", # colour by their cos2
               gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
               repel = TRUE)
 
-# colour individuals by growth form (used ?fviz_famd_ind to figure out)
 
-fviz_famd_ind(res.famd, 
-             geom = "point", # show points only (but not "text")
-             col.ind = FAMD_data$Growth_Form, # color by growth form 
-             # shape.ind = c(3, 15, 17, 18, 19),
-             palette = c("Dark2"),
-             addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipse
-             legend.title = "Growth from")
-# can add the invisible = "quali.var" argument if you don't want to display the triangles
+# colour individuals by growth form (used ?fviz_famd_ind to figure out)
 
 library(ggplot2)
 
@@ -555,14 +547,72 @@ individuals <- fviz_famd_ind(res.famd,
               addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipse
               legend.title = "Growth from",
               invisible = "quali.var")
+# shape.ind = c(3, 15, 17, 18, 19),
+individuals         
+
+# creating the biplot (looks v. messy)
+# figured out using fviz_add
+# http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/112-pca-principal-component-analysis-essentials/
 
 quanti <- fviz_add(individuals, res.famd$quanti.var$coord, 
          repel = TRUE,
-         col.var = "black",
+         col = "blue",
+         linetype = "solid",
          geom = c("arrow", "text"))
+
+quanti
 
 all_variables <- fviz_add(quanti, res.famd$quali.var$coord, 
          repel = TRUE,
-         col.var = "black",
+         col = "black",
          geom = c("point", "text"))
+
+all_variables
+
+# plotting a subset of the quantitative variables so biplot doesn't look so messy
+
+individuals <- fviz_famd_ind(res.famd, 
+                             geom = "point", # show points only (but not "text")
+                             col.ind = FAMD_data$Growth_Form, # color by growth form 
+                             palette = c("Dark2"),
+                             addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipse
+                             legend.title = "Growth from",
+                             invisible = "quali.var") # will add these later
+
+individuals         
+
+# plotting the quantitative variables on top
+# plot only the ones which make the most contributions
+
+quanti.var$contrib # osmpot and LMA make most contributions (first 2 on list)
+
+coord = as.data.frame(quanti.var$coord)
+coord <- coord %>%
+  rownames_to_column("variable") %>% # name the row names into a column
+  filter(variable == "mean_OsmPot" | variable == "mean_LMA_gm2") # select the top two variables
+  
+  
+coord <- coord %>%
+  remove_rownames %>%
+  column_to_rownames(var="variable") # make variable the row names again
+
+
+quanti <- fviz_add(individuals, coord, 
+                   repel = TRUE,
+                   col = "blue",
+                   linetype = "solid",
+                   geom = c("arrow", "text"))
+
+quanti
+
+# plotting the qualitative variables on top
+
+all_variables <- fviz_add(quanti, res.famd$quali.var$coord, 
+                          repel = TRUE,
+                          col = "black",
+                          geom = c("point", "text"))
+
+all_variables
+
+
 
