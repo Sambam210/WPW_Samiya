@@ -475,7 +475,7 @@ FAMD_data <- FAMD_data %>%
 
 # remove the categorical vaiables that aren't needed/used to colour points later
 
-FAMD_data_analysis <- select(FAMD_data, -Species, -Origin, -Growth_Form, -Growth_structure)
+FAMD_data_analysis <- select(FAMD_data, -Species, -Origin, -Growth_Form)
 
 library("FactoMineR")
 library("factoextra")
@@ -489,7 +489,7 @@ res.famd <- FAMD(FAMD_data_analysis, graph = FALSE)
 # extract the eigenvalues
 
 eig.val <- get_eigenvalue(res.famd)
-head(eig.val) # first 3 dimensions explain 43% of the data
+head(eig.val) # first 3 dimensions explain 48% of the data
 
 # draw the scree plot
 fviz_screeplot(res.famd)
@@ -507,7 +507,7 @@ fviz_famd_var(res.famd, repel = TRUE)
 fviz_contrib(res.famd, "var", axes = 1) # leaf drop traits contribute most to dimension 1
 
 # contribution to 2nd dimension
-fviz_contrib(res.famd, "var", axes = 2) # lead drop and water storage contribute most to dimension 2
+fviz_contrib(res.famd, "var", axes = 2) # osm pot and growth structure contribute most to dimension 2
 
 ## quantitative variables
 
@@ -519,5 +519,50 @@ fviz_famd_var(res.famd, "quanti.var", repel = TRUE, col.var = "black")
 
 ## qualitative variables
 
+quali.var <- get_famd_var(res.famd, "quali.var")
 
+# plot the qualitative variables
+
+fviz_famd_var(res.famd, "quali.var", repel = TRUE, col.var = "black")
+
+### graph of individuals
+
+ind <- get_famd_ind(res.famd)
+
+# plot the individuals with the qualitative variables
+
+fviz_famd_ind(res.famd, col.ind = "cos2", # colour by their cos2
+              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+              repel = TRUE)
+
+# colour individuals by growth form (used ?fviz_famd_ind to figure out)
+
+fviz_famd_ind(res.famd, 
+             geom = "point", # show points only (but not "text")
+             col.ind = FAMD_data$Growth_Form, # color by growth form 
+             # shape.ind = c(3, 15, 17, 18, 19),
+             palette = c("Dark2"),
+             addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipse
+             legend.title = "Growth from")
+# can add the invisible = "quali.var" argument if you don't want to display the triangles
+
+library(ggplot2)
+
+individuals <- fviz_famd_ind(res.famd, 
+              geom = "point", # show points only (but not "text")
+              col.ind = FAMD_data$Growth_Form, # color by growth form 
+              palette = c("Dark2"),
+              addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipse
+              legend.title = "Growth from",
+              invisible = "quali.var")
+
+quanti <- fviz_add(individuals, res.famd$quanti.var$coord, 
+         repel = TRUE,
+         col.var = "black",
+         geom = c("arrow", "text"))
+
+all_variables <- fviz_add(quanti, res.famd$quali.var$coord, 
+         repel = TRUE,
+         col.var = "black",
+         geom = c("point", "text"))
 
