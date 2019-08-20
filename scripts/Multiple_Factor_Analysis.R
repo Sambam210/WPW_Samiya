@@ -503,6 +503,12 @@ var <- get_famd_var(res.famd)
 # plot of variables
 fviz_famd_var(res.famd, repel = TRUE)
 
+# colour the variables according to their contribution to the dimensions (used ?fviz_famd_var to figure out)
+fviz_famd_var(res.famd, choice = "var", col.var = "contrib", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+             repel = TRUE,
+             geom = c("arrow", "text"))
+
 # contribution to the 1st dimension
 fviz_contrib(res.famd, "var", axes = 1) # leaf drop traits contribute most to dimension 1
 
@@ -591,7 +597,7 @@ individuals
 # plotting the quantitative variables on top
 # plot only the ones which make the most contributions
 
-quanti.var$contrib # osmpot and LMA make most contributions (first 2 on list)
+quanti.var$contrib # osmpot and LMA make most contributions
 
 coord = as.data.frame(quanti.var$coord)
 coord <- coord %>%
@@ -678,7 +684,7 @@ head(eig.val) # first 3 dimensions explain 45% of the data
 # scree plot
 fviz_screeplot(res.mfa)
 
-# groups of variables
+## groups of variables
 group <- get_mfa_var(res.mfa, "group")
 group
 
@@ -691,7 +697,57 @@ fviz_contrib(res.mfa, "group", axes = 1) # evaportranspiration and temp
 # Contribution to the second dimension
 fviz_contrib(res.mfa, "group", axes = 2) # aridity and precip
 
-# quantitative variables
+## quantitative variables
 quanti.var <- get_mfa_var(res.mfa, "quanti.var")
 quanti.var
 
+# plot the quantitative variables according to their groups
+fviz_mfa_var(res.mfa, "quanti.var", palette = "jco", repel = TRUE) # absolute mess!
+fviz_mfa_var(res.mfa, "quanti.var", palette = "jco", geom = "arrow") # looks better without the text
+
+# contributions of the top 20 quantitative variables to dimension 1
+fviz_contrib(res.mfa, choice = "quanti.var", axes = 1, top = 20, palette = "jco")
+
+# contributions of the top 20 quantitative variables to dimension 2
+fviz_contrib(res.mfa, choice = "quanti.var", axes = 2, top = 20, palette = "jco")
+
+# colour the groups according to their contribution to the dimensions
+fviz_mfa_var(res.mfa, "group", col.var = "contrib", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+             repel = TRUE,
+             geom = c("arrow", "text"))
+
+## graph of individuals
+ind <- get_mfa_ind(res.mfa)
+
+# plot the individuals with the qualitative variables (the example does not work, used ?fviz_mfa_var for help)
+
+fviz_mfa_quali_biplot(res.mfa, axes = c(1, 2), geom = c("point", "text"),
+                      repel = TRUE)
+
+# colour individuals by growth form
+
+individuals <- fviz_mfa_ind(res.mfa, 
+              geom = "point", # show points only (but not "text")
+              col.ind = all.data$Growth_Form, # color by growth form 
+              palette = c("Dark2"),
+              addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipse
+              legend.title = "Growth from",
+              invisible = "quali.var")
+
+individuals
+
+group <- fviz_add(individuals, res.mfa$group$coord, # could remove the morphology group as it is the qualitative variables
+                   repel = TRUE,
+                   col = "blue",
+                   linetype = "solid",
+                   geom = c("arrow", "text"))
+
+group
+
+all_variables <- fviz_add(group, res.mfa$quali.var$coord, 
+                          repel = TRUE,
+                          col = "black",
+                          geom = c("point", "text"))
+
+all_variables
