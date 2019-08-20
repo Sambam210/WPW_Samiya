@@ -177,7 +177,43 @@ whatweneed <- whatweneed %>%
 
 hist(whatweneed$trait_count) # histogram of the traits we have
 
+#####################################################################################################################################################
 
+# let's extract info on the drought tolerance of the glasshouse species
 
+library(tidyverse)
 
+glspeciestraits <- read.csv("Dave_data_output/glspeciestraits.csv")
+
+drought <- glspeciestraits %>%
+  filter(trait_name == "drought_tolerance") # filter just the drought tolerance trait
+
+str(drought)
+
+drought_summary <- count(drought, value)
+  
+drought_summary <- drought %>%
+  group_by(newspecies) %>%
+  count(value) # count the number of yes and no for each species
+
+# convert into long format
+# https://stackoverflow.com/questions/34684925/how-to-use-the-spread-function-properly-in-tidyr
+
+drought_summary_long <- spread(drought_summary, key = value, value = n, fill = 0) #90/113 species have drought tolerance info
+
+# add a total records column
+drought_summary_long <- mutate(drought_summary_long, total = (No + Yes))
+
+# classify the strategy
+# https://stackoverflow.com/questions/15016723/how-to-add-column-into-a-dataframe-based-on-condition 
+drought_summary_long <- drought_summary_long %>%
+  mutate(drought_tolerant = case_when(No == 0 ~ 'Yes',
+                                      Yes == 0 ~ 'No',
+                                      TRUE ~ 'Mixed'))
+
+# or try this way
+drought_summary_long <- drought_summary_long %>%
+  mutate(drought_tolerant = case_when(No > Yes ~ 'No',
+                                      Yes > No ~ 'Yes',
+                                      TRUE ~ 'Mixed'))
 
