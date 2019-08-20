@@ -206,14 +206,10 @@ drought_summary_long <- mutate(drought_summary_long, total = (No + Yes))
 
 # classify the strategy
 # https://stackoverflow.com/questions/15016723/how-to-add-column-into-a-dataframe-based-on-condition 
-drought_summary_long <- drought_summary_long %>%
-  mutate(drought_tolerant = case_when(No == 0 ~ 'Yes',
-                                      Yes == 0 ~ 'No',
-                                      TRUE ~ 'Mixed'))
 
-# or try this way
 drought_summary_long <- drought_summary_long %>%
   mutate(drought_tolerant = case_when(No > Yes ~ 'No',
                                       Yes > No ~ 'Yes',
                                       TRUE ~ 'Mixed'))
 
+write.csv(drought_summary_long, "Dave_data_output/gh_drought_summary.csv", row.names = FALSE)
