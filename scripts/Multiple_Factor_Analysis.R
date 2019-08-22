@@ -522,6 +522,7 @@ quanti.var <- get_famd_var(res.famd, "quanti.var")
 # plot the quantitative variables
 
 quanti.plot <- fviz_famd_var(res.famd, "quanti.var", repel = TRUE, col.var = "black")
+quanti.plot
 
 ## qualitative variables
 
@@ -530,6 +531,7 @@ quali.var <- get_famd_var(res.famd, "quali.var")
 # plot the qualitative variables
 
 quali.plot <- fviz_famd_var(res.famd, "quali.var", repel = TRUE, col.var = "black")
+quali.plot
 
 ### graph of individuals
 
@@ -719,6 +721,7 @@ fviz_mfa_var(res.mfa, "group", col.var = "contrib",
 
 ## graph of individuals
 ind <- get_mfa_ind(res.mfa)
+ind
 
 # plot the individuals with the qualitative variables (the example does not work, used ?fviz_mfa_var for help)
 
