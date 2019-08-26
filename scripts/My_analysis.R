@@ -138,6 +138,40 @@ LMA <- LMA %>%
 
 SamiyaandRenee <- left_join(SamiyaandRenee, LMA, by = "Species_Code") # joining the LMA data
 
+# leaf area and lobosity ( I calculated these)
+
+leaf_area <- read.csv("Data/leaf_lobosity_area.csv")
+
+leaf_area <- leaf_area %>%
+  filter(Treatment == 'C') %>% # filter for only the controls
+  select(Species_Code, Batch, Area_cm, Lobosity_adjusted) %>% # select relevant columns
+  group_by(Species_Code, Batch) %>% # group by species code and batch
+  summarise(mean_leaf_area_cm2 = mean(Area_cm, na.rm = TRUE),
+            mean_Lobosity = mean(Lobosity_adjusted, na.rm = TRUE))
+
+ggplot(leaf_area, aes(x = Batch, y = mean_leaf_area_cm2)) +
+  geom_boxplot() +
+  theme_bw()
+
+filter(leaf_area, mean_leaf_area_cm2 > 75) # no errors, just bog leaves
+
+ggplot(leaf_area, aes(x = Batch, y = mean_Lobosity)) +
+  geom_boxplot() +
+  theme_bw()
+
+# adding to the master spreadsheet
+
+leaf_area <- read.csv("Data/leaf_lobosity_area.csv")
+
+leaf_area <- leaf_area %>%
+  filter(Treatment == 'C') %>% # filter for only the controls
+  select(Species_Code, Area_cm, Lobosity_adjusted) %>% # select relevant columns
+  group_by(Species_Code) %>% # group by species code and batch
+  summarise(mean_leaf_area_cm2 = mean(Area_cm, na.rm = TRUE),
+            mean_Lobosity = mean(Lobosity_adjusted, na.rm = TRUE))
+
+SamiyaandRenee <- left_join(SamiyaandRenee, leaf_area, by = "Species_Code") # joining the data
+
 ################################################################################################################################################
 
 ######################################################## adding climate data ###################################################################
@@ -169,6 +203,8 @@ SamiyaandReneeandHugh[[60,10]] <- "-0.882" # osmotic potential value
 SamiyaandReneeandHugh[[60,11]] <- "43.272" # LMA value
 SamiyaandReneeandHugh[[60,12]] <- "0.179" # thickness value
 SamiyaandReneeandHugh[[60,13]] <- "0.53442" # succulence value
+SamiyaandReneeandHugh[[60,14]] <- "12.9651354" # leaf area
+SamiyaandReneeandHugh[[60,15]] <- "1.0000000" # lobosity
 
 write.csv(SamiyaandReneeandHugh,"Data_output/SamiyaandReneeandHugh.csv",row.names=FALSE) # save as csv into "Data" folder
 
