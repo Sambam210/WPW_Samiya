@@ -489,7 +489,7 @@ res.famd <- FAMD(FAMD_data_analysis, graph = FALSE)
 # extract the eigenvalues
 
 eig.val <- get_eigenvalue(res.famd)
-head(eig.val) # first 3 dimensions explain 48% of the data
+head(eig.val) # first 3 dimensions explain 49% of the data
 
 # draw the scree plot
 fviz_screeplot(res.famd)
@@ -754,3 +754,25 @@ all_variables <- fviz_add(group, res.mfa$quali.var$coord,
                           geom = c("point", "text"))
 
 all_variables
+
+####################################################################################################################################################
+####################################################### Factor analysis of mixed data ##############################################################
+############################################### using glasshouse variables and my scraped data #####################################################
+####################################################################################################################################################
+
+# DIFFERENCE FROM LAST TIME
+
+# Fixed up growth form classifications after consulting with Michelle
+# Diffs are:
+# Herbs and Grasses changed, Grasses + Graminoides = Graminoides, rest is herbs
+# Alco = tree
+# Lolo = graminoid
+# Mypa = herb
+# Dilo = graminoid
+# Dica = gaminoid
+# Phte = graminoid
+# Opja = graminoid
+
+# Stse = semi deciduous
+
+
