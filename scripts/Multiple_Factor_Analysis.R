@@ -757,22 +757,86 @@ all_variables
 
 ####################################################################################################################################################
 ####################################################### Factor analysis of mixed data ##############################################################
-############################################### using glasshouse variables and my scraped data #####################################################
+###################################### using glasshouse variables, my scraped data and targeted niche variables ####################################
+################################################################### using FAMD #####################################################################
 ####################################################################################################################################################
 
-# DIFFERENCE FROM LAST TIME
+### I have added a new dataset (FAMD_data2) which contains the leaf area and lobosity variables
 
-# Fixed up growth form classifications after consulting with Michelle
-# Diffs are:
-# Herbs and Grasses changed, Grasses + Graminoides = Graminoides, rest is herbs
-# Alco = tree
-# Lolo = graminoid
-# Mypa = herb
-# Dilo = graminoid
-# Dica = gaminoid
-# Phte = graminoid
-# Opja = graminoid
+## Michelle said to only include the mean annual precip and precip of driest quarter variables
 
-# Stse = semi deciduous
+library(tidyverse)
+
+other.variables <- read.csv("MFA_data/FAMD_data2.csv")
+
+hugh.data <- read.csv("MFA_data/niche.data.HB.csv")
+
+hugh.data <- hugh.data %>%
+  select(searchTaxon, Annual_precip_mean, Precip_dry_qu_mean) %>% # selecting the relevant variables
+  rename(Species=searchTaxon)
+
+all.data <- left_join(other.variables, hugh.data, by = "Species")
+
+# let's see if the data are linearly related
+
+all.data.cont <- select(all.data, 10:17) # select only the continuous variables
+
+pairs(all.data.linear)
+# might need to tranasform the area and succulance variables
+
+all.data.cont <- all.data.cont %>%
+  mutate(log_mean_succulance_g = log(mean_succulance_g),
+         log_mean_leaf_area_cm2 = log(mean_leaf_area_cm2)) %>%
+  select(-mean_succulance_g, -mean_leaf_area_cm2)
+
+pairs(all.data.cont) # looks better
+
+# transform in the main datasheet
+
+all.data <- all.data %>%
+  mutate(log_mean_succulance_g = log(mean_succulance_g),
+         log_mean_leaf_area_cm2 = log(mean_leaf_area_cm2)) %>%
+  select(-mean_succulance_g, -mean_leaf_area_cm2) %>%
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code") # make species code the row names
+
+# remove the categorical vaiables that aren't needed/used to colour points later
+
+FAMD_data_analysis <- select(all.data, -Species, -Origin, -Growth_Form)
+
+library("FactoMineR")
+library("factoextra")
+
+str(FAMD_data_analysis)
+
+# following this tutorial
+
+# http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/115-famd-factor-analysis-of-mixed-data-in-r-essentials/
+
+# running the FAMD analysis
+
+res.famd <- FAMD(FAMD_data_analysis, graph = FALSE) # can't do because there is NAs in the continuous variables
+# but can use MFA when there are missing values
+# can also do a PCA
+# but should really impute the missing values
+
+install.packages("missMDA")
+library(missMDA)
+# can use imputePCA, imputeMFA, imputeFAMD
+
+# this tutorial also helps
+# http://juliejosse.com/wp-content/uploads/2018/06/DataAnalysisMissingR.html
+
+# estimate the number of components to use
+result <- estim_ncpFAMD(FAMD_data_analysis)
+result$ncp # says 5
+
+res.impute <- imputeFAMD(FAMD_data_analysis, ncp = 5)
+res.impute$tab.disj # changes the categorical variables into 'long format'
+res.impute$completeObs # keeps the same format
+# replaced values are the same for both of these
+
+res.famd <- FAMD(FAMD_data_analysis, tab.comp = res.impute$tab.disj) # WORKS!!!
+
 
 
