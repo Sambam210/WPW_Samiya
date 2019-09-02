@@ -838,5 +838,105 @@ res.impute$completeObs # keeps the same format
 
 res.famd <- FAMD(FAMD_data_analysis, tab.comp = res.impute$tab.disj) # WORKS!!!
 
+############################################### let's remove the leaf area and lobosity for now ###################################################
+##################################################################################################################################################
+
+FAMD_data_analysis <- select(FAMD_data_analysis, -mean_Lobosity, -log_mean_leaf_area_cm2)
+
+res.famd <- FAMD(FAMD_data_analysis) # not working, maybe remove the Kebe and Phro that have NAs?
+
+FAMD_data_analysis <- FAMD_data_analysis %>%
+  rownames_to_column("Species") %>% # convert row names into a column
+  filter(Species != "Kebe", Species != "Phro") %>% # filter out the species we don't want
+  remove_rownames %>%
+  column_to_rownames(var="Species") # add row names again
+
+res.famd <- FAMD(FAMD_data_analysis, graph = FALSE) # works
+
+# extract the eigenvalues
+
+eig.val <- get_eigenvalue(res.famd)
+head(eig.val) # first 3 dimensions explain 44% of the data
+
+# draw the scree plot
+fviz_screeplot(res.famd)
+
+### graph of variables
+
+## all variables
+
+var <- get_famd_var(res.famd)
+
+# plot of variables
+fviz_famd_var(res.famd, repel = TRUE)
+
+# colour the variables according to their contribution to the dimensions (used ?fviz_famd_var to figure out)
+fviz_famd_var(res.famd, choice = "var", col.var = "contrib", 
+              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+              repel = TRUE,
+              geom = c("arrow", "text"))
+
+# contribution to the 1st dimension
+fviz_contrib(res.famd, "var", axes = 1) # leaf drop traits contribute most to dimension 1
+
+# contribution to 2nd dimension
+fviz_contrib(res.famd, "var", axes = 2) # LMA and environmental variables contribute most to dimension 2
+
+## quantitative variables
+
+quanti.var <- get_famd_var(res.famd, "quanti.var")
+
+# plot the quantitative variables
+
+quanti.plot <- fviz_famd_var(res.famd, "quanti.var", repel = TRUE, col.var = "black")
+quanti.plot
+
+## qualitative variables
+
+quali.var <- get_famd_var(res.famd, "quali.var")
+
+# plot the qualitative variables
+
+quali.plot <- fviz_famd_var(res.famd, "quali.var", repel = TRUE, col.var = "black")
+quali.plot
+
+### graph of individuals
+
+ind <- get_famd_ind(res.famd)
+
+# plot the individuals with the qualitative variables
+
+fviz_famd_ind(res.famd, col.ind = "cos2", # colour by their cos2
+              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+              repel = TRUE)
+
+# colour individuals by growth form (used ?fviz_famd_ind to figure out)
+
+library(ggplot2)
+
+# first need to remove Kebe and Phro
+all.data <- all.data %>%
+  rownames_to_column("Species_Code") %>% # convert row names into a column
+  filter(Species_Code != "Kebe", Species_Code != "Phro") %>% # filter out the species we don't want
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code") # add row names again
+
+individuals <- fviz_famd_ind(res.famd, 
+                             geom = "point", # show points only (but not "text")
+                             col.ind = all.data$Growth_Form, # color by growth form 
+                             palette = c("Dark2"),
+                             addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipse
+                             legend.title = "Growth from",
+                             invisible = "quali.var")
+# shape.ind = c(3, 15, 17, 18, 19),
+individuals # doesn't show any differences!         
+
+# save the output
+pdf("MFA_data_output/FAMD_scraped_glasshouse_climate.pdf") # Create a new pdf device
+print(quanti.plot)
+print(quali.plot)
+print(individuals)
+dev.off() # Close the pdf device
+
 
 
