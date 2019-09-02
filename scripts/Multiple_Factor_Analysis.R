@@ -938,5 +938,131 @@ print(quali.plot)
 print(individuals)
 dev.off() # Close the pdf device
 
+######################################################################################################################################################
+############################################### Converted categorical variables into 0 and 1 #########################################################
+################################################### so we can do a PCA instead of FAMD ###############################################################
+######################################################################################################################################################
+
+PCA.all.variables <- read.csv("MFA_data/PCA_binary_variables.csv")
+
+# This file has all the categorical variables coded by dummy variables so they can be treated as continuous variables
+# Deciduous_or_evergreen: Evergreen = 0, Semi-deciduous = 1, Deciduous = 2
+# Growth_structure: woody = 0, not woody = 1
+# Leaf senescent in response to drought: not frought senescent = 0, drought senescent = 1
+# Water storage organs: no water storage = 0, water storage = 1
+# Leaf hairs: no ahirs = 0, partly hairy = 1, fully hairy = 2
+
+library(tidyverse)
+library("FactoMineR")
+library("factoextra")
+
+# tranfrom the succulance variable
+PCA.all.variables <- PCA.all.variables %>%
+  mutate(log_mean_succulance_g = log(mean_succulance_g)) %>%
+  select(-mean_succulance_g)
+
+# subset the data to remove the categorial variables (these will be used later to colour by groups) and also make the species code as row name
+
+PCA.data <- PCA.all.variables %>%
+  select(-Species, -Origin, -Growth_Form) %>%
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code")
+
+# doing the PCA
+
+res.pca <- PCA(PCA.data, graph = FALSE)
+
+print(res.pca)
+
+# looking at the eigenvalues
+
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+# first three PCs explain 56% of the data
+
+# let's look at the scree plot
+
+fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 60))
+
+# let's look at the variables
+
+var <- get_pca_var(res.pca)
+var
+
+# plot the variables
+
+var.plot <- fviz_pca_var(res.pca, col.var = "black")
+var.plot
+
+# quality of representation
+
+library("corrplot")
+corrplot(var$cos2, is.corr=FALSE)
+# think this means that OsmPot is correlated with Dim2 while succulance, thickness and LMA is correlated with Dim1
+
+# colour variables on the correlation circle by their contrib value -> contribution of the variable on the factor map
+
+var.plot.contrib <- fviz_pca_var(res.pca, col.var = "contrib",
+                 gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), # specify custom gradient
+                 repel = TRUE) # avoid text overlap
+
+var.plot.contrib
+
+# Contributions of variables to PC1
+
+fviz_contrib(res.pca, choice = "var", axes = 1, top = 4) # red dashed line is the expected average contribution (i.e. 4 variables = 25%)
+# thickness, leaf drop traits and LMA
+
+# Contributions of variables to PC2
+
+fviz_contrib(res.pca, choice = "var", axes = 2, top = 4)
+# osmotic potential and growth structure
+
+# dimension description
+# identify the most significanlty associated variables for a given PC
+
+res.desc <- dimdesc(res.pca, axes = c(1,2), proba = 0.05)
+# Description of dimension 1
+res.desc$Dim.1
+# Description of dimension 2
+res.desc$Dim.2
+
+# graph of individuals
+
+ind <- get_pca_ind(res.pca)
+ind
+
+# plot the individuals
+
+fviz_pca_ind(res.pca, repel = TRUE)
+
+# colour by groups
+
+# confidence ellipses
+# shows 95% confidence ellipse, see ?coord.ellipse()
+
+individuals <- fviz_pca_ind(res.pca,
+               geom.ind = "point", # show points only (but not "text")
+               col.ind = PCA.all.variables$Growth_Form, # color by growth form
+               palette = c("Dark2"),
+               addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipses
+               legend.title = "Growth form") # grasses look sign different from everything else
+
+individuals
 
 
+# biplot
+
+biplot <- fviz_pca_biplot(res.pca, 
+                col.ind = PCA.all.variables$Growth_Form, palette = "jco", 
+                addEllipses = TRUE, ellipse.type = "confidence", label = "var",
+                col.var = "black", repel = TRUE,
+                legend.title = "Growth Form")
+
+biplot
+
+# save the output
+pdf("MFA_data_output/PCA_binary_variables.pdf") # Create a new pdf device
+print(var.plot.contrib)
+print(biplot)
+dev.off() # Close the pdf device
