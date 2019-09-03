@@ -41,7 +41,7 @@ str(FAMD_data_analysis)
 
 # running the FAMD analysis
 
-res.famd <- FAMD(FAMD_data_analysis, graph = FALSE) # changed the number of principle components to 4 as the 5th conmponent doesn't seem to add much more explanantion. The default ncp for FAMD analysis is 5.
+res.famd <- FAMD(FAMD_data_analysis, graph = FALSE)
 
 # extract the eigenvalues
 
@@ -91,6 +91,7 @@ individuals <- fviz_famd_ind(res.famd,
 individuals
 
 # Compute hierarchical clustering
+
 res.hcpc <- HCPC(res.famd, graph = FALSE)
 
 # dendrogram
@@ -311,9 +312,6 @@ head(res.hcpc$data.clust)
 
 res.hcpc$desc.var$quanti
 
-# same thing but for categorical variables
-res.hcpc$desc.var$category
-
 # principle dimensions that are most associated with clusters
 res.hcpc$desc.axes$quanti
 
@@ -329,8 +327,299 @@ dev.off() # Close the pdf device
 
 PCA_analysis <- read.csv("MFA_data/FAMD_data.csv")
 
+# filter out just trees and shrubs
 
+PCA_analysis <- filter(PCA_analysis, Growth_Form == "Tree" | Growth_Form == "Shrub") # 92 native and exotic trees and shrubs
+
+# pull out just the continuous variables
+
+PCA_analysis_cont <- PCA_analysis %>%
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code") %>%
+  select(9:12)
+
+# let's see if the data are linearly related
+
+pairs(PCA_analysis_cont)
+
+# might need to transform the mean_succulance variable
+
+PCA_analysis_cont <- PCA_analysis_cont %>%
+  mutate(log_mean_succulance_g = log(mean_succulance_g))
+
+PCA_analysis_cont <- select(PCA_analysis_cont, -mean_succulance_g) # remove the untransformed variable
+
+pairs(PCA_analysis_cont) # looks better
+
+# add back the Species_Code
+
+PCA_analysis_cont <- cbind(PCA_analysis$Species_Code, PCA_analysis_cont)
+
+# make species code the row name
+
+PCA_analysis_cont <- PCA_analysis_cont %>%
+  remove_rownames %>%
+  column_to_rownames(var="PCA_analysis$Species_Code")
+
+# doing the PCA
+
+res.pca <- PCA(PCA_analysis_cont, graph = FALSE)
+
+print(res.pca)
+
+# looking at the eigenvalues
+
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+# first three PCs explain 92% of the data
+
+# let's look at the scree plot
+
+fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 60))
+
+# let's look at the variables
+
+var <- get_pca_var(res.pca)
+var
+
+# plot the variables
+
+var.plot <- fviz_pca_var(res.pca, col.var = "black")
+var.plot
+
+# quality of representation
+
+install.packages("corrplot")
+library("corrplot")
+corrplot(var$cos2, is.corr=FALSE)
+# think this means that OsmPot is correlated with Dim2 while succulance, thickness and LMA is correlated with Dim1
+
+# colour variables on the correlation circle by their contrib value -> contribution of the variable on the factor map
+
+fviz_pca_var(res.pca, col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), # specify custom gradient
+             repel = TRUE # avoid text overlap
+)
+
+
+# Contributions of variables to PC1
+
+fviz_contrib(res.pca, choice = "var", axes = 1, top = 4) # red dashed line is the expected average contribution (i.e. 4 variables = 25%)
+
+# Contributions of variables to PC2
+
+fviz_contrib(res.pca, choice = "var", axes = 2, top = 4)
+
+# Contributions of variables to PC3
+
+fviz_contrib(res.pca, choice = "var", axes = 3, top = 4)
+
+# dimension description
+# identify the most significanlty associated variables for a given PC
+
+res.desc <- dimdesc(res.pca, axes = c(1,2), proba = 0.05)
+# Description of dimension 1
+res.desc$Dim.1 # thickness
+# Description of dimension 2
+res.desc$Dim.2 # osmotic potential and LMA
+
+# graph of individuals
+
+ind <- get_pca_ind(res.pca)
+ind
+
+# plot the individuals
+
+ind.plot <- fviz_pca_ind(res.pca, repel = TRUE)
+ind.plot
+
+# colour by groups
+
+# confidence ellipses
+# shows 95% confidence ellipse, see ?coord.ellipse()
+
+fviz_pca_ind(res.pca,
+             geom.ind = "point", # show points only (but not "text")
+             col.ind = PCA_analysis$Growth_Form, # color by growth form
+             palette = c("Dark2"),
+             addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipses
+             legend.title = "Growth form") # grasses look sign different from everything else
+
+
+# biplot
+
+biplot <- fviz_pca_biplot(res.pca, 
+                          col.ind = PCA_analysis$Growth_Form, palette = "jco", 
+                          addEllipses = TRUE, ellipse.type = "confidence", label = "var",
+                          col.var = "black", repel = TRUE,
+                          legend.title = "Growth Form")
+
+biplot # not really telling us anything
+
+# Hierarchical clustering
+
+# let's only do the PCA on the first 3 dimensions
+
+res.pca <- PCA(PCA_analysis_cont, ncp = 3, graph = FALSE)
+
+# clustering
+res.hcpc <- HCPC(res.pca, graph = FALSE)
+
+# dendrogram
+fviz_dend(res.hcpc, 
+          cex = 0.7,                     # Label size
+          palette = "jco",               # Color palette see ?ggpubr::ggpar
+          rect = TRUE, rect_fill = TRUE, # Add rectangle around groups
+          rect_border = "jco",           # Rectangle color
+          labels_track_height = 0.8)     # Augment the room for labels
+
+# graph
+cluster <- fviz_cluster(res.hcpc,
+                        repel = TRUE,            # Avoid label overlapping
+                        show.clust.cent = TRUE, # Show cluster centers
+                        palette = "jco",         # Color palette see ?ggpubr::ggpar
+                        ggtheme = theme_minimal(),
+                        main = "PCA - trees and shrubs")
+
+cluster
+
+# Let's look at the HCPC output
+
+# display the original data with a new column indicating which cluster they belong to
+
+head(res.hcpc$data.clust)
+
+# display the qualtitative variables that explain the most variance in each cluster
+
+res.hcpc$desc.var$quanti
+
+# principle dimensions that are most associated with clusters
+res.hcpc$desc.axes$quanti
+
+# save the output
+pdf("MFA_data_output/Cluster_analysis/PCA_glasshouse_trees_shrubs.pdf") # Create a new pdf device
+print(var.plot)
+print(biplot)
+print(ind.plot)
+print(cluster)
+dev.off() # Close the pdf device
 
 ####################################### 1. MCA and cluster analysis on scraped variables
 
-# 
+# http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/114-mca-multiple-correspondence-analysis-in-r-essentials/
+
+MCA_analysis <- read.csv("MFA_data/FAMD_data.csv")
+
+MCA_analysis_cat <- MCA_analysis %>%
+  filter(Species_Code != "Mero") %>% # remove Mero as it has NAs
+  select(1:9) %>%
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code") %>%
+  select(-Species, -Origin, -Growth_Form, -Growth_structure, -Water_storage_organs) # remove the other categorical variables we won't need
+# for variables categories with a low frequency (i.e. water storage) - these variables can distort the analysis
+
+# running the MCA
+
+res.mca <- MCA(MCA_analysis_cat, graph = FALSE)
+
+print(res.mca)
+
+# eigen values
+
+eig.val <- get_eigenvalue(res.mca)
+head(eig.val) # removing Mero has significantly improved it!
+
+# biplot
+fviz_mca_biplot(res.mca, 
+                repel = TRUE, # Avoid text overlapping (slow if many point)
+                ggtheme = theme_minimal())
+
+## graph of variables
+
+var <- get_mca_var(res.mca)
+var
+
+# Contributions of variables to PC1
+
+fviz_contrib(res.mca, choice = "var", axes = 1, top = 4) # red dashed line is the expected average contribution (i.e. 4 variables = 25%)
+# drought senescent
+
+# Contributions of variables to PC2
+
+fviz_contrib(res.mca, choice = "var", axes = 2, top = 4)
+# fully hairy
+
+# correlation between variables and principle dimensions
+
+fviz_mca_var(res.mca, choice = "mca.cor", 
+             repel = TRUE, # Avoid text overlapping
+             ggtheme = theme_minimal())
+
+# coordinates of variable categories
+
+cat.var <- fviz_mca_var(res.mca, 
+             repel = TRUE, # Avoid text overlapping
+             ggtheme = theme_minimal())
+cat.var
+
+# contribution of the variable categories to the dimensions
+
+var$contrib
+
+## graph of individuals
+
+ind <- get_mca_ind(res.mca)
+ind
+
+# colour individuals by cos2 value
+fviz_mca_ind(res.mca, col.ind = "cos2", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE, # Avoid text overlapping (slow if many points)
+             ggtheme = theme_minimal())
+
+# biplot
+
+fviz_mca_biplot(res.mca, repel = TRUE,
+                ggtheme = theme_minimal())
+
+# colour individuals by group
+
+# need to remove Mero from original dataset first
+
+MCA_analysis <- filter(MCA_analysis, Species_Code != "Mero")
+
+fviz_mca_ind(res.mca,
+             label = "none", # show points only (but not "text")
+             habillage = MCA_analysis$Growth_Form, # color by growth form
+             palette = c("Dark2"),
+             addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipses
+             legend.title = "Growth form")
+# v. small number of points - only so many combinations of categorial variables there could be
+
+# Hierarchical clustering
+
+# let's only do the MCA on the first 3 dimensions
+
+res.mca <- MCA(MCA_analysis_cat, ncp = 3, graph = FALSE)
+
+# clustering
+res.hcpc <- HCPC(res.mca, graph = FALSE)
+
+# dendrogram
+fviz_dend(res.hcpc, 
+          cex = 0.7,                     # Label size
+          palette = "jco",               # Color palette see ?ggpubr::ggpar
+          rect = TRUE, rect_fill = TRUE, # Add rectangle around groups
+          rect_border = "jco",           # Rectangle color
+          labels_track_height = 0.8)     # Augment the room for labels
+
+# graph
+cluster <- fviz_cluster(res.hcpc,
+                        repel = TRUE,            # Avoid label overlapping
+                        show.clust.cent = TRUE, # Show cluster centers
+                        palette = "jco",         # Color palette see ?ggpubr::ggpar
+                        ggtheme = theme_minimal(),
+                        main = "MCA")
+
+cluster
+
