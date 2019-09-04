@@ -116,7 +116,7 @@ fviz_cluster(res.hcpc,
 
 head(res.hcpc$data.clust)
 
-# display the qualtitative variables that explain the most variance in each cluster
+# display the quantitative variables that explain the most variance in each cluster
 
 res.hcpc$desc.var$quanti
 
@@ -504,7 +504,7 @@ print(ind.plot)
 print(cluster)
 dev.off() # Close the pdf device
 
-####################################### 1. MCA and cluster analysis on scraped variables
+####################################### 2. MCA and cluster analysis on scraped variables
 
 # http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/114-mca-multiple-correspondence-analysis-in-r-essentials/
 
@@ -515,7 +515,7 @@ MCA_analysis_cat <- MCA_analysis %>%
   select(1:9) %>%
   remove_rownames %>%
   column_to_rownames(var="Species_Code") %>%
-  select(-Species, -Origin, -Growth_Form, -Growth_structure, -Water_storage_organs) # remove the other categorical variables we won't need
+  select(-Species, -Origin, -Growth_Form, -Water_storage_organs) # remove the other categorical variables we won't need
 # for variables categories with a low frequency (i.e. water storage) - these variables can distort the analysis
 
 # running the MCA
@@ -528,11 +528,7 @@ print(res.mca)
 
 eig.val <- get_eigenvalue(res.mca)
 head(eig.val) # removing Mero has significantly improved it!
-
-# biplot
-fviz_mca_biplot(res.mca, 
-                repel = TRUE, # Avoid text overlapping (slow if many point)
-                ggtheme = theme_minimal())
+# first 3 dimensions explain 65%
 
 ## graph of variables
 
@@ -547,7 +543,7 @@ fviz_contrib(res.mca, choice = "var", axes = 1, top = 4) # red dashed line is th
 # Contributions of variables to PC2
 
 fviz_contrib(res.mca, choice = "var", axes = 2, top = 4)
-# fully hairy
+# fully hairy, not woody
 
 # correlation between variables and principle dimensions
 
@@ -579,8 +575,9 @@ fviz_mca_ind(res.mca, col.ind = "cos2",
 
 # biplot
 
-fviz_mca_biplot(res.mca, repel = TRUE,
+biplot <- fviz_mca_biplot(res.mca, repel = TRUE,
                 ggtheme = theme_minimal())
+biplot
 
 # colour individuals by group
 
@@ -588,12 +585,14 @@ fviz_mca_biplot(res.mca, repel = TRUE,
 
 MCA_analysis <- filter(MCA_analysis, Species_Code != "Mero")
 
-fviz_mca_ind(res.mca,
+ind <- fviz_mca_ind(res.mca,
              label = "none", # show points only (but not "text")
              habillage = MCA_analysis$Growth_Form, # color by growth form
              palette = c("Dark2"),
              addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipses
              legend.title = "Growth form")
+ind
+
 # v. small number of points - only so many combinations of categorial variables there could be
 
 # Hierarchical clustering
@@ -622,4 +621,570 @@ cluster <- fviz_cluster(res.hcpc,
                         main = "MCA")
 
 cluster
+
+#Let's look at the HCPC output
+
+# display the original data with a new column indicating which cluster they belong to
+
+head(res.hcpc$data.clust)
+
+# display the qualitative variables that explain the most variance in each cluster
+
+res.hcpc$desc.var$category
+
+# principle dimensions that are most associated with clusters
+res.hcpc$desc.axes$quanti
+
+# save the output
+pdf("MFA_data_output/Cluster_analysis/MCA_glasshouse_all.pdf") # Create a new pdf device
+print(cat.var)
+print(biplot)
+print(ind)
+print(cluster)
+dev.off() # Close the pdf device
+
+#################################### subsetting the data for only the trees and shrubs
+
+MCA_analysis <- read.csv("MFA_data/FAMD_data.csv")
+
+MCA_analysis_cat <- MCA_analysis %>%
+  filter(Species_Code != "Mero") %>% # remove Mero as it has NAs
+  filter(Growth_Form == "Tree" | Growth_Form == "Shrub") %>% # filter only the trees and shrubs
+  select(1:9) %>%
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code") %>%
+  select(-Species, -Origin, -Growth_Form, -Growth_structure, -Water_storage_organs) # remove the other categorical variables we won't need
+# for variables categories with a low frequency (i.e. water storage) - these variables can distort the analysis
+
+# running the MCA
+
+res.mca <- MCA(MCA_analysis_cat, graph = FALSE)
+
+print(res.mca)
+
+# eigen values
+
+eig.val <- get_eigenvalue(res.mca)
+head(eig.val) # removing Mero has significantly improved it!
+# first 3 dimensions explain 75%
+
+## graph of variables
+
+var <- get_mca_var(res.mca)
+var
+
+# Contributions of variables to PC1
+
+fviz_contrib(res.mca, choice = "var", axes = 1, top = 4) # red dashed line is the expected average contribution (i.e. 4 variables = 25%)
+# drought senescent
+
+# Contributions of variables to PC2
+
+fviz_contrib(res.mca, choice = "var", axes = 2, top = 4)
+# fully hairy and deciduous
+
+# correlation between variables and principle dimensions
+
+fviz_mca_var(res.mca, choice = "mca.cor", 
+             repel = TRUE, # Avoid text overlapping
+             ggtheme = theme_minimal())
+
+# coordinates of variable categories
+
+cat.var <- fviz_mca_var(res.mca, 
+                        repel = TRUE, # Avoid text overlapping
+                        ggtheme = theme_minimal())
+cat.var
+
+# contribution of the variable categories to the dimensions
+
+var$contrib
+
+## graph of individuals
+
+ind <- get_mca_ind(res.mca)
+ind
+
+# colour individuals by cos2 value
+fviz_mca_ind(res.mca, col.ind = "cos2", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE, # Avoid text overlapping (slow if many points)
+             ggtheme = theme_minimal())
+
+# biplot
+
+biplot <- fviz_mca_biplot(res.mca, repel = TRUE,
+                          ggtheme = theme_minimal())
+biplot
+
+# colour individuals by group
+
+# need to remove Mero and filter for trees and shrubs from original dataset first
+
+MCA_analysis <- MCA_analysis %>%
+  filter(Species_Code != "Mero") %>%
+  filter(Growth_Form == "Tree" | Growth_Form == "Shrub")
+
+ind <- fviz_mca_ind(res.mca,
+                    label = "none", # show points only (but not "text")
+                    habillage = MCA_analysis$Growth_Form, # color by growth form
+                    palette = c("Dark2"),
+                    addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipses
+                    legend.title = "Growth form")
+ind
+
+# v. small number of points - only so many combinations of categorial variables there could be
+
+# Hierarchical clustering
+
+# let's only do the MCA on the first 3 dimensions
+
+res.mca <- MCA(MCA_analysis_cat, ncp = 3, graph = FALSE)
+
+# clustering
+res.hcpc <- HCPC(res.mca, graph = FALSE)
+
+# dendrogram
+fviz_dend(res.hcpc, 
+          cex = 0.7,                     # Label size
+          palette = "jco",               # Color palette see ?ggpubr::ggpar
+          rect = TRUE, rect_fill = TRUE, # Add rectangle around groups
+          rect_border = "jco",           # Rectangle color
+          labels_track_height = 0.8)     # Augment the room for labels
+
+# graph
+cluster <- fviz_cluster(res.hcpc,
+                        repel = TRUE,            # Avoid label overlapping
+                        show.clust.cent = TRUE, # Show cluster centers
+                        palette = "jco",         # Color palette see ?ggpubr::ggpar
+                        ggtheme = theme_minimal(),
+                        main = "MCA")
+
+cluster
+
+# Let's look at the HCPC output
+
+# display the original data with a new column indicating which cluster they belong to
+
+head(res.hcpc$data.clust)
+
+# display the qualitative variables that explain the most variance in each cluster
+
+res.hcpc$desc.var$category
+
+# principle dimensions that are most associated with clusters
+res.hcpc$desc.axes$quanti
+
+# save the output
+pdf("MFA_data_output/Cluster_analysis/MCA_glasshouse_trees_shrubs.pdf") # Create a new pdf device
+print(cat.var)
+print(biplot)
+print(ind)
+print(cluster)
+dev.off() # Close the pdf device
+
+####################################### 3. FAMD and cluster analysis on glasshouse ecophys variables and scrapped data
+
+FAMD_data <- read.csv("MFA_data/FAMD_data.csv")
+
+# need to transform the succulance variable to make it linear and remove Mero
+FAMD_data <- FAMD_data %>%
+  filter(Species_Code != "Mero") %>%
+  mutate(log_mean_succulance_g = log(mean_succulance_g)) %>%
+  select(-mean_succulance_g) %>%
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code") # make species code the row names
+
+# remove the categorical variables that aren't needed/used
+
+FAMD_data_analysis <- select(FAMD_data, -Species, -Origin, -Growth_Form, -Water_storage_organs) # removing water storage organ trait as it is too skewed
+
+str(FAMD_data_analysis)
+
+# running the FAMD analysis
+
+res.famd <- FAMD(FAMD_data_analysis, graph = FALSE)
+
+# extract the eigenvalues
+
+eig.val <- get_eigenvalue(res.famd)
+head(eig.val) # first 3 dimensions explain 50% of the data
+
+# draw the scree plot
+fviz_screeplot(res.famd)
+
+## quantitative variables
+
+quanti.var <- get_famd_var(res.famd, "quanti.var")
+
+# plot the quantitative variables
+
+quanti.plot <- fviz_famd_var(res.famd, "quanti.var", repel = TRUE, col.var = "black")
+quanti.plot
+
+## qualitative variables
+
+quali.var <- get_famd_var(res.famd, "quali.var")
+
+# plot the qualitative variables
+
+quali.plot <- fviz_famd_var(res.famd, "quali.var", repel = TRUE, col.var = "black")
+quali.plot
+
+### graph of individuals
+
+ind <- get_famd_ind(res.famd)
+
+ind.graph <- fviz_famd_ind(res.famd, repel = TRUE, invisible = "quali.var", col.ind = "black")
+ind.graph
+
+# colour individuals by growth form (used ?fviz_famd_ind to figure out)
+
+library(ggplot2)
+
+individuals <- fviz_famd_ind(res.famd, 
+                             geom = "point", # show points only (but not "text")
+                             col.ind = FAMD_data$Growth_Form, # color by growth form 
+                             palette = c("Dark2"),
+                             addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipse
+                             legend.title = "Growth from",
+                             invisible = "quali.var")
+
+individuals
+
+# Compute hierarchical clustering
+
+# need to reduce the number of dimensions first
+res.famd <- FAMD(FAMD_data_analysis, ncp = 3, graph = FALSE)
+
+res.hcpc <- HCPC(res.famd, graph = FALSE)
+
+# dendrogram
+fviz_dend(res.hcpc, 
+          cex = 0.7,                     # Label size
+          palette = "jco",               # Color palette see ?ggpubr::ggpar
+          rect = TRUE, rect_fill = TRUE, # Add rectangle around groups
+          rect_border = "jco",           # Rectangle color
+          labels_track_height = 0.8)     # Augment the room for labels
+
+# graph
+cluster <- fviz_cluster(res.hcpc,
+             repel = TRUE,            # Avoid label overlapping
+             show.clust.cent = TRUE, # Show cluster centers
+             palette = "jco",         # Color palette see ?ggpubr::ggpar
+             ggtheme = theme_minimal(),
+             main = "Factor map")
+cluster
+
+# Let's look at the HCPC output
+
+# display the original data with a new column indicating which cluster they belong to
+
+head(res.hcpc$data.clust)
+
+# display the quantitative variables that explain the most variance in each cluster
+
+res.hcpc$desc.var$quanti
+
+# same thing but for categorical variables
+res.hcpc$desc.var$category
+
+# principle dimensions that are most associated with clusters
+res.hcpc$desc.axes$quanti
+
+# save the output
+pdf("MFA_data_output/Cluster_analysis/FAMD_glasshouse_all.pdf") # Create a new pdf device
+print(quanti.plot)
+print(quali.plot)
+print(individuals)
+print(cluster)
+dev.off() # Close the pdf device
+
+#################################### subsetting the data for only the trees and shrubs
+
+FAMD_data <- read.csv("MFA_data/FAMD_data.csv")
+
+# need to transform the succulance variable to make it linear and remove Mero
+FAMD_data <- FAMD_data %>%
+  filter(Growth_Form == "Tree" | Growth_Form == "Shrub") %>%
+  mutate(log_mean_succulance_g = log(mean_succulance_g)) %>%
+  select(-mean_succulance_g) %>%
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code") # make species code the row names
+
+# remove the categorical variables that aren't needed/used
+
+FAMD_data_analysis <- select(FAMD_data, -Species, -Origin, -Growth_Form, -Water_storage_organs) # removing water storage organ trait as it is too skewed
+
+str(FAMD_data_analysis)
+
+# running the FAMD analysis
+
+res.famd <- FAMD(FAMD_data_analysis, graph = FALSE)
+
+# extract the eigenvalues
+
+eig.val <- get_eigenvalue(res.famd)
+head(eig.val) # first 3 dimensions explain 54% of the data
+
+# draw the scree plot
+fviz_screeplot(res.famd)
+
+## quantitative variables
+
+quanti.var <- get_famd_var(res.famd, "quanti.var")
+
+# plot the quantitative variables
+
+quanti.plot <- fviz_famd_var(res.famd, "quanti.var", repel = TRUE, col.var = "black")
+quanti.plot
+
+## qualitative variables
+
+quali.var <- get_famd_var(res.famd, "quali.var")
+
+# plot the qualitative variables
+
+quali.plot <- fviz_famd_var(res.famd, "quali.var", repel = TRUE, col.var = "black")
+quali.plot
+
+### graph of individuals
+
+ind <- get_famd_ind(res.famd)
+
+ind.graph <- fviz_famd_ind(res.famd, repel = TRUE, invisible = "quali.var", col.ind = "black")
+ind.graph
+
+# colour individuals by growth form (used ?fviz_famd_ind to figure out)
+
+library(ggplot2)
+
+individuals <- fviz_famd_ind(res.famd, 
+                             geom = "point", # show points only (but not "text")
+                             col.ind = FAMD_data$Growth_Form, # color by growth form 
+                             palette = c("Dark2"),
+                             addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipse
+                             legend.title = "Growth from",
+                             invisible = "quali.var")
+
+individuals
+
+# Compute hierarchical clustering
+
+# need to reduce the number of dimensions first
+res.famd <- FAMD(FAMD_data_analysis, ncp = 3, graph = FALSE)
+
+res.hcpc <- HCPC(res.famd, graph = FALSE)
+
+# dendrogram
+fviz_dend(res.hcpc, 
+          cex = 0.7,                     # Label size
+          palette = "jco",               # Color palette see ?ggpubr::ggpar
+          rect = TRUE, rect_fill = TRUE, # Add rectangle around groups
+          rect_border = "jco",           # Rectangle color
+          labels_track_height = 0.8)     # Augment the room for labels
+
+# graph
+cluster <- fviz_cluster(res.hcpc,
+                        repel = TRUE,            # Avoid label overlapping
+                        show.clust.cent = TRUE, # Show cluster centers
+                        palette = "jco",         # Color palette see ?ggpubr::ggpar
+                        ggtheme = theme_minimal(),
+                        main = "Factor map")
+cluster
+
+# Let's look at the HCPC output
+
+# display the original data with a new column indicating which cluster they belong to
+
+head(res.hcpc$data.clust)
+
+# display the quantitative variables that explain the most variance in each cluster
+
+res.hcpc$desc.var$quanti
+
+# same thing but for categorical variables
+res.hcpc$desc.var$category
+
+# principle dimensions that are most associated with clusters
+res.hcpc$desc.axes$quanti
+
+# save the output
+pdf("MFA_data_output/Cluster_analysis/FAMD_glasshouse_trees_shrubs.pdf") # Create a new pdf device
+print(quanti.plot)
+print(quali.plot)
+print(individuals)
+print(cluster)
+dev.off() # Close the pdf device
+
+#########################################################################################################################################
+#################################################### FAMD on glasshouse, scraped and selected climate ###################################
+#################################################### Removed water storage organs and species with NAs ##################################
+#########################################################################################################################################
+
+library(tidyverse)
+
+other.variables <- read.csv("MFA_data/FAMD_data.csv")
+
+hugh.data <- read.csv("MFA_data/niche.data.HB.csv")
+
+hugh.data <- hugh.data %>%
+  select(searchTaxon, Annual_precip_mean, Precip_dry_qu_mean) %>% # selecting the relevant variables
+  rename(Species=searchTaxon)
+
+all.data <- left_join(other.variables, hugh.data, by = "Species")
+
+all.data <- filter(all.data, Species_Code != "Kebe", Species_Code != "Phro", Species_Code != "Mero") # filter out species with NAs
+
+# let's see if the data are linearly related
+
+all.data.cont <- select(all.data, 10:15) # select only the continuous variables
+
+pairs(all.data.cont)
+# might need to tranasform the succulance variables
+
+all.data.cont <- all.data.cont %>%
+  mutate(log_mean_succulance_g = log(mean_succulance_g)
+
+pairs(all.data.cont) # looks better
+
+# transform in the main datasheet
+
+all.data <- all.data %>%
+  mutate(log_mean_succulance_g = log(mean_succulance_g)) %>%
+  select(-mean_succulance_g) %>%
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code") # make species code the row names
+
+# remove the categorical vaiables that aren't needed/used to colour points later
+
+FAMD_data_analysis <- select(all.data, -Species, -Origin, -Growth_Form, -Water_storage_organs) # removing water storage organs
+
+library("FactoMineR")
+library("factoextra")
+
+str(FAMD_data_analysis)
+
+res.famd <- FAMD(FAMD_data_analysis, graph = FALSE)
+
+# extract the eigenvalues
+
+eig.val <- get_eigenvalue(res.famd)
+head(eig.val) # first 3 dimensions explain 46% of the data
+
+# draw the scree plot
+fviz_screeplot(res.famd)
+
+### graph of variables
+
+## all variables
+
+var <- get_famd_var(res.famd)
+
+# plot of variables
+fviz_famd_var(res.famd, repel = TRUE)
+
+# colour the variables according to their contribution to the dimensions (used ?fviz_famd_var to figure out)
+fviz_famd_var(res.famd, choice = "var", col.var = "contrib", 
+              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+              repel = TRUE,
+              geom = c("arrow", "text"))
+
+# contribution to the 1st dimension
+fviz_contrib(res.famd, "var", axes = 1) # leaf drop traits contribute most to dimension 1
+
+# contribution to 2nd dimension
+fviz_contrib(res.famd, "var", axes = 2) # LMA and environmental variables contribute most to dimension 2
+
+## quantitative variables
+
+quanti.var <- get_famd_var(res.famd, "quanti.var")
+
+# plot the quantitative variables
+
+quanti.plot <- fviz_famd_var(res.famd, "quanti.var", repel = TRUE, col.var = "black")
+quanti.plot
+
+## qualitative variables
+
+quali.var <- get_famd_var(res.famd, "quali.var")
+
+# plot the qualitative variables
+
+quali.plot <- fviz_famd_var(res.famd, "quali.var", repel = TRUE, col.var = "black")
+quali.plot
+
+### graph of individuals
+
+ind <- get_famd_ind(res.famd)
+
+# plot the individuals with the qualitative variables
+
+fviz_famd_ind(res.famd, col.ind = "cos2", # colour by their cos2
+              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+              repel = TRUE)
+
+# colour individuals by growth form (used ?fviz_famd_ind to figure out)
+
+library(ggplot2)
+
+# first need to remove Kebe and Phro
+
+individuals <- fviz_famd_ind(res.famd, 
+                             geom = "point", # show points only (but not "text")
+                             col.ind = all.data$Growth_Form, # color by growth form 
+                             palette = c("Dark2"),
+                             addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipse
+                             legend.title = "Growth from",
+                             invisible = "quali.var")
+
+individuals # doesn't show any differences!         
+
+# Compute hierarchical clustering
+
+# need to reduce the number of dimensions first
+res.famd <- FAMD(FAMD_data_analysis, ncp = 3, graph = FALSE)
+
+res.hcpc <- HCPC(res.famd, graph = FALSE)
+
+# dendrogram
+fviz_dend(res.hcpc, 
+          cex = 0.7,                     # Label size
+          palette = "jco",               # Color palette see ?ggpubr::ggpar
+          rect = TRUE, rect_fill = TRUE, # Add rectangle around groups
+          rect_border = "jco",           # Rectangle color
+          labels_track_height = 0.8)     # Augment the room for labels
+
+# graph
+cluster <- fviz_cluster(res.hcpc,
+                        repel = TRUE,            # Avoid label overlapping
+                        show.clust.cent = TRUE, # Show cluster centers
+                        palette = "jco",         # Color palette see ?ggpubr::ggpar
+                        ggtheme = theme_minimal(),
+                        main = "Factor map")
+cluster
+
+# Let's look at the HCPC output
+
+# display the original data with a new column indicating which cluster they belong to
+
+head(res.hcpc$data.clust)
+
+# display the quantitative variables that explain the most variance in each cluster
+
+res.hcpc$desc.var$quanti
+
+# same thing but for categorical variables
+res.hcpc$desc.var$category
+
+# principle dimensions that are most associated with clusters
+res.hcpc$desc.axes$quanti
+
+# save the output
+pdf("MFA_data_output/Cluster_analysis/FAMD_scraped_glasshouse_climate_all.pdf") # Create a new pdf device
+print(quanti.plot)
+print(quali.plot)
+print(individuals)
+print(cluster)
+dev.off() # Close the pdf device
 
