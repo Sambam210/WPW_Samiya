@@ -1726,7 +1726,7 @@ print(res.pca)
 
 eig.val <- get_eigenvalue(res.pca)
 eig.val
-# first three PCs explain 77% of the data
+# first three PCs explain 71% of the data
 
 # let's look at the scree plot
 
@@ -1761,9 +1761,9 @@ fviz_contrib(res.pca, choice = "var", axes = 2, top = 4)
 
 res.desc <- dimdesc(res.pca, axes = c(1,2), proba = 0.05)
 # Description of dimension 1
-res.desc$Dim.1 # LMA, thickness, annual precip
+res.desc$Dim.1 # Leaf area, succulence, annual precip
 # Description of dimension 2
-res.desc$Dim.2 # succulence
+res.desc$Dim.2 # thickness, LMA
 
 # graph of individuals
 
@@ -1839,10 +1839,279 @@ res.hcpc$desc.var$quanti
 res.hcpc$desc.axes$quanti
 
 # save the output
-pdf("MFA_data_output/Cluster_analysis/PCA_glasshouse_climate_trees_shrubs.pdf") # Create a new pdf device
+pdf("MFA_data_output/Cluster_analysis/PCA_glasshouse_climate_leafarea_trees_shrubs.pdf") # Create a new pdf device
 print(var.plot)
 print(biplot)
 print(ind.plot)
+print(cluster)
+dev.off() # Close the pdf device
+
+######################################################################################################################################
+################################### FAMD on glasshouse variables, selected environmental variables ###################################
+######################################################## plus leaf area ##############################################################
+################################################# and drought deciduousness ##########################################################
+######################################################################################################################################
+
+other.variables <- read.csv("MFA_data/FAMD_data2.csv")
+
+hugh.data <- read.csv("MFA_data/niche.data.HB.csv")
+
+hugh.data <- hugh.data %>%
+  select(searchTaxon, Annual_precip_mean, Precip_dry_qu_mean) %>% # selecting the relevant variables
+  rename(Species=searchTaxon)
+
+all.data <- left_join(other.variables, hugh.data, by = "Species")
+
+all.data <- filter(all.data, Species_Code != "Phro", Species_Code != "Kebe", Species_Code != "Atmo", Species_Code != "Pich", 
+                   Species_Code != "Ulpa", Species_Code != "Crla", Species_Code != "Crma", Species_Code != "Atfi",
+                   Species_Code != "Brru", Species_Code != "Mero") # filter out species with missing climate, drought deciduous or leaf area
+
+library(tidyverse)
+library("FactoMineR")
+library("factoextra")
+
+# need to transform the succulance variable to make it linear
+FAMD_analysis_all <- all.data %>%
+  mutate(log_mean_succulance_g = log(mean_succulance_g)) %>%
+  select(-mean_succulance_g, -mean_Lobosity) %>% # need to remove lobosity
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code") # make species code the row names
+
+# remove the categorical vaiables
+
+FAMD_analysis <- select(FAMD_analysis_all, -Species, -Origin, -Growth_Form, -Growth_structure, -Deciduous_or_evergreen,
+                        -Water_storage_organs, -Leaf_hairs)
+
+# running the FAMD analysis
+
+res.famd <- FAMD(FAMD_analysis, graph = FALSE)
+
+# extract the eigenvalues
+
+eig.val <- get_eigenvalue(res.famd)
+head(eig.val) # first 3 dimensions explain 64% of the data
+
+# draw the scree plot
+fviz_screeplot(res.famd)
+
+## quantitative variables
+
+quanti.var <- get_famd_var(res.famd, "quanti.var")
+
+# plot the quantitative variables
+
+quanti.plot <- fviz_famd_var(res.famd, "quanti.var", repel = TRUE, col.var = "black")
+quanti.plot
+
+## qualitative variables
+
+quali.var <- get_famd_var(res.famd, "quali.var")
+
+# plot the qualitative variables
+
+quali.plot <- fviz_famd_var(res.famd, "quali.var", repel = TRUE, col.var = "black")
+quali.plot
+
+### graph of individuals
+
+ind <- get_famd_ind(res.famd)
+
+ind.graph <- fviz_famd_ind(res.famd, repel = TRUE, invisible = "quali.var", col.ind = "black")
+ind.graph
+
+# colour individuals by growth form (used ?fviz_famd_ind to figure out)
+
+library(ggplot2)
+
+individuals <- fviz_famd_ind(res.famd, 
+                             geom = "point", # show points only (but not "text")
+                             col.ind = all.data$Growth_Form, # color by growth form 
+                             palette = c("Dark2"),
+                             addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipse
+                             legend.title = "Growth from",
+                             invisible = "quali.var")
+
+individuals
+
+# redo FAMD with only the first 3 dimensions
+
+res.famd <- FAMD(FAMD_analysis, ncp = 3, graph = FALSE)
+
+# Compute hierarchical clustering
+
+res.hcpc <- HCPC(res.famd, graph = FALSE)
+
+# dendrogram
+fviz_dend(res.hcpc, 
+          cex = 0.7,                     # Label size
+          palette = "jco",               # Color palette see ?ggpubr::ggpar
+          rect = TRUE, rect_fill = TRUE, # Add rectangle around groups
+          rect_border = "jco",           # Rectangle color
+          labels_track_height = 0.8)     # Augment the room for labels
+
+# graph
+cluster <- fviz_cluster(res.hcpc,
+             repel = TRUE,            # Avoid label overlapping
+             show.clust.cent = TRUE, # Show cluster centers
+             palette = "jco",         # Color palette see ?ggpubr::ggpar
+             ggtheme = theme_minimal(),
+             main = "Factor map")
+cluster
+
+# Let's look at the HCPC output
+
+# display the original data with a new column indicating which cluster they belong to
+
+head(res.hcpc$data.clust)
+
+# display the quantitative variables that explain the most variance in each cluster
+
+res.hcpc$desc.var$quanti
+
+# same thing but for categorical variables
+res.hcpc$desc.var$category
+
+# principle dimensions that are most associated with clusters
+res.hcpc$desc.axes$quanti
+
+# save the output
+pdf("MFA_data_output/Cluster_analysis/FAMD_scraped_glasshouse_climate_all.pdf") # Create a new pdf device
+print(quanti.plot)
+print(quali.plot)
+print(individuals)
+print(cluster)
+dev.off() # Close the pdf device
+
+#################################### subsetting the data for only the trees and shrubs
+
+other.variables <- read.csv("MFA_data/FAMD_data2.csv")
+
+hugh.data <- read.csv("MFA_data/niche.data.HB.csv")
+
+hugh.data <- hugh.data %>%
+  select(searchTaxon, Annual_precip_mean, Precip_dry_qu_mean) %>% # selecting the relevant variables
+  rename(Species=searchTaxon)
+
+all.data <- left_join(other.variables, hugh.data, by = "Species")
+
+all.data <- filter(all.data, Growth_Form == "Tree" | Growth_Form == "Shrub") # 92 native and exotic trees and shrubs
+
+all.data <- filter(all.data, Species_Code != "Atmo", Species_Code != "Atfi", Species_Code != "Brru", Species_Code != "Crma", Species_Code != "Crla", Species_Code != "Pich",
+                   Species_Code != "Phro", Species_Code != "Ulpa")
+
+library(tidyverse)
+library("FactoMineR")
+library("factoextra")
+
+# need to transform the succulance variable to make it linear
+FAMD_analysis_all <- all.data %>%
+  mutate(log_mean_succulance_g = log(mean_succulance_g)) %>%
+  select(-mean_succulance_g, -mean_Lobosity) %>% # need to remove lobosity
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code") # make species code the row names
+
+# remove the categorical vaiables
+
+FAMD_analysis <- select(FAMD_analysis_all, -Species, -Origin, -Growth_Form, -Growth_structure, -Deciduous_or_evergreen,
+                        -Water_storage_organs, -Leaf_hairs)
+
+# running the FAMD analysis
+
+res.famd <- FAMD(FAMD_analysis, graph = FALSE)
+
+# extract the eigenvalues
+
+eig.val <- get_eigenvalue(res.famd)
+head(eig.val) # first 3 dimensions explain 66% of the data
+
+# draw the scree plot
+fviz_screeplot(res.famd)
+
+## quantitative variables
+
+quanti.var <- get_famd_var(res.famd, "quanti.var")
+
+# plot the quantitative variables
+
+quanti.plot <- fviz_famd_var(res.famd, "quanti.var", repel = TRUE, col.var = "black")
+quanti.plot
+
+## qualitative variables
+
+quali.var <- get_famd_var(res.famd, "quali.var")
+
+# plot the qualitative variables
+
+quali.plot <- fviz_famd_var(res.famd, "quali.var", repel = TRUE, col.var = "black")
+quali.plot
+
+### graph of individuals
+
+ind <- get_famd_ind(res.famd)
+
+ind.graph <- fviz_famd_ind(res.famd, repel = TRUE, invisible = "quali.var", col.ind = "black")
+ind.graph
+
+# colour individuals by growth form (used ?fviz_famd_ind to figure out)
+
+library(ggplot2)
+
+individuals <- fviz_famd_ind(res.famd, 
+                             geom = "point", # show points only (but not "text")
+                             col.ind = all.data$Growth_Form, # color by growth form 
+                             palette = c("Dark2"),
+                             addEllipses = TRUE, ellipse.type = "confidence", # confidence ellipse
+                             legend.title = "Growth from",
+                             invisible = "quali.var")
+
+individuals
+
+# redo FAMD with only the first 3 dimensions
+
+res.famd <- FAMD(FAMD_analysis, ncp = 3, graph = FALSE)
+
+# Compute hierarchical clustering
+
+res.hcpc <- HCPC(res.famd, graph = FALSE)
+
+# dendrogram
+fviz_dend(res.hcpc, 
+          cex = 0.7,                     # Label size
+          palette = "jco",               # Color palette see ?ggpubr::ggpar
+          rect = TRUE, rect_fill = TRUE, # Add rectangle around groups
+          rect_border = "jco",           # Rectangle color
+          labels_track_height = 0.8)     # Augment the room for labels
+
+# graph
+cluster <- fviz_cluster(res.hcpc,
+                        repel = TRUE,            # Avoid label overlapping
+                        show.clust.cent = TRUE, # Show cluster centers
+                        palette = "jco",         # Color palette see ?ggpubr::ggpar
+                        ggtheme = theme_minimal(),
+                        main = "Factor map")
+cluster
+
+# Let's look at the HCPC output
+
+# display the original data with a new column indicating which cluster they belong to
+
+head(res.hcpc$data.clust)
+
+# display the quantitative variables that explain the most variance in each cluster
+
+res.hcpc$desc.var$quanti
+
+# same thing but for categorical variables
+res.hcpc$desc.var$category
+
+# principle dimensions that are most associated with clusters
+res.hcpc$desc.axes$quanti
+
+# save the output
+pdf("MFA_data_output/Cluster_analysis/FAMD_scraped_glasshouse_climate_trees_shrubs.pdf") # Create a new pdf device
+print(quanti.plot)
+print(quali.plot)
+print(individuals)
 print(cluster)
 dev.off() # Close the pdf device
 
