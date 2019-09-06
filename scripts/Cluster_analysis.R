@@ -1540,10 +1540,10 @@ library(tidyverse)
 library("FactoMineR")
 library("factoextra")
 
-# need to transform the succulance variable to make it linear
+# need to transform the succulance variable and leaf area variable to make it linear
 PCA_analysis <- all.data %>%
-  mutate(log_mean_succulance_g = log(mean_succulance_g)) %>%
-  select(-mean_succulance_g, -mean_Lobosity) %>% # need to remove lobosity
+  mutate(log_mean_succulence_g = log(mean_succulance_g), log_mean_leaf_area_cm2 = log(mean_leaf_area_cm2)) %>%
+  select(-mean_succulance_g, -mean_leaf_area_cm2, -mean_Lobosity) %>% # need to remove lobosity
   remove_rownames %>%
   column_to_rownames(var="Species_Code") # make species code the row names
 
@@ -1561,7 +1561,7 @@ print(res.pca)
 
 eig.val <- get_eigenvalue(res.pca)
 eig.val
-# first 4 PCs explain 86% of the data
+# first 3 PCs explain 74% of the data
 
 # let's look at the scree plot
 
@@ -1586,14 +1586,12 @@ fviz_pca_var(res.pca, col.var = "contrib",
 # Contributions of variables to PC1
 
 fviz_contrib(res.pca, choice = "var", axes = 1, top = 4) # red dashed line is the expected average contribution (i.e. 4 variables = 25%)
+# succulence and leaf area
 
 # Contributions of variables to PC2
 
 fviz_contrib(res.pca, choice = "var", axes = 2, top = 4)
-
-# Contributions of variables to PC3
-
-fviz_contrib(res.pca, choice = "var", axes = 3, top = 4)
+# thickness, annual precip, LMA
 
 # dimension description
 # identify the most significanlty associated variables for a given PC
@@ -1705,10 +1703,10 @@ library(tidyverse)
 library("FactoMineR")
 library("factoextra")
 
-# need to transform the succulance variable to make it linear
+# need to transform the succulance variable and leaf area variable to make it linear
 PCA_analysis <- all.data %>%
-  mutate(log_mean_succulance_g = log(mean_succulance_g)) %>%
-  select(-mean_succulance_g, -mean_Lobosity) %>%
+  mutate(log_mean_succulence_g = log(mean_succulance_g), log_mean_leaf_area_cm2 = log(mean_leaf_area_cm2)) %>%
+  select(-mean_succulance_g, -mean_leaf_area_cm2, -mean_Lobosity) %>% # need to remove lobosity
   remove_rownames %>%
   column_to_rownames(var="Species_Code") # make species code the row names
 
@@ -1726,7 +1724,7 @@ print(res.pca)
 
 eig.val <- get_eigenvalue(res.pca)
 eig.val
-# first three PCs explain 71% of the data
+# first three PCs explain 74% of the data
 
 # let's look at the scree plot
 
@@ -1870,10 +1868,10 @@ library(tidyverse)
 library("FactoMineR")
 library("factoextra")
 
-# need to transform the succulance variable to make it linear
+# need to transform the succulance variable and leaf area variable to make it linear
 FAMD_analysis_all <- all.data %>%
-  mutate(log_mean_succulance_g = log(mean_succulance_g)) %>%
-  select(-mean_succulance_g, -mean_Lobosity) %>% # need to remove lobosity
+  mutate(log_mean_succulence_g = log(mean_succulance_g), log_mean_leaf_area_cm2 = log(mean_leaf_area_cm2)) %>%
+  select(-mean_succulance_g, -mean_leaf_area_cm2, -mean_Lobosity) %>% # need to remove lobosity
   remove_rownames %>%
   column_to_rownames(var="Species_Code") # make species code the row names
 
@@ -1889,10 +1887,23 @@ res.famd <- FAMD(FAMD_analysis, graph = FALSE)
 # extract the eigenvalues
 
 eig.val <- get_eigenvalue(res.famd)
-head(eig.val) # first 3 dimensions explain 64% of the data
+head(eig.val) # first 3 dimensions explain 67% of the data
 
 # draw the scree plot
 fviz_screeplot(res.famd)
+
+## all variables
+
+var <- get_famd_var(res.famd)
+
+# plot of variables
+fviz_famd_var(res.famd, repel = TRUE)
+
+# contribution to the 1st dimension
+fviz_contrib(res.famd, "var", axes = 1) # area, succulance
+
+# contribution to 2nd dimension
+fviz_contrib(res.famd, "var", axes = 2) # thickness, LMA, annual precip
 
 ## quantitative variables
 
@@ -2003,10 +2014,10 @@ library(tidyverse)
 library("FactoMineR")
 library("factoextra")
 
-# need to transform the succulance variable to make it linear
+# need to transform the succulance variable and leaf area variable to make it linear
 FAMD_analysis_all <- all.data %>%
-  mutate(log_mean_succulance_g = log(mean_succulance_g)) %>%
-  select(-mean_succulance_g, -mean_Lobosity) %>% # need to remove lobosity
+  mutate(log_mean_succulence_g = log(mean_succulance_g), log_mean_leaf_area_cm2 = log(mean_leaf_area_cm2)) %>%
+  select(-mean_succulance_g, -mean_leaf_area_cm2, -mean_Lobosity) %>% # need to remove lobosity
   remove_rownames %>%
   column_to_rownames(var="Species_Code") # make species code the row names
 
@@ -2026,6 +2037,19 @@ head(eig.val) # first 3 dimensions explain 66% of the data
 
 # draw the scree plot
 fviz_screeplot(res.famd)
+
+## all variables
+
+var <- get_famd_var(res.famd)
+
+# plot of variables
+fviz_famd_var(res.famd, repel = TRUE)
+
+# contribution to the 1st dimension
+fviz_contrib(res.famd, "var", axes = 1) # annual precip, leaf area, succulence
+
+# contribution to 2nd dimension
+fviz_contrib(res.famd, "var", axes = 2) # thickness, LMA
 
 ## quantitative variables
 
@@ -2101,8 +2125,8 @@ head(res.hcpc$data.clust)
 
 res.hcpc$desc.var$quanti
 
-# same thing but for categorical variables
-res.hcpc$desc.var$category
+Large # same thing but for categorical variables
+res.hcpc$desc.var$category # keeps saying 'null' - maybe doesn't cluster according to this variable?
 
 # principle dimensions that are most associated with clusters
 res.hcpc$desc.axes$quanti
