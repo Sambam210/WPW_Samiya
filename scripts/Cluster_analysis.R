@@ -2125,7 +2125,7 @@ head(res.hcpc$data.clust)
 
 res.hcpc$desc.var$quanti
 
-Large # same thing but for categorical variables
+# same thing but for categorical variables
 res.hcpc$desc.var$category # keeps saying 'null' - maybe doesn't cluster according to this variable?
 
 # principle dimensions that are most associated with clusters
