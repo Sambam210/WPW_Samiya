@@ -2033,7 +2033,7 @@ res.famd <- FAMD(FAMD_analysis, graph = FALSE)
 # extract the eigenvalues
 
 eig.val <- get_eigenvalue(res.famd)
-head(eig.val) # first 3 dimensions explain 66% of the data
+head(eig.val) # first 3 dimensions explain 68% of the data
 
 # draw the scree plot
 fviz_screeplot(res.famd)
