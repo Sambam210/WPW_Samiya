@@ -1682,6 +1682,54 @@ print(ind.plot)
 print(cluster)
 dev.off() # Close the pdf device
 
+# Hierarchical clustering WITH NO CONSOLIDATION
+# https://www.youtube.com/watch?v=4XrgWmN9erg&list=PLnZgp6epRBbTsZEFXi_p6W48HhNyqwxIu&index=7
+
+# let's only do the PCA on the first 3 dimensions
+
+res.pca <- PCA(PCA_analysis_cont, ncp = 3, graph = FALSE)
+
+# clustering
+res.hcpc <- HCPC(res.pca, consol = FALSE, graph = FALSE)
+
+# dendrogram
+fviz_dend(res.hcpc, 
+          cex = 0.7,                     # Label size
+          palette = "jco",               # Color palette see ?ggpubr::ggpar
+          rect = TRUE, rect_fill = TRUE, # Add rectangle around groups
+          rect_border = "jco",           # Rectangle color
+          labels_track_height = 0.8)     # Augment the room for labels
+
+# graph
+cluster <- fviz_cluster(res.hcpc,
+                        repel = TRUE,            # Avoid label overlapping
+                        show.clust.cent = TRUE, # Show cluster centers
+                        palette = "jco",         # Color palette see ?ggpubr::ggpar
+                        ggtheme = theme_minimal(),
+                        main = "PCA")
+cluster
+
+# Let's look at the HCPC output
+
+# display the original data with a new column indicating which cluster they belong to
+
+head(res.hcpc$data.clust)
+
+# display the qualtitative variables that explain the most variance in each cluster
+
+res.hcpc$desc.var$quanti
+
+# principle dimensions that are most associated with clusters
+res.hcpc$desc.axes$quanti
+
+# save the output
+pdf("MFA_data_output/Cluster_analysis/PCA_glasshouse_climate_leafarea_noconsol_all.pdf") # Create a new pdf device
+print(var.plot)
+print(biplot)
+print(ind.plot)
+print(cluster)
+dev.off() # Close the pdf device
+
 #################################### subsetting the data for only the trees and shrubs
 
 other.variables <- read.csv("MFA_data/FAMD_data2.csv")
@@ -1987,6 +2035,52 @@ res.hcpc$desc.axes$quanti
 
 # save the output
 pdf("MFA_data_output/Cluster_analysis/FAMD_scraped_glasshouse_climate_all.pdf") # Create a new pdf device
+print(quanti.plot)
+print(quali.plot)
+print(individuals)
+print(cluster)
+dev.off() # Close the pdf device
+
+# Compute hierarchical clustering WITH NO CONSOLIDATION
+# https://www.youtube.com/watch?v=4XrgWmN9erg&list=PLnZgp6epRBbTsZEFXi_p6W48HhNyqwxIu&index=7
+
+res.hcpc <- HCPC(res.famd, consol = FALSE, graph = FALSE)
+
+# dendrogram
+fviz_dend(res.hcpc, 
+          cex = 0.7,                     # Label size
+          palette = "jco",               # Color palette see ?ggpubr::ggpar
+          rect = TRUE, rect_fill = TRUE, # Add rectangle around groups
+          rect_border = "jco",           # Rectangle color
+          labels_track_height = 0.8)     # Augment the room for labels
+
+# graph
+cluster <- fviz_cluster(res.hcpc,
+                        repel = TRUE,            # Avoid label overlapping
+                        show.clust.cent = TRUE, # Show cluster centers
+                        palette = "jco",         # Color palette see ?ggpubr::ggpar
+                        ggtheme = theme_minimal(),
+                        main = "Factor map")
+cluster
+
+# Let's look at the HCPC output
+
+# display the original data with a new column indicating which cluster they belong to
+
+head(res.hcpc$data.clust)
+
+# display the quantitative variables that explain the most variance in each cluster
+
+res.hcpc$desc.var$quanti
+
+# same thing but for categorical variables
+res.hcpc$desc.var$category
+
+# principle dimensions that are most associated with clusters
+res.hcpc$desc.axes$quanti
+
+# save the output
+pdf("MFA_data_output/Cluster_analysis/FAMD_scraped_glasshouse_climate_noconsol_all.pdf") # Create a new pdf device
 print(quanti.plot)
 print(quali.plot)
 print(individuals)
