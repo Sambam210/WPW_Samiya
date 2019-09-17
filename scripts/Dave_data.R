@@ -213,3 +213,54 @@ drought_summary_long <- drought_summary_long %>%
                                       TRUE ~ 'Mixed'))
 
 write.csv(drought_summary_long, "Dave_data_output/gh_drought_summary.csv", row.names = FALSE)
+
+#####################################################################################################################################
+
+# filter species according to minimum selection criteria identified by advisory board
+# they want info on:
+# drought_tolerance
+# frost_tolerance
+# coastal_tolerance
+# light_level
+# form
+# height
+# width
+
+# First, let's see the frequency of these traits within the database
+
+# let's load the data
+
+Dave <- read.csv("Dave_data/UptodateDB.csv")
+
+library(tidyverse)
+
+# select the columns I am interested in
+
+DaveNew <- Dave %>%
+  select(newspecies, source, trait_name, value)
+
+head(DaveNew)
+
+DaveNew <- distinct(DaveNew,newspecies,trait_name, .keep_all = TRUE) # for each species and trait I just want one row
+
+                                                                     # figured out from ?distinct
+
+# subset only the traits I am interested in
+
+DaveNew <- DaveNew %>%
+  filter(trait_name == "drought_tolerance" | trait_name == "frost_tolerance" | trait_name == "coastal_tolerance" |
+         trait_name == "light_level" | trait_name == "form" | trait_name == "max_height" | trait_name == "height" |
+         trait_name == "min_height" | trait_name == "max_width" | trait_name == "width" | trait_name == "min_width")
+
+# frequency of each trait
+
+selection_trait_frequency <- DaveNew %>%
+  add_count(trait_name, sort = TRUE, name = "frequency") %>%
+  select(-newspecies, -source, -value) %>%
+  distinct(trait_name, .keep_all = TRUE) %>%
+  mutate(completeness = (frequency / 4356)) # completeness of each trait, there are 4356 unique 'species' in the database
+
+write.csv(selection_trait_frequency, "Dave_data_output/advisory_board_min_traits/selection_trait_frequency.csv", row.names = FALSE)
+
+
+
