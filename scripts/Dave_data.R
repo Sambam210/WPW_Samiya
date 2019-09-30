@@ -216,10 +216,11 @@ write.csv(drought_summary_long, "Dave_data_output/gh_drought_summary.csv", row.n
 
 #####################################################################################################################################
 
-# filter species according to minimum selection criteria identified by advisory board + consultation with Ale
+# filter species according to minimum selection criteria identified by advisory board + consultation with MQ WPW group
 # they want info on:
 # drought_tolerance
 # frost_tolerance
+# coastal_tolerance
 # light_level
 # form
 # leaf loss
@@ -248,7 +249,7 @@ DaveNew <- distinct(DaveNew,newspecies,trait_name, .keep_all = TRUE) # for each 
 # subset only the traits I am interested in
 
 DaveNew <- DaveNew %>%
-  filter(trait_name == "drought_tolerance" | trait_name == "frost_tolerance" |
+  filter(trait_name == "drought_tolerance" | trait_name == "frost_tolerance" | trait_name == "coastal_tolerance" |
          trait_name == "light_level" | trait_name == "form" | trait_name == "leaf_loss" | trait_name == "max_height" |
          trait_name == "max_width")
 
@@ -258,7 +259,7 @@ selection_trait_frequency <- DaveNew %>%
   add_count(trait_name, sort = TRUE, name = "frequency") %>%
   select(-newspecies, -source, -value) %>%
   distinct(trait_name, .keep_all = TRUE) %>%
-  mutate(completeness = (frequency / 4355)) # completeness of each trait, there are 4356 unique 'species' in the database
+  mutate(completeness = (frequency / 4355)) # completeness of each trait, there are 4355 unique 'species' in the database
 
 write.csv(selection_trait_frequency, "Dave_data_output/advisory_board_min_traits/selection_trait_frequency.csv", row.names = FALSE)
 
@@ -292,22 +293,23 @@ DaveNew_long <- spread(DaveNew, key = trait_name, value = value, fill = 0)
 # subset only the traits I am interested in
 
 DaveNew_long <- DaveNew_long %>%
-  select(newspecies, drought_tolerance, frost_tolerance, light_level, form, leaf_loss, max_height, max_width)
+  select(newspecies, drought_tolerance, frost_tolerance, coastal_tolerance, light_level, form, leaf_loss, max_height, max_width)
 
-DaveNew_long = DaveNew_long[-1,] # remove first row, for some reason it is blank
+DaveNew_long <- DaveNew_long[-1,] # remove first row, for some reason it is blank
 
 str(DaveNew_long) # need to change characters into numeric
 
 DaveNew_long$drought_tolerance <- as.numeric(as.character(DaveNew_long$drought_tolerance))
 DaveNew_long$form <- as.numeric(as.character(DaveNew_long$form))
 DaveNew_long$frost_tolerance <- as.numeric(as.character(DaveNew_long$frost_tolerance))
+DaveNew_long$coastal_tolerance <- as.numeric(as.character(DaveNew_long$coastal_tolerance))
 DaveNew_long$leaf_loss <- as.numeric(as.character(DaveNew_long$leaf_loss))
 DaveNew_long$light_level <- as.numeric(as.character(DaveNew_long$light_level))
 DaveNew_long$max_height <- as.numeric(as.character(DaveNew_long$max_height))
 DaveNew_long$max_width <- as.numeric(as.character(DaveNew_long$max_width))
 
 # add a total records column
-DaveNew_long$total <- rowSums(DaveNew_long[,2:8])
+DaveNew_long$total <- rowSums(DaveNew_long[,2:9])
 
 # arrange species in descending order
 DaveNew_long <- DaveNew_long %>%
@@ -316,7 +318,57 @@ DaveNew_long <- DaveNew_long %>%
 
 write.csv(DaveNew_long, "Dave_data_output/advisory_board_min_traits/selection_trait_species_frequency.csv", row.names = FALSE)
 
+########################################################################
+# Let's remove costal, drought and frost tolerance as minimum traits
 
+Dave <- read.csv("Dave_data/UptodateDB.csv")
+
+library(tidyverse)
+
+# select the columns I am interested in
+
+DaveNew <- Dave %>%
+  select(newspecies, source, trait_name, value)
+
+head(DaveNew)
+
+DaveNew <- distinct(DaveNew,newspecies,trait_name, .keep_all = TRUE) # for each species and trait I just want one row
+
+# figured out from ?distinct
+
+DaveNew <- select(DaveNew, -source, -value) # get rid of the source and value column
+
+DaveNew$value <- rep("1",nrow(DaveNew)) # add a new column populated by "1", essentially replacing the characters with a number
+
+# convert into long format
+# https://stackoverflow.com/questions/34684925/how-to-use-the-spread-function-properly-in-tidyr
+
+DaveNew_long <- spread(DaveNew, key = trait_name, value = value, fill = 0)
+
+# subset only the traits I am interested in
+
+DaveNew_long <- DaveNew_long %>%
+  select(newspecies, light_level, form, leaf_loss, max_height, max_width)
+
+DaveNew_long <- DaveNew_long[-1,] # remove first row, for some reason it is blank
+
+str(DaveNew_long) # need to change characters into numeric
+
+DaveNew_long$form <- as.numeric(as.character(DaveNew_long$form))
+DaveNew_long$leaf_loss <- as.numeric(as.character(DaveNew_long$leaf_loss))
+DaveNew_long$light_level <- as.numeric(as.character(DaveNew_long$light_level))
+DaveNew_long$max_height <- as.numeric(as.character(DaveNew_long$max_height))
+DaveNew_long$max_width <- as.numeric(as.character(DaveNew_long$max_width))
+
+# add a total records column
+DaveNew_long$total <- rowSums(DaveNew_long[,2:6])
+
+# arrange species in descending order
+DaveNew_long <- DaveNew_long %>%
+  arrange(desc(total)) %>%
+  add_count(total, sort = FALSE, name = "frequency") # count the number of species that have a certain number of traits
+
+write.csv(DaveNew_long, "Dave_data_output/advisory_board_min_traits/selection_trait_species_frequency_short.csv", row.names = FALSE)
 
 
 
