@@ -2010,11 +2010,11 @@ fviz_dend(res.hcpc,
 
 # graph
 cluster <- fviz_cluster(res.hcpc,
-             repel = TRUE,            # Avoid label overlapping
-             show.clust.cent = TRUE, # Show cluster centers
-             palette = "jco",         # Color palette see ?ggpubr::ggpar
-             ggtheme = theme_minimal(),
-             main = "Factor map")
+                        repel = TRUE,            # Avoid label overlapping
+                        show.clust.cent = TRUE, # Show cluster centers
+                        palette = "jco",         # Color palette see ?ggpubr::ggpar
+                        ggtheme = theme_minimal(),
+                        main = "Factor map")
 cluster
 
 # Let's look at the HCPC output
@@ -2232,9 +2232,3 @@ print(quali.plot)
 print(individuals)
 print(cluster)
 dev.off() # Close the pdf device
-
-
-
-
-
-
