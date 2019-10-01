@@ -34,3 +34,4 @@ MFA_data/*.csv
 MFA_data_output
 Dave_data_output
 PCA_Cluster_data/*.csv
+PCA_Cluster_output
