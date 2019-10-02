@@ -372,7 +372,7 @@ write.csv(DaveNew_long, "Dave_data_output/advisory_board_min_traits/selection_tr
 
 #############################################################################################################################################
 
-# Earth sceince garden request
+# Earth science garden request
 
 library(dplyr)
 
