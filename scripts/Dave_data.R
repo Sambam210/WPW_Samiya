@@ -370,30 +370,63 @@ DaveNew_long <- DaveNew_long %>%
 
 write.csv(DaveNew_long, "Dave_data_output/advisory_board_min_traits/selection_trait_species_frequency_short.csv", row.names = FALSE)
 
+#############################################################################################################################################
+
+# Earth sceince garden request
+
+library(dplyr)
+
+Dave <- read.csv("Dave_data/UptodateDB.csv")
+
+filter(Dave, newspecies == "Berberis thunbergii")
+
+# filter(Dave, grepl('Acer palmatum', newspecies))
+# this is to check if the character string contains some of these words
+# https://stackoverflow.com/questions/22850026/filtering-row-which-contains-a-certain-string-using-dplyr
+
+filter(Dave, newspecies == "Acer palmatum")
+
+filter(Dave, newspecies == "Prunus cerasifera Nigra")
+
+filter(Dave, newspecies == "Malus floribunda")
+
+filter(Dave, newspecies == "Albizia julibrissin")
+
+filter(Dave, newspecies == "Camellia sasanqua")
+
+filter(Dave, newspecies == "Acacia covenyi")
+
+filter(Dave, newspecies == "Acacia podalyriifolia")
+
+filter(Dave, newspecies == "Acacia fimbriata")
+
+filter(Dave, newspecies == "Acacia boormanii")
+
+filter(Dave, newspecies == "Grevillea Moonlight")
+
+filter(Dave, newspecies == "Grevillea Honey Gem")
+
+filter(Dave, newspecies == "Grevillea Flamingo")
+
+filter(Dave, newspecies == "Grevillea Ivanhoe")
+
+filter(Dave, newspecies == "Callistemon salignus")
+
+filter(Dave, newspecies == "Leptospermum rotundifolium")
 
 
+# ALL OF THESE ARE PRESENT IN THE DATATBASE
 
+earth_science_garden <- filter(Dave, newspecies == "Berberis thunbergii" | newspecies == "Acer palmatum" | newspecies == "Prunus cerasifera Nigra" | 
+                                 newspecies == "Malus floribunda" | newspecies == "Albizia julibrissin" | newspecies == "Camellia sasanqua" | 
+                                 newspecies == "Acacica covenyi" | newspecies == "Acacia podalyriifolia" | newspecies == "Acacia fimbriata" | 
+                                 newspecies == "Acacia boormanii" | newspecies == "Grevillea Moonlight" | newspecies == "Grevillea Honey Gem" |
+                                 newspecies == "Grevillea Flamingo" | newspecies == "Grevillea Ivanhoe" | newspecies == "Callistemon salignus" |
+                                 newspecies == "Leptospermum rotundifolium")
 
+earth_science_garden <- select(earth_science_garden, -List_source, -date_sourced, -species, -verification, -species_number, 
+                               -multiple_forms, -trait_index, -trait_name_original, -value_original)
 
+earth_science_garden <- filter(earth_science_garden, trait_name != "common_name")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+write.csv(earth_science_garden, "Dave_data_output/earth_science_garden.csv", row.names = FALSE)
