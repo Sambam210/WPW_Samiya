@@ -438,6 +438,7 @@ write.csv(earth_science_garden, "Dave_data_output/earth_science_garden.csv", row
 # not drought tolerant
 # fast growth
 
+library(tidyr)
 library(dplyr)
 
 Dave <- read.csv("Dave_data/UptodateDB.csv")
@@ -476,7 +477,28 @@ tya_plants <- left_join(gh_species, DaveNew, by = "newspecies") # merge the two 
 
 tya_plants <- select(tya_plants, -source)
 
-tya_plants_long <- spread(tya_plants, key = trait_name, value = value, fill = 0)
+# tya_plants_long <- spread(tya_plants, key = trait_name, value = value, fill = 0) doesn't work, multiple entries for trait values
 
-write.csv(glspeciesdata,"Dave_data_output/glspeciestraits.csv", row.names = FALSE)
+# extract the fast growing species
+tya_plants_growth <- filter(tya_plants, trait_name == "growth_rate" & value == "fast")
 
+tya_plants_growth <- distinct(tya_plants_growth,newspecies, .keep_all = TRUE) # for each species and trait I just want one row
+
+tya_plants_growth <- select(tya_plants_growth, newspecies)
+
+# extract the drought tolerant species
+tya_plants_drought <- filter(tya_plants, trait_name == "drought_tolerance" & value == "No")
+
+tya_plants_drought <- distinct(tya_plants_drought,newspecies, .keep_all = TRUE) # for each species and trait I just want one row
+
+tya_plants_drought <- select(tya_plants_drought, newspecies)
+
+# see which species are not drought tolerant and have fast growth rate
+
+drought_growth <- semi_join(tya_plants_drought, tya_plants_growth)
+
+write.csv(drought_growth,"Dave_data_output/tya_species.csv", row.names = FALSE)
+# these are a subset of the 113 glasshouse species that:
+# are trees or shrubs
+# have no drought tolerance
+# are fast growing
