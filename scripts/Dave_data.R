@@ -430,3 +430,53 @@ earth_science_garden <- select(earth_science_garden, -List_source, -date_sourced
 earth_science_garden <- filter(earth_science_garden, trait_name != "common_name")
 
 write.csv(earth_science_garden, "Dave_data_output/earth_science_garden.csv", row.names = FALSE)
+
+###########################################################################################################################################
+
+# query David's database to find the species used in the glasshouse that are suitable for Tya to use
+# trees or shrubs
+# not drought tolerant
+# fast growth
+
+library(dplyr)
+
+Dave <- read.csv("Dave_data/UptodateDB.csv")
+
+DaveNew <- Dave %>%
+  select(newspecies)
+
+gh_species<-read.csv("PCA_Cluster_data/PCA_data.csv") # read in glasshouse species list
+
+gh_species <- gh_species %>%
+  rename(newspecies=Species) %>% # changing column name to match David's
+  filter(Growth_Form == "Shrub" | Growth_Form == "Tree") %>% # filter for only trees and shrubs
+  select(newspecies) # select only the species column
+
+missing<-setdiff(gh_species,DaveNew) # there are 4 species that don't match but Dave said that 1 of those species had different names in his database
+# let's change that names
+
+# gh_species[[40,1]] <- "Ficus microcarpa var hillii" # this doesn't work!
+
+glimpse(gh_species) # species names seem to be factors and not characters!
+
+gh_species$newspecies <- as.character(gh_species$newspecies) # change factors into characters
+# https://stackoverflow.com/questions/2851015/convert-data-frame-columns-from-factors-to-characters
+
+glimpse(gh_species) # worked!
+
+gh_species[[40,1]] <- "Ficus microcarpa var hillii"
+
+missing<-setdiff(gh_species,DaveNew) # there are now 3 species that don't exist in Dave's db after those changes
+
+DaveNew <- Dave %>%
+  select(newspecies, source, trait_name, value) %>% # let's subset David's data with the variables I am interested in
+  filter(trait_name == "drought_tolerance" | trait_name == "growth_rate")
+
+tya_plants <- left_join(gh_species, DaveNew, by = "newspecies") # merge the two datasets
+
+tya_plants <- select(tya_plants, -source)
+
+tya_plants_long <- spread(tya_plants, key = trait_name, value = value, fill = 0)
+
+write.csv(glspeciesdata,"Dave_data_output/glspeciestraits.csv", row.names = FALSE)
+
