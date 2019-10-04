@@ -502,3 +502,70 @@ write.csv(drought_growth,"Dave_data_output/tya_species.csv", row.names = FALSE)
 # are trees or shrubs
 # have no drought tolerance
 # are fast growing
+
+#####################################################################
+# Redo analysis but with all life forms
+
+library(tidyr)
+library(dplyr)
+
+Dave <- read.csv("Dave_data/UptodateDB.csv")
+
+DaveNew <- Dave %>%
+  select(newspecies)
+
+gh_species<-read.csv("PCA_Cluster_data/PCA_data.csv") # read in glasshouse species list
+
+gh_species <- gh_species %>%
+  rename(newspecies=Species) %>% # changing column name to match David's
+  select(newspecies) # select only the species column
+
+missing<-setdiff(gh_species,DaveNew) # there are 7 species that don't match but Dave said that 2 of those species had different names in his database
+# let's change that names
+
+# gh_species[[44,1]] <- "Ficus microcarpa var hillii" # this doesn't work!
+
+glimpse(gh_species) # species names seem to be factors and not characters!
+
+gh_species$newspecies <- as.character(gh_species$newspecies) # change factors into characters
+# https://stackoverflow.com/questions/2851015/convert-data-frame-columns-from-factors-to-characters
+
+glimpse(gh_species) # worked!
+
+gh_species[[44,1]] <- "Ficus microcarpa var hillii"
+gh_species[[11,1]] <- "Arthropodium cirrhatum"
+
+missing<-setdiff(gh_species,DaveNew) # there are now 3 species that don't exist in Dave's db after those changes
+
+DaveNew <- Dave %>%
+  select(newspecies, source, trait_name, value) %>% # let's subset David's data with the variables I am interested in
+  filter(trait_name == "drought_tolerance" | trait_name == "growth_rate")
+
+tya_plants <- left_join(gh_species, DaveNew, by = "newspecies") # merge the two datasets
+
+tya_plants <- select(tya_plants, -source)
+
+# tya_plants_long <- spread(tya_plants, key = trait_name, value = value, fill = 0) doesn't work, multiple entries for trait values
+
+# extract the fast growing species
+tya_plants_growth <- filter(tya_plants, trait_name == "growth_rate" & value == "fast")
+
+tya_plants_growth <- distinct(tya_plants_growth,newspecies, .keep_all = TRUE) # for each species and trait I just want one row
+
+tya_plants_growth <- select(tya_plants_growth, newspecies)
+
+# extract the drought tolerant species
+tya_plants_drought <- filter(tya_plants, trait_name == "drought_tolerance" & value == "No")
+
+tya_plants_drought <- distinct(tya_plants_drought,newspecies, .keep_all = TRUE) # for each species and trait I just want one row
+
+tya_plants_drought <- select(tya_plants_drought, newspecies)
+
+# see which species are not drought tolerant and have fast growth rate
+
+drought_growth <- semi_join(tya_plants_drought, tya_plants_growth)
+
+write.csv(drought_growth,"Dave_data_output/tya_species_allforms.csv", row.names = FALSE)
+# these are a subset of the 113 glasshouse species that:
+# have no drought tolerance
+# are fast growing
