@@ -1,6 +1,7 @@
 #### new script just for PCA and cluster analysis
-#### now have Crla and Atmo leaf area
-
+#### now have Crla, Atmo, Pich, Ulpa leaf area
+#### STill missing Brru, Crma, Atfi leaf area
+#### Phro and Kebe have no environmental data due to low records
 
 ######################################################################################################################################
 ################################### PCA on glasshouse variables and selected environmental variables #################################
@@ -21,8 +22,8 @@ hugh.data <- hugh.data %>%
 
 all.data <- left_join(other.variables, hugh.data, by = "Species")
 
-all.data <- filter(all.data, Species_Code != "Phro", Species_Code != "Kebe", Species_Code != "Pich", 
-                   Species_Code != "Ulpa", Species_Code != "Crma", Species_Code != "Atfi",
+all.data <- filter(all.data, Species_Code != "Phro", Species_Code != "Kebe", 
+                   Species_Code != "Crma", Species_Code != "Atfi",
                    Species_Code != "Brru") # filter out species with missing climate or leaf area
 
 
@@ -214,10 +215,8 @@ hugh.data <- hugh.data %>%
 
 all.data <- left_join(other.variables, hugh.data, by = "Species")
 
-all.data <- filter(all.data, Species_Code != "Phro", Species_Code != "Kebe", Species_Code != "Pich", 
-                   Species_Code != "Ulpa", Species_Code != "Crma", Species_Code != "Atfi",
+all.data <- filter(all.data, Species_Code != "Phro", Species_Code != "Kebe", Species_Code != "Crma", Species_Code != "Atfi",
                    Species_Code != "Brru") # filter out species with missing climate or leaf area
-
 
 # need to transform the succulance variable and leaf area variable to make it linear
 PCA_analysis <- all.data %>%
@@ -397,8 +396,7 @@ library("factoextra")
 
 other.variables <- read.csv("PCA_Cluster_data/PCA_data.csv")
 
-other.variables <- filter(other.variables, Species_Code != "Pich", 
-                   Species_Code != "Ulpa", Species_Code != "Crma", Species_Code != "Atfi",
+other.variables <- filter(other.variables, Species_Code != "Crma", Species_Code != "Atfi",
                    Species_Code != "Brru") # filter out species with missing leaf area
 
 
@@ -588,10 +586,8 @@ hugh.data <- hugh.data %>%
 
 all.data <- left_join(other.variables, hugh.data, by = "Species")
 
-all.data <- filter(all.data, Species_Code != "Phro", Species_Code != "Kebe", Species_Code != "Pich", 
-                   Species_Code != "Ulpa", Species_Code != "Crma", Species_Code != "Atfi",
+all.data <- filter(all.data, Species_Code != "Phro", Species_Code != "Kebe", Species_Code != "Crma", Species_Code != "Atfi",
                    Species_Code != "Brru") # filter out species with missing climate or leaf area
-
 
 # need to transform the succulance variable and leaf area variable to make it linear
 PCA_analysis <- all.data %>%
@@ -779,8 +775,7 @@ hugh.data <- hugh.data %>%
 
 all.data <- left_join(other.variables, hugh.data, by = "Species")
 
-all.data <- filter(all.data, Species_Code != "Phro", Species_Code != "Kebe", Species_Code != "Pich", 
-                   Species_Code != "Ulpa", Species_Code != "Crma", Species_Code != "Atfi",
+all.data <- filter(all.data, Species_Code != "Phro", Species_Code != "Kebe", Species_Code != "Crma", Species_Code != "Atfi",
                    Species_Code != "Brru") # filter out species with missing climate or leaf area
 
 
