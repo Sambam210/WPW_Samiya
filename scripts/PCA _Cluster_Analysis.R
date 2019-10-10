@@ -1,6 +1,6 @@
 #### new script just for PCA and cluster analysis
 #### now have Crla, Atmo, Pich, Ulpa leaf area
-#### STill missing Brru, Crma, Atfi leaf area
+#### Still missing Brru, Crma, Atfi leaf area
 #### Phro and Kebe have no environmental data due to low records
 
 ######################################################################################################################################
@@ -524,6 +524,9 @@ cluster
 # display the original data with a new column indicating which cluster they belong to
 
 head(res.hcpc$data.clust)
+# save this output for ladderplot
+PCA_traits_cluster_output <- res.hcpc$data.clust
+write.csv(PCA_traits_cluster_output,"PCA_Cluster_output/PCA_traits_cluster_output.csv", row.names = TRUE) # need row names for species
 
 # display the qualtitative variables that explain the most variance in each cluster
 
@@ -713,6 +716,8 @@ cluster
 # display the original data with a new column indicating which cluster they belong to
 
 head(res.hcpc$data.clust)
+PCA_traitsAI_cluster_output <- res.hcpc$data.clust
+write.csv(PCA_traitsAI_cluster_output,"PCA_Cluster_output/PCA_traitsAI_cluster_output.csv", row.names = TRUE) # need row names for species
 
 # display the qualtitative variables that explain the most variance in each cluster
 
