@@ -47,8 +47,6 @@ ladderplot(all.data, method = "jitter") # doesn't work
 
 ladderplot(all.data, col=1:4)
 
-
-
 # change the numbers into categorical values
 # https://stackoverflow.com/questions/19503266/replace-all-particular-values-in-a-data-frame
 
@@ -60,10 +58,12 @@ all.data[all.data == "4"] <- "succulent tolerators"
 # ladderplot
 ladderplot(all.data) # doesn't work
 
-
+################################################
 
 # let's try the ggplot way
 # https://stackoverflow.com/questions/52138418/how-to-make-ladder-plot
+
+library(dplyr)
 
 # let's read in the data for PCA traits only and PCA traits and AI cluster analysis
 # these csv files contain a column with the cluster that each species is in
@@ -91,20 +91,6 @@ traitsAI_cluster <- traitsAI %>%
 
 # let's join these together
 all.data <- left_join(traits_cluster, traitsAI_cluster, by = "Species")
-
-# gather so there is one column for model and cluster
-# https://www.rdocumentation.org/packages/tidyr/versions/0.8.3/topics/gather
-all.data.new <- gather(all.data, key="model", value="cluster", -Species)
-
-
-library(ggplot2)
-
-ggplot(all.data.new, aes(x=model, y=cluster, group=Species)) +
-  geom_line() +
-  theme_bw()
-
-
-
 
 # species for which the clusters have changed
 filter(all.data, traits != traitsAI)
@@ -175,5 +161,9 @@ ggplot(all.data.jitter, aes(x=model, y=cluster, group=Species)) +
                             "3" = "avoiders", "4" = "succulent tolerators")) +
   theme_bw()
 
+
+
+
+all.data.long <- gather(all.data, key="model", value="cluster", -Species)
  
 
