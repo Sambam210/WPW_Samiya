@@ -64,6 +64,7 @@ ladderplot(all.data) # doesn't work
 # https://stackoverflow.com/questions/52138418/how-to-make-ladder-plot
 
 library(dplyr)
+library(tidyverse)
 
 # let's read in the data for PCA traits only and PCA traits and AI cluster analysis
 # these csv files contain a column with the cluster that each species is in
@@ -92,6 +93,8 @@ traitsAI_cluster <- traitsAI %>%
 # let's join these together
 all.data <- left_join(traits_cluster, traitsAI_cluster, by = "Species")
 
+write.csv(all.data, "Ladderplot_data_input/traitsandtraitsAI.csv", row.names = FALSE)
+
 # species for which the clusters have changed
 filter(all.data, traits != traitsAI)
 
@@ -99,12 +102,6 @@ filter(all.data, traits != traitsAI)
 all.data.same <- filter(all.data, Species != "Anco", Species != "Coau", Species != "Limu", Species != "Meaf", Species != "Pyca")
 
 # create a random column to jitter the points
-# all.data.same <- all.data.same %>%
-#  mutate(random = case_when(traits == "1" ~ runif(1, 0.8, 1.2),
-#                            traits == "2" ~ runif(1, 1.8, 2.2),
-#                            traits == "3" ~ runif(1, 2.8, 3.2),
-#                            traits == "4" ~ runif(1, 3.8, 4.2)))
-
 all.data.same <- all.data.same %>%
   mutate(random = runif(103, -0.1, 0.1) + traits)
 
@@ -119,23 +116,11 @@ all.data.same <- select(all.data.same, -random)
 all.data.diff <- filter(all.data, traits != traitsAI)
 
 # create a random column for traits to jitter the points
-#all.data.diff <- all.data.diff %>%
-#  mutate(randomtraits = case_when(traits == "1" ~ runif(1, 0.8, 1.2),
-#                                  traits == "2" ~ runif(1, 1.8, 2.2),
-#                                  traits == "3" ~ runif(1, 2.8, 3.2),
-#                                  traits == "4" ~ runif(1, 3.8, 4.2)))
-
 all.data.diff <- all.data.diff %>%
   mutate(randomtraits = runif(5, -0.1, 0.1) + traits)
 
 
 # create a random column for traitsAI to jitter the points
-#all.data.diff <- all.data.diff %>%
-#  mutate(randomtraitsAI = case_when(traitsAI == "1" ~ runif(1, 0.8, 1.2),
-#                                    traitsAI == "2" ~ runif(1, 1.8, 2.2),
-#                                    traitsAI == "3" ~ runif(1, 2.8, 3.2),
-#                                    traitsAI == "4" ~ runif(1, 3.8, 4.2)))
-
 all.data.diff <- all.data.diff %>%
   mutate(randomtraitsAI = runif(5, -0.1, 0.1) + traitsAI)
 
@@ -161,9 +146,70 @@ ggplot(all.data.jitter, aes(x=model, y=cluster, group=Species)) +
                             "3" = "avoiders", "4" = "succulent tolerators")) +
   theme_bw()
 
+#######################################################
 
+## ggalluvial vignette
+# https://cran.r-project.org/web/packages/ggalluvial/vignettes/ggalluvial.html
 
+all.data <- read.csv("Ladderplot_data_input/traitsandtraitsAI.csv")
 
+library(tidyverse)
+
+#transform data into 'wide' format
 all.data.long <- gather(all.data, key="model", value="cluster", -Species)
- 
+
+install.packages("ggalluvial")
+library(ggalluvial)
+library(ggplot2)
+
+# vignette code
+
+data(vaccinations)
+
+levels(vaccinations$response) <- rev(levels(vaccinations$response))
+
+ggplot(vaccinations,
+       aes(x = survey, stratum = response, alluvium = subject,
+           y = freq,
+           fill = response, label = response)) +
+  scale_x_discrete(expand = c(.1, .1)) +
+  geom_flow() +
+  geom_stratum(alpha = .5) +
+  geom_text(stat = "stratum", size = 3) +
+  theme(legend.position = "none") +
+  ggtitle("vaccination survey responses at three points in time")
+
+# let's try on my data
+# first need a 'classification' column
+
+all.data.long <- all.data.long %>%
+  mutate(classification = case_when(cluster == "1" ~ "tolerators",
+                                    cluster == "2" ~ "mixture",
+                                    cluster == "3" ~ "avoiders",
+                                    cluster == "4" ~ "succulent tolerators"))
+
+
+traitsandstraitsAIplot <- ggplot(all.data.long,
+                      aes(x = model, stratum = classification, alluvium = Species,
+                      fill = classification, label = classification)) +
+                      scale_x_discrete(expand = c(.1, .1)) +
+                      geom_flow() +
+                      geom_stratum(alpha = .5) +
+                      geom_text(stat = "stratum", size = 3) +
+                      theme(legend.position = "none") +
+                      labs(y = "Number of species")
+
+# save the output
+pdf("Ladderplot_output/traitsandtraitsAI.pdf") # Create a new pdf device
+print(traitsandstraitsAIplot)
+dev.off() # Close the pdf device
+
+
+
+
+
+
+
+
+
 
