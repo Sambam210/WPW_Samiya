@@ -534,7 +534,7 @@ glimpse(gh_species) # worked!
 gh_species[[44,1]] <- "Ficus microcarpa var hillii"
 gh_species[[11,1]] <- "Arthropodium cirrhatum"
 
-missing<-setdiff(gh_species,DaveNew) # there are now 3 species that don't exist in Dave's db after those changes
+missing<-setdiff(gh_species,DaveNew) # there are now 5 species that don't exist in Dave's db after those changes
 
 DaveNew <- Dave %>%
   select(newspecies, source, trait_name, value) %>% # let's subset David's data with the variables I am interested in
@@ -601,7 +601,7 @@ glimpse(gh_species) # worked!
 gh_species[[44,1]] <- "Ficus microcarpa var hillii"
 gh_species[[11,1]] <- "Arthropodium cirrhatum"
 
-missing<-setdiff(gh_species,DaveNew) # there are now 3 species that don't exist in Dave's db after those changes
+missing<-setdiff(gh_species$newspecies,DaveNew$newspecies) # there are now 5 species that don't exist in Dave's db after those changes
 
 DaveNew <- Dave %>%
   select(newspecies, source, trait_name, value) %>% # let's subset David's data with the variables I am interested in
