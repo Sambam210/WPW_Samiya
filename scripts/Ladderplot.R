@@ -208,6 +208,8 @@ dev.off() # Close the pdf device
 
 ###############################################################################################################
 
+############ HORT CLASSIFICATION VS TRAITS CLASSIFICATION
+
 # Loading in my horticultural classification data
 
 hort.class <- read.csv("Ladderplot_data_input/gh_drought_summary_Samiya.csv")
@@ -311,5 +313,116 @@ pdf("Ladderplot_output/hortandtraits.pdf") # Create a new pdf device
 print(hortandtraitsplot)
 dev.off() # Close the pdf device
 
+#####################################################################################################
+
+############ HORT CLASSIFICATION VS TRAITSAI CLASSIFICATION
+
+# Loading in my horticultural classification data
+
+hort.class <- read.csv("Ladderplot_data_input/gh_drought_summary_Samiya.csv")
+
+library(tidyverse)
+
+# get rid of source and line info
+
+hort.class <- hort.class[,1:7]
+
+# filter out the species with less than 4 sources
+
+hort.class <- filter(hort.class, total >= 4) # this gives us 92/113 species
+
+# create percentage columns for each of the columns 'no, 'moderate' and 'yes'
+
+hort.class <- hort.class %>%
+  mutate(No_percentage = No/total*100,
+         Moderate_percentage = Moderate/total*100,
+         Yes_percentage = Yes/total*100)
+
+# assign 'yes', 'no' or 'mixture' classifications 
+# Protocol: 
+# If >=60% of the records is either 'yes', 'no' or 'medium' then that species has that corresponding classification
+# If 'medium' is >=60% then that species is said to be 'yes' for drought tolerance
+# If no classification is >=60% then that species is 'mixture'
+
+hort.class <- hort.class %>%
+  mutate(hort_classification = case_when(No_percentage >= 60 ~ "drought intolerant",
+                                         Moderate_percentage >= 60 ~ "drought tolerant",
+                                         Yes_percentage >= 60 ~ "drought tolerant",
+                                         TRUE ~ "mixture")) %>%
+  select(Species_Code, hort_classification)
+
+# load my traitsAI cluster data
+
+traitsAI <- read.csv("PCA_Cluster_output/PCA_traitsAI_cluster_output.csv")
+
+traitsAI <- traitsAI %>%
+  rename(Species_Code=X) %>%
+  mutate(traitsAI_classification = case_when(clust == "1" ~ "drought tolerant",
+                                           clust == "2" ~ "mixture",
+                                           clust == "3" ~ "drought intolerant",
+                                           clust == "4" ~ "drought tolerant")) %>%
+  select(Species_Code, traitsAI_classification)
+
+# merge the two datasets together
+
+hortandtraitsAI <- left_join(hort.class, traitsAI, by = "Species_Code")
+
+# remove rows with NAs
+# https://stackoverflow.com/questions/26665319/removing-na-in-dplyr-pipe
+
+hortandtraitsAI <- drop_na(hortandtraitsAI) # ended up with 88 species 
+
+write.csv(hortandtraitsAI, "Ladderplot_data_input/hortandtraitsAI.csv", row.names = FALSE)
+
+# let's look at some summaries of what has changed
+summary <- hortandtraitsAI %>%
+  select(-Species_Code) %>%
+  group_by(hort_classification, traitsAI_classification) %>%
+  add_count() %>%
+  distinct(hort_classification, traitsAI_classification, .keep_all = TRUE)
+
+write.csv(summary, "Ladderplot_output/hortandtraitsAI_summary.csv", row.names = FALSE)
+
+#############################
+# Constructing the alluvial plot for hort and traitsAI classification
+
+hortandtraitsAI <- read.csv("Ladderplot_data_input/hortandtraitsAI.csv")
+
+#transform data into 'wide' format
+hortandtraitsAI.wide <- gather(hortandtraitsAI, key="method", value="classification", -Species_Code)
+
+# constructing the alluvial plot
+
+library(ggalluvial)
+library(ggplot2)
+
+install.packages("viridis")
+library(viridis)
+
+hortandtraitsAIplot <- ggplot(hortandtraitsAI.wide,
+                            aes(x = method, stratum = classification, alluvium = Species_Code,
+                                fill = classification, label = classification)) +
+                       scale_x_discrete(expand = c(.1, .1)) +
+                       geom_flow() +
+                       geom_stratum(alpha = .5) +
+                       scale_color_brewer(palette = "Accent") +
+                       scale_fill_brewer(palette = "Accent") +
+                       geom_text(stat = "stratum", size = 3) +
+                       annotate("text", x = 1, y = 80, label = "(12.5%)", size = 3) +
+                       annotate("text", x = 1, y = 45, label = "(67%)", size = 3) +
+                       annotate("text", x = 1, y = 6.8, label = "(20.4%)", size = 3) +
+                       annotate("text", x = 2, y = 67.8, label = "(40.9%)", size = 3) +
+                       annotate("text", x = 2, y = 35, label = "(26.1%)", size = 3) +
+                       annotate("text", x = 2, y = 9, label = "(32.9%)", size = 3) +
+                       theme(legend.position = "none") +
+                       labs(y = "Number of species",
+                       x = "Method")
+
+hortandtraitsAIplot
+
+# save the output
+pdf("Ladderplot_output/hortandtraitsAI.pdf") # Create a new pdf device
+print(hortandtraitsAIplot)
+dev.off() # Close the pdf device
 
 
