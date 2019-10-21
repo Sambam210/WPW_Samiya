@@ -570,6 +570,51 @@ cluster <- fviz_cluster(res.hcpc,
                         main = "PCA")
 cluster # looks worse!
 
+#####################################
+### PCA on glasshouse variables 
+# OsmPot transformed to osmotic potential at full turgor
+# LDMC instead of succulence
+
+library(tidyverse)
+library("FactoMineR")
+library("factoextra")
+
+other.variables <- read.csv("PCA_Cluster_data/PCA_data.csv")
+
+other.variables <- filter(other.variables, Species_Code != "Crma", Species_Code != "Atfi",
+                          Species_Code != "Brru") # filter out species with missing leaf area
+
+other.variables <- select(other.variables, Species, Species_Code, mean_LMA_gm2, Thickness_mm_Avg, mean_leaf_area_cm2)
+
+# load the OsmPot data
+osmpot <- read.csv("Gh_data/WPW_GH_OSMPOT.csv")
+
+# transform osmolarity into osmotic potential at full turgor
+osmpot <- osmpot %>%
+  filter(Treatment == "C") %>%
+  select(Species, Species_Code, OsmPot_MPa) %>%
+  mutate(osmpot_full_turgor = OsmPot_MPa * (-2.3958/1000)) %>%
+  group_by(Species_Code) %>%
+  summarise(mean_osmpot_full_turgor = mean(osmpot_full_turgor, na.rm = TRUE))
+
+# join to master spreadsheet
+PCA_analysis <- left_join(other.variables, osmpot, by = "Species_Code")
+
+# load the LMA data
+LMA <- read.csv("GH_data/WPW_GH_LMA_clean.csv")
+
+# transform fresh and dry weights into LDMC
+LDMC <- LMA %>%
+  filter(Treatment == "C") %>%
+  select(Species, Species_Code, Fresh_Weight_g, Dry_Weight_g) %>%
+  mutate(LDMC = Dry_Weight_g/Fresh_Weight_g) %>%
+  group_by(Species_Code) %>%
+  summarise(mean_LDMC = mean(LDMC, na.rm = TRUE))
+
+# join to master spreadsheet
+PCA_analysis <- left_join(PCA_analysis, LDMC, by = "Species_Code")
+
+
 ######################################################################################################################################
 ################################################## PCA on glasshouse variables and aridity ###############################################################
 #####################################################################################################################################
