@@ -770,7 +770,7 @@ other.variables <- select(other.variables, Species, Species_Code, mean_OsmPot, m
 # load the LMA data
 LMA <- read.csv("GH_data/WPW_GH_LMA_clean.csv")
 
-# transform fresh and dry weights into LDMC
+# transform fresh and dry weights into LDMC and aslo add density
 LDMCandDensity <- LMA %>%
   filter(Treatment == "C") %>%
   select(Species, Species_Code, Fresh_Weight_g, Dry_Weight_g, LMA_gm2, Thickness_mm_Avg) %>%
