@@ -37,4 +37,5 @@ PCA_Cluster_data/*.csv
 PCA_Cluster_output
 Ladderplot_data_input/*.csv
 Ladderplot_output
-
+Cluster_traits_analysis_data/*.csv
+Cluster_traits_analysis_output
