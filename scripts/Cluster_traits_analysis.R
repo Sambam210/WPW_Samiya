@@ -500,7 +500,7 @@ grid.arrange(graph, graph2, graph3, nrow = 3, ncol = 1)
 
 ############################################################################################################################################
 
-#                                                 Relationship between OsmPot and LDMC
+#                                                 Relationship between OsmPot, LDMC and density
 
 ############################################################################################################################################
 
@@ -511,11 +511,12 @@ library(ggplot2)
 
 everything <- read.csv("Cluster_traits_analysis_data/traits_and_cluster.csv")
 
+# let's look at LDMC
 # plot all the points
 all_together <- ggplot(everything, aes(x = mean_OsmPot, y = mean_LDMC)) +
   geom_point() +
   geom_smooth(method = lm) +
-  labs(x = "Osmotic potential (MPa)", y = "LDMC") +
+  labs(x = "Osmotic potential (MPa)", y = "LDMC (g/g)") +
   annotate("text", x = -0.8, y = 0.6, label = "r2 = 0.38", size = 5) +
   theme_bw()
 
@@ -526,8 +527,64 @@ all_together
 growth_structure <- ggplot(everything, aes(x = mean_OsmPot, y = mean_LDMC, shape = Growth_structure, color = Growth_structure)) +
   geom_point() +
   geom_smooth(method = lm) +
-  labs(x = "Osmotic potential (MPa)", y = "LDMC") +
+  labs(x = "Osmotic potential (MPa)", y = "LDMC (g/g)") +
   theme_bw()
 
 growth_structure
 
+# let's subset for just the trees and shrubs
+
+treesshrubs <- filter(everything, Growth_Form == "Tree" | Growth_Form == "Shrub")
+
+treeshrubplot <- ggplot(treesshrubs, aes(x = mean_OsmPot, y = mean_LDMC, shape = Growth_Form, color = Growth_Form)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(x = "Osmotic potential (MPa)", y = "LDMC (g/g)") +
+  theme_bw()
+
+treeshrubplot
+
+# let's look at density
+# plot all the points
+
+density <- ggplot(everything, aes(x = mean_OsmPot, y = mean_Density_kgm3)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(x = "Osmotic potential (MPa)", y = "Density (LMA/thickness) (kg/m3)") +
+  annotate("text", x = -0.8, y = 0.6, label = "r2 = 0.31", size = 5) +
+  theme_bw()
+
+density
+
+# group points by woody/non woody
+
+growth_structure <- ggplot(everything, aes(x = mean_OsmPot, y = mean_Density_kgm3, shape = Growth_structure, color = Growth_structure)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(x = "Osmotic potential (MPa)", y = "Density (LMA/thickness) (kg/m3)") +
+  theme_bw()
+
+growth_structure
+
+# just trees and shrubs
+
+treesshrubs <- filter(everything, Growth_Form == "Tree" | Growth_Form == "Shrub")
+
+treeshrubplot <- ggplot(treesshrubs, aes(x = mean_OsmPot, y = mean_Density_kgm3, shape = Growth_Form, color = Growth_Form)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(x = "Osmotic potential (MPa)", y = "Density (LMA/thickness) (kg/m3)") +
+  theme_bw()
+
+treeshrubplot
+
+# plot density and LDMC
+
+densityandthickness <- ggplot(everything, aes(x = mean_Density_kgm3, y = mean_LDMC)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(x = "Density (LMA/thickness) (kg/m3)", y = "LDMC (g/g)") +
+  annotate("text", x = 100, y = 0.6, label = "r2 = 0.54", size = 5) +
+  theme_bw()
+
+densityandthickness
