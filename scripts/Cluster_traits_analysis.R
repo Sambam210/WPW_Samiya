@@ -47,7 +47,7 @@ write.csv(everything,"Cluster_traits_analysis_data/traits_and_cluster.csv",row.n
 
 #######################################################################################################################################
 
-#####                                                     CREATING BOXPLOTS
+#####                                                     CREATING GRAPHS
 
 #######################################################################################################################################
 
@@ -497,4 +497,37 @@ library(gridExtra)
 
 grid.arrange(graph, graph2, graph3, nrow = 3, ncol = 1)
 # saved plot manually, for some reason code wasn't working
+
+############################################################################################################################################
+
+#                                                 Relationship between OsmPot and LDMC
+
+############################################################################################################################################
+
+library(tidyverse)
+library(ggplot2)
+
+# load data
+
+everything <- read.csv("Cluster_traits_analysis_data/traits_and_cluster.csv")
+
+# plot all the points
+all_together <- ggplot(everything, aes(x = mean_OsmPot, y = mean_LDMC)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(x = "Osmotic potential (MPa)", y = "LDMC") +
+  annotate("text", x = -0.8, y = 0.6, label = "r2 = 0.38", size = 5) +
+  theme_bw()
+
+all_together
+
+# group points by woody/non woody
+
+growth_structure <- ggplot(everything, aes(x = mean_OsmPot, y = mean_LDMC, shape = Growth_structure, color = Growth_structure)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(x = "Osmotic potential (MPa)", y = "LDMC") +
+  theme_bw()
+
+growth_structure
 
