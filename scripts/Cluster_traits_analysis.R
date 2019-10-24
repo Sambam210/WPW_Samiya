@@ -68,8 +68,6 @@ everything <- gather(everything, key="method", value="classification", -Species_
                      -mean_OsmPot, -mean_LMA_gm2, -Thickness_mm_Avg, -mean_succulance_g, -mean_leaf_area_cm2, -mean_LDMC,
                      -mean_Density_kgm3)
 
-# also change 
-
 ##### Let's compare the traits hort vs traits for each classification
 
 ## 1. drought tolerant
@@ -260,4 +258,243 @@ LDMC
 grid.arrange(OsmPot, LMA, Thickness, Leaf_area, LDMC, nrow = 3, ncol = 2)
 # saved plot manually, for some reason code wasn't working
 
+#### now let's look at how the traits are changing with changing hort classification
+
+# load data
+
+everything <- read.csv("Cluster_traits_analysis_data/traits_and_cluster.csv")
+
+# filter out all the species with NAs
+# https://stackoverflow.com/questions/26665319/removing-na-in-dplyr-pipe
+
+everything <- drop_na(everything) # ended up with 90 species
+
+### filter just for the drought tolerant hort classification
+drought_tolerant <- filter(everything, hort_classification == "drought tolerant")
+
+# need to create a new column for the changes in classification if there are any
+
+drought_tolerant <- drought_tolerant %>%
+  mutate(Changes = case_when(hort_classification == "drought tolerant" & traits_classification == "drought tolerant" ~ "DT to DT",
+                             hort_classification == "drought tolerant" & traits_classification == "drought intolerant" ~ "DT to DI",
+                             hort_classification == "drought tolerant" & traits_classification == "mixture" ~ "DT to mixture"))
+
+# OsmPot
+
+OsmPot <- ggplot(drought_tolerant, aes(x = Changes, y = mean_OsmPot, fill = Changes)) +
+  geom_boxplot(alpha=0.5, outlier.shape=NA) +
+  scale_fill_manual(values = c("#00AFBB", "#FC4E07", "#E7B800")) +
+  labs(title="",x="", y = "Osmotic potential (MPa)") +
+  theme_bw() +
+  theme(legend.position = "none") # remove legend
+
+OsmPot
+
+# LMA
+
+LMA <- ggplot(drought_tolerant, aes(x = Changes, y = mean_LMA_gm2, fill = Changes)) +
+  geom_boxplot(alpha=0.5, outlier.shape=NA) +
+  scale_fill_manual(values = c("#00AFBB", "#FC4E07", "#E7B800")) +
+  labs(title="",x="", y = expression("LMA" ~ (g/m^{2}))) +
+  theme_bw() +
+  theme(legend.position = "none") # remove legend
+
+LMA
+
+# Thickness
+
+Thickness <- ggplot(drought_tolerant, aes(x = Changes, y = Thickness_mm_Avg, fill = Changes)) +
+  geom_boxplot(alpha=0.5, outlier.shape=NA)+
+  scale_fill_manual(values = c("#00AFBB", "#FC4E07", "#E7B800")) +
+  labs(title="",x="", y = "Thickness (mm)") +
+  theme_bw() +
+  theme(legend.position = "none") # remove legend
+
+Thickness
+
+# Leaf area
+Leaf_area <- ggplot(drought_tolerant, aes(x = Changes, y = mean_leaf_area_cm2, fill = Changes)) +
+  geom_boxplot(alpha=0.5, outlier.shape=NA)+
+  scale_fill_manual(values = c("#00AFBB", "#FC4E07", "#E7B800")) +
+  labs(title="",x="", y = expression("Leaf area" ~ (cm^{2}))) +
+  theme_bw() +
+  theme(legend.position = "none") # remove legend
+
+Leaf_area
+
+# LDMC
+
+LDMC <- ggplot(drought_tolerant, aes(x = Changes, y = mean_LDMC, fill = Changes)) +
+  geom_boxplot(alpha=0.5, outlier.shape=NA)+
+  scale_fill_manual(values = c("#00AFBB", "#FC4E07", "#E7B800")) +
+  labs(title="",x="", y = "LDMC") +
+  theme_bw() +
+  theme(legend.position = "none") # remove legend
+
+LDMC
+
+# join plots together
+
+library(gridExtra)
+
+grid.arrange(OsmPot, LMA, Thickness, Leaf_area, LDMC, nrow = 3, ncol = 2)
+# saved plot manually, for some reason code wasn't working
+
+### filter just for the mixture hort classification (there are only 7 hort drought intolerant species so didn't do)
+mixture <- filter(everything, hort_classification == "mixture")
+
+# need to create a new column for the changes in classification if there are any
+
+mixture <- mixture %>%
+  mutate(Changes = case_when(hort_classification == "mixture" & traits_classification == "drought tolerant" ~ "mixture to DT",
+                             hort_classification == "mixture" & traits_classification == "drought intolerant" ~ "mixture to DI",
+                             hort_classification == "mixture" & traits_classification == "mixture" ~ "mixture to mixture"))
+
+# OsmPot
+
+OsmPot <- ggplot(mixture, aes(x = Changes, y = mean_OsmPot, fill = Changes)) +
+  geom_boxplot(alpha=0.5, outlier.shape=NA) +
+  scale_fill_manual(values = c("#00AFBB", "#FC4E07", "#E7B800")) +
+  labs(title="",x="", y = "Osmotic potential (MPa)") +
+  theme_bw() +
+  theme(legend.position = "none") # remove legend
+
+OsmPot
+
+# LMA
+
+LMA <- ggplot(mixture, aes(x = Changes, y = mean_LMA_gm2, fill = Changes)) +
+  geom_boxplot(alpha=0.5, outlier.shape=NA) +
+  scale_fill_manual(values = c("#00AFBB", "#FC4E07", "#E7B800")) +
+  labs(title="",x="", y = expression("LMA" ~ (g/m^{2}))) +
+  theme_bw() +
+  theme(legend.position = "none") # remove legend
+
+LMA
+
+# Thickness
+
+Thickness <- ggplot(mixture, aes(x = Changes, y = Thickness_mm_Avg, fill = Changes)) +
+  geom_boxplot(alpha=0.5, outlier.shape=NA)+
+  scale_fill_manual(values = c("#00AFBB", "#FC4E07", "#E7B800")) +
+  labs(title="",x="", y = "Thickness (mm)") +
+  theme_bw() +
+  theme(legend.position = "none") # remove legend
+
+Thickness
+
+# Leaf area
+
+Leaf_area <- ggplot(mixture, aes(x = Changes, y = mean_leaf_area_cm2, fill = Changes)) +
+  geom_boxplot(alpha=0.5, outlier.shape=NA)+
+  scale_fill_manual(values = c("#00AFBB", "#FC4E07", "#E7B800")) +
+  labs(title="",x="", y = expression("Leaf area" ~ (cm^{2}))) +
+  theme_bw() +
+  theme(legend.position = "none") # remove legend
+
+Leaf_area
+
+# LDMC
+
+LDMC <- ggplot(mixture, aes(x = Changes, y = mean_LDMC, fill = Changes)) +
+  geom_boxplot(alpha=0.5, outlier.shape=NA)+
+  scale_fill_manual(values = c("#00AFBB", "#FC4E07", "#E7B800")) +
+  labs(title="",x="", y = "LDMC") +
+  theme_bw() +
+  theme(legend.position = "none") # remove legend
+
+LDMC
+
+# join plots together
+
+library(gridExtra)
+
+grid.arrange(OsmPot, LMA, Thickness, Leaf_area, LDMC, nrow = 3, ncol = 2)
+# saved plot manually, for some reason code wasn't working
+
+### Let's look at changes in life forms
+
+# load data
+
+everything <- read.csv("Cluster_traits_analysis_data/traits_and_cluster.csv")
+
+# filter out all the species with NAs
+# https://stackoverflow.com/questions/26665319/removing-na-in-dplyr-pipe
+
+everything <- drop_na(everything) # ended up with 90 species
+
+# need to change classification into long format
+everything <- gather(everything, key="method", value="classification", -Species_Code, -Origin, -Growth_Form, -Growth_structure,
+                     -mean_OsmPot, -mean_LMA_gm2, -Thickness_mm_Avg, -mean_succulance_g, -mean_leaf_area_cm2, -mean_LDMC,
+                     -mean_Density_kgm3)
+
+stacked_all <- everything %>%
+  group_by(method, classification, Growth_Form) %>%
+  summarise(frequency = n())
+
+# stacked barplot of life forms for each classification
+
+graph <- ggplot(stacked_all, aes(x = classification, y = frequency, fill = Growth_Form)) +
+                geom_bar(position = "stack", stat = "identity") +
+                facet_wrap(~ method)
+
+graph
+
+## look at just the drought tolerant species
+
+# load data
+
+everything <- read.csv("Cluster_traits_analysis_data/traits_and_cluster.csv")
+
+# filter out all the species with NAs
+# https://stackoverflow.com/questions/26665319/removing-na-in-dplyr-pipe
+
+everything <- drop_na(everything) # ended up with 90 species
+
+### filter just for the drought tolerant hort classification
+drought_tolerant <- filter(everything, hort_classification == "drought tolerant")
+
+# need to create a new column for the changes in classification if there are any
+
+drought_tolerant <- drought_tolerant %>%
+  mutate(Changes = case_when(hort_classification == "drought tolerant" & traits_classification == "drought tolerant" ~ "DT to DT",
+                             hort_classification == "drought tolerant" & traits_classification == "drought intolerant" ~ "DT to DI",
+                             hort_classification == "drought tolerant" & traits_classification == "mixture" ~ "DT to mixture"))
+
+drought_summary <- drought_tolerant %>%
+  group_by(Growth_Form, Changes) %>%
+  summarise(frequency = n())
+
+graph2 <- ggplot(drought_summary, aes(x = Changes, y = frequency, fill = Growth_Form)) +
+  geom_bar(position = "stack", stat = "identity") +
+  labs(title = "Horticultural drougth tolerant species")
+
+graph2
+
+### filter just for the mixture hort classification (there are only 7 hort drought intolerant species so didn't do)
+mixture <- filter(everything, hort_classification == "mixture")
+
+# need to create a new column for the changes in classification if there are any
+
+mixture <- mixture %>%
+  mutate(Changes = case_when(hort_classification == "mixture" & traits_classification == "drought tolerant" ~ "mixture to DT",
+                             hort_classification == "mixture" & traits_classification == "drought intolerant" ~ "mixture to DI",
+                             hort_classification == "mixture" & traits_classification == "mixture" ~ "mixture to mixture"))
+
+mixture_summary <- mixture %>%
+  group_by(Growth_Form, Changes) %>%
+  summarise(frequency = n())
+
+graph3 <- ggplot(mixture_summary, aes(x = Changes, y = frequency, fill = Growth_Form)) +
+  geom_bar(position = "stack", stat = "identity") +
+  labs(title = "Horticultural mixture species")
+
+graph3
+
+# join plots together
+
+library(gridExtra)
+
+grid.arrange(graph, graph2, graph3, nrow = 3, ncol = 1)
+# saved plot manually, for some reason code wasn't working
 
