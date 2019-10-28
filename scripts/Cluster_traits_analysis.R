@@ -21,7 +21,7 @@ traits <- select(traits, -Species, -Deciduous_or_evergreen, -Leaf_senescence_in_
 # load the LMA data
 LMA <- read.csv("GH_data/WPW_GH_LMA_clean.csv")
 
-# transform fresh and dry weights into LDMC and aslo add density (LMA/thickness (gm^-3)) see Bartlett et al 2012
+# transform fresh and dry weights into LDMC and also add density (LMA/thickness (gm^-3)) see Bartlett et al 2012
 LDMCandDensity <- LMA %>%
   filter(Treatment == "C") %>%
   select(Species, Species_Code, Fresh_Weight_g, Dry_Weight_g, LMA_gm2, Thickness_mm_Avg) %>%
@@ -35,6 +35,20 @@ LDMCandDensity <- LMA %>%
 
 # join to master spreadsheet
 alltraits <- left_join(traits, LDMCandDensity, by = "Species_Code")
+
+# load the osmpot data
+osmpot <- read.csv("GH_data/WPW_GH_OSMPOT.csv")
+
+# transform osmpot into tlp using Batlett et al 2012 equation
+osmpot <- osmpot %>%
+  filter(Treatment == "C") %>%
+  select(Species_Code, OsmPot_MPa) %>%
+  mutate(TLP = (0.832 * OsmPot_MPa) - 0.631) %>%
+  group_by(Species_Code) %>%
+  summarise(mean_TLP = mean(TLP, na.rm = TRUE))
+
+# join to master spreadsheet
+alltraits <- left_join(alltraits, osmpot, by = "Species_Code")
 
 # join everything together
 everything <- full_join(classification,alltraits, by = "Species_Code")
@@ -66,24 +80,24 @@ everything <- drop_na(everything) # ended up with 90 species
 # need to change classification into long format
 everything <- gather(everything, key="method", value="classification", -Species_Code, -Origin, -Growth_Form, -Growth_structure,
                      -mean_OsmPot, -mean_LMA_gm2, -Thickness_mm_Avg, -mean_succulance_g, -mean_leaf_area_cm2, -mean_LDMC,
-                     -mean_Density_kgm3)
+                     -mean_Density_kgm3, -mean_TLP)
 
 ##### Let's compare the traits hort vs traits for each classification
 
 ## 1. drought tolerant
 drought_tolerant <- filter(everything, classification == "drought tolerant")
 
-# OsmPot
+# TLP
 
-OsmPot <- ggplot(drought_tolerant, aes(x = method, y = mean_OsmPot)) +
+TLP <- ggplot(drought_tolerant, aes(x = method, y = mean_TLP)) +
   geom_boxplot(alpha=0.5, outlier.shape=NA)+
-  labs(title="",x="Method", y = "Osmotic potential (MPa)")+
+  labs(title="",x="Method", y = "TLP (MPa)")+
   geom_point(position=position_jitterdodge(),aes(color=method),alpha=0.6) + 
   scale_color_manual(values = c("#00AFBB", "#FC4E07")) +
   guides(color = FALSE) + # remove legend
   theme_bw()
 
-OsmPot
+TLP
 
 # LMA
 
@@ -136,23 +150,23 @@ LDMC
 
 library(gridExtra)
 
-grid.arrange(OsmPot, LMA, Thickness, Leaf_area, LDMC, nrow = 3, ncol = 2)
+grid.arrange(TLP, LMA, Thickness, Leaf_area, LDMC, nrow = 3, ncol = 2)
 # saved plot manually, for some reason code wasn't working
 
 ## 2. Drought intolerant
 drought_intolerant <- filter(everything, classification == "drought intolerant")
 
-# OsmPot
+# TLP
 
-OsmPot <- ggplot(drought_intolerant, aes(x = method, y = mean_OsmPot)) +
+TLP <- ggplot(drought_intolerant, aes(x = method, y = mean_TLP)) +
   geom_boxplot(alpha=0.5, outlier.shape=NA)+
-  labs(title="",x="Method", y = "Osmotic potential (MPa)")+
+  labs(title="",x="Method", y = "TLP (MPa)")+
   geom_point(position=position_jitterdodge(),aes(color=method),alpha=0.6) + 
   scale_color_manual(values = c("#00AFBB", "#FC4E07")) +
   guides(color = FALSE) + # remove legend
   theme_bw()
 
-OsmPot
+TLP
 
 # LMA
 
@@ -205,19 +219,19 @@ LDMC
 
 library(gridExtra)
 
-grid.arrange(OsmPot, LMA, Thickness, Leaf_area, LDMC, nrow = 3, ncol = 2)
+grid.arrange(TLP, LMA, Thickness, Leaf_area, LDMC, nrow = 3, ncol = 2)
 # saved plot manually, for some reason code wasn't working
 
 # PLOTTING EVERYTHING TOGETHER
 
-OsmPot <- ggplot(everything, aes(x = method, y = mean_OsmPot, fill = classification)) +
+TLP <- ggplot(everything, aes(x = method, y = mean_TLP, fill = classification)) +
   geom_boxplot(aes(fill=classification),alpha=0.5, outlier.shape=NA) +
   scale_fill_manual(values = c("#00AFBB", "#FC4E07", "#E7B800")) +
-  labs(title="",x="Method", y = "Osmotic potential (MPa)") +
+  labs(title="",x="Method", y = "TLP (MPa)") +
   theme_bw() +
   theme(legend.position = "none") # remove legend
 
-OsmPot
+TLP
 
 LMA <- ggplot(everything, aes(x = method, y = mean_LMA_gm2, fill = classification)) +
   geom_boxplot(aes(fill=classification),alpha=0.5, outlier.shape=NA) +
@@ -255,7 +269,7 @@ LDMC <- ggplot(everything, aes(x = method, y = mean_LDMC, fill = classification)
 
 LDMC
 
-grid.arrange(OsmPot, LMA, Thickness, Leaf_area, LDMC, nrow = 3, ncol = 2)
+grid.arrange(TLP, LMA, Thickness, Leaf_area, LDMC, nrow = 3, ncol = 2)
 # saved plot manually, for some reason code wasn't working
 
 #### now let's look at how the traits are changing with changing hort classification
@@ -281,14 +295,14 @@ drought_tolerant <- drought_tolerant %>%
 
 # OsmPot
 
-OsmPot <- ggplot(drought_tolerant, aes(x = Changes, y = mean_OsmPot, fill = Changes)) +
+TLP <- ggplot(drought_tolerant, aes(x = Changes, y = mean_TLP, fill = Changes)) +
   geom_boxplot(alpha=0.5, outlier.shape=NA) +
   scale_fill_manual(values = c("#00AFBB", "#FC4E07", "#E7B800")) +
-  labs(title="",x="", y = "Osmotic potential (MPa)") +
+  labs(title="",x="", y = "TLP (MPa)") +
   theme_bw() +
   theme(legend.position = "none") # remove legend
 
-OsmPot
+TLP
 
 # LMA
 
@@ -337,7 +351,7 @@ LDMC
 
 library(gridExtra)
 
-grid.arrange(OsmPot, LMA, Thickness, Leaf_area, LDMC, nrow = 3, ncol = 2)
+grid.arrange(TLP, LMA, Thickness, Leaf_area, LDMC, nrow = 3, ncol = 2)
 # saved plot manually, for some reason code wasn't working
 
 ### filter just for the mixture hort classification (there are only 7 hort drought intolerant species so didn't do)
@@ -350,16 +364,16 @@ mixture <- mixture %>%
                              hort_classification == "mixture" & traits_classification == "drought intolerant" ~ "mixture to DI",
                              hort_classification == "mixture" & traits_classification == "mixture" ~ "mixture to mixture"))
 
-# OsmPot
+# TLP
 
-OsmPot <- ggplot(mixture, aes(x = Changes, y = mean_OsmPot, fill = Changes)) +
+TLP <- ggplot(mixture, aes(x = Changes, y = mean_TLP, fill = Changes)) +
   geom_boxplot(alpha=0.5, outlier.shape=NA) +
   scale_fill_manual(values = c("#00AFBB", "#FC4E07", "#E7B800")) +
-  labs(title="",x="", y = "Osmotic potential (MPa)") +
+  labs(title="",x="", y = "TLP (MPa)") +
   theme_bw() +
   theme(legend.position = "none") # remove legend
 
-OsmPot
+TLP
 
 # LMA
 
@@ -409,7 +423,7 @@ LDMC
 
 library(gridExtra)
 
-grid.arrange(OsmPot, LMA, Thickness, Leaf_area, LDMC, nrow = 3, ncol = 2)
+grid.arrange(TLP, LMA, Thickness, Leaf_area, LDMC, nrow = 3, ncol = 2)
 # saved plot manually, for some reason code wasn't working
 
 ### Let's look at changes in life forms
@@ -500,7 +514,7 @@ grid.arrange(graph, graph2, graph3, nrow = 3, ncol = 1)
 
 ############################################################################################################################################
 
-#                                                 Relationship between OsmPot, LDMC and density
+#                                                 Relationship between TLP, LDMC and density
 
 ############################################################################################################################################
 
@@ -513,10 +527,10 @@ everything <- read.csv("Cluster_traits_analysis_data/traits_and_cluster.csv")
 
 # let's look at LDMC
 # plot all the points
-all_together <- ggplot(everything, aes(x = mean_OsmPot, y = mean_LDMC)) +
+all_together <- ggplot(everything, aes(x = mean_TLP, y = mean_LDMC)) +
   geom_point() +
   geom_smooth(method = lm) +
-  labs(x = "Osmotic potential (MPa)", y = "LDMC (g/g)") +
+  labs(x = "TLP (MPa)", y = "LDMC (g/g)") +
   annotate("text", x = -0.8, y = 0.6, label = "r2 = 0.38", size = 5) +
   theme_bw()
 
@@ -524,10 +538,10 @@ all_together
 
 # group points by woody/non woody
 
-growth_structure <- ggplot(everything, aes(x = mean_OsmPot, y = mean_LDMC, shape = Growth_structure, color = Growth_structure)) +
+growth_structure <- ggplot(everything, aes(x = mean_TLP, y = mean_LDMC, shape = Growth_structure, color = Growth_structure)) +
   geom_point() +
   geom_smooth(method = lm) +
-  labs(x = "Osmotic potential (MPa)", y = "LDMC (g/g)") +
+  labs(x = "TLP (MPa)", y = "LDMC (g/g)") +
   theme_bw()
 
 growth_structure
@@ -536,10 +550,10 @@ growth_structure
 
 treesshrubs <- filter(everything, Growth_Form == "Tree" | Growth_Form == "Shrub")
 
-treeshrubplot <- ggplot(treesshrubs, aes(x = mean_OsmPot, y = mean_LDMC, shape = Growth_Form, color = Growth_Form)) +
+treeshrubplot <- ggplot(treesshrubs, aes(x = mean_TLP, y = mean_LDMC, shape = Growth_Form, color = Growth_Form)) +
   geom_point() +
   geom_smooth(method = lm) +
-  labs(x = "Osmotic potential (MPa)", y = "LDMC (g/g)") +
+  labs(x = "TLP (MPa)", y = "LDMC (g/g)") +
   theme_bw()
 
 treeshrubplot
@@ -547,10 +561,10 @@ treeshrubplot
 # let's look at density
 # plot all the points
 
-density <- ggplot(everything, aes(x = mean_OsmPot, y = mean_Density_kgm3)) +
+density <- ggplot(everything, aes(x = mean_TLP, y = mean_Density_kgm3)) +
   geom_point() +
   geom_smooth(method = lm) +
-  labs(x = "Osmotic potential (MPa)", y = "Density (LMA/thickness) (kg/m3)") +
+  labs(x = "TLP (MPa)", y = "Density (LMA/thickness) (kg/m3)") +
   annotate("text", x = -0.8, y = 0.6, label = "r2 = 0.31", size = 5) +
   theme_bw()
 
@@ -558,10 +572,10 @@ density
 
 # group points by woody/non woody
 
-growth_structure <- ggplot(everything, aes(x = mean_OsmPot, y = mean_Density_kgm3, shape = Growth_structure, color = Growth_structure)) +
+growth_structure <- ggplot(everything, aes(x = mean_TLP, y = mean_Density_kgm3, shape = Growth_structure, color = Growth_structure)) +
   geom_point() +
   geom_smooth(method = lm) +
-  labs(x = "Osmotic potential (MPa)", y = "Density (LMA/thickness) (kg/m3)") +
+  labs(x = "TLP (MPa)", y = "Density (LMA/thickness) (kg/m3)") +
   theme_bw()
 
 growth_structure
@@ -570,10 +584,10 @@ growth_structure
 
 treesshrubs <- filter(everything, Growth_Form == "Tree" | Growth_Form == "Shrub")
 
-treeshrubplot <- ggplot(treesshrubs, aes(x = mean_OsmPot, y = mean_Density_kgm3, shape = Growth_Form, color = Growth_Form)) +
+treeshrubplot <- ggplot(treesshrubs, aes(x = mean_TLP, y = mean_Density_kgm3, shape = Growth_Form, color = Growth_Form)) +
   geom_point() +
   geom_smooth(method = lm) +
-  labs(x = "Osmotic potential (MPa)", y = "Density (LMA/thickness) (kg/m3)") +
+  labs(x = "TLP (MPa)", y = "Density (LMA/thickness) (kg/m3)") +
   theme_bw()
 
 treeshrubplot
