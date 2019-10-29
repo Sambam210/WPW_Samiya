@@ -522,6 +522,328 @@ pdf("Ladderplot_output/hortandtraits_LDMC_75percentconcensus.pdf") # Create a ne
 print(hortandtraitsplot)
 dev.off() # Close the pdf device
 
+########################################################################################################################
+
+####################### HORT CLASSIFICATION (75% concensus) VS AI CLASSIFICATION
+
+# Loading in my horticultural classification data
+
+hort.class <- read.csv("Ladderplot_data_input/gh_drought_summary_Samiya.csv")
+
+library(tidyverse)
+
+# get rid of source and line info
+
+hort.class <- hort.class[,1:7]
+
+# filter out the species with less than 4 sources
+
+hort.class <- filter(hort.class, total >= 4) # this gives us 92/113 species
+
+# create percentage columns for each of the columns 'no, 'moderate' and 'yes'
+
+hort.class <- hort.class %>%
+  mutate(No_percentage = No/total*100,
+         Moderate_percentage = Moderate/total*100,
+         Yes_percentage = Yes/total*100)
+
+# assign 'yes', 'no' or 'mixture' classifications 
+# Protocol: 
+# If >=75% of the records is either 'yes', 'no' or 'medium' then that species has that corresponding classification
+# If 'medium' is >=75% then that species is said to be 'yes' for drought tolerance
+# If no classification is >=75% then that species is 'mixture'
+
+hort.class <- hort.class %>%
+  mutate(hort_classification = case_when(No_percentage >= 75 ~ "drought intolerant",
+                                         Moderate_percentage >= 75 ~ "drought tolerant",
+                                         Yes_percentage >= 75 ~ "drought tolerant",
+                                         TRUE ~ "mixture")) %>%
+  select(Species_Code, hort_classification)
+
+# load AI data from Hugh
+
+AI.data <- read.csv("Data_output/SamiyaandReneeandHugh.csv")
+
+AI.data <- select(AI.data, Species_Code, AI_mean)
+
+# create bins for the AI data from Sinoni et al 2015
+
+AI.data <- AI.data %>%
+  mutate(AI_classification = case_when(0.65 >= AI_mean ~ "Arid", 
+                                       0.75 >= AI_mean & AI_mean > 0.65 ~ "Mid",
+                                       AI_mean > 0.75 ~ "Humid")) %>%
+  select(Species_Code, AI_classification)
+
+# merge the two datasets together
+
+hortandAI <- left_join(hort.class, AI.data, by = "Species_Code")
+
+# remove rows with NAs
+# https://stackoverflow.com/questions/26665319/removing-na-in-dplyr-pipe
+
+hortandAI <- drop_na(hortandAI) # ended up with 90 species 
+
+write.csv(hortandAI, "Ladderplot_data_input/hortandAI_75percentconcensus.csv", row.names = FALSE)
+
+# let's look at some summaries of what has changed
+summary <- hortandAI %>%
+  select(-Species_Code) %>%
+  group_by(hort_classification, AI_classification) %>%
+  add_count() %>%
+  distinct(hort_classification, AI_classification, .keep_all = TRUE)
+
+write.csv(summary, "Ladderplot_output/hortandAI_summary_75%concensus.csv", row.names = FALSE)
+
+#############################
+# Constructing the alluvial plot for hort and AI classification
+
+hortandAI <- read.csv("Ladderplot_data_input/hortandAI_75percentconcensus.csv")
+
+#transform data into 'wide' format
+hortandAI.wide <- gather(hortandAI, key="method", value="classification", -Species_Code)
+
+# need to rearrange the levels so that AI_classification doesn't come first in the plot
+hortandAI.wide[,'method'] <- as.factor(hortandAI.wide[,'method'])
+hortandAI.wide[,'method'] <- factor(hortandAI.wide[,'method'], levels = c("hort_classification", "AI_classification"))
+
+# constructing the alluvial plot
+
+library(ggalluvial)
+library(ggplot2)
+
+hortandAIplot <- ggplot(hortandAI.wide,
+                            aes(x = method, stratum = classification, alluvium = Species_Code,
+                                fill = classification, label = classification)) +
+  scale_x_discrete(expand = c(.1, .1)) +
+  geom_flow() +
+  geom_stratum(alpha = .5) +
+  geom_text(stat = "stratum", size = 3) +
+  annotate("text", x = 1, y = 84.8, label = "(7.8%)", size = 3) +
+  annotate("text", x = 1, y = 58, label = "(51.1%)", size = 3) +
+  annotate("text", x = 1, y = 16.2, label = "(41.1%)", size = 3) +
+  annotate("text", x = 2, y = 80.5, label = "(15.5%)", size = 3) +
+  annotate("text", x = 2, y = 40, label = "(75.5%)", size = 3) +
+  annotate("text", x = 2, y = 2, label = "(8.9%)", size = 3) +
+  theme(legend.position = "none") +
+  labs(y = "Number of species",
+       x = "Method")
+
+hortandAIplot
+
+# save the output
+pdf("Ladderplot_output/hortandAI_75percentconcensus.pdf") # Create a new pdf device
+print(hortandAIplot)
+dev.off() # Close the pdf device
+
+########################################################################################################################
+
+####################### AI CLASSIFICATION VS TRAITS CLASSIFICATION
+
+# load AI data from Hugh
+
+AI.data <- read.csv("Data_output/SamiyaandReneeandHugh.csv")
+
+AI.data <- select(AI.data, Species_Code, AI_mean)
+
+# create bins for the AI data from Sinoni et al 2015
+
+AI.data <- AI.data %>%
+  mutate(AI_classification = case_when(0.65 >= AI_mean ~ "Arid", 
+                                       0.75 >= AI_mean & AI_mean > 0.65 ~ "Mid",
+                                       AI_mean > 0.75 ~ "Humid")) %>%
+  select(Species_Code, AI_classification)
+
+# load my traits cluster data
+
+traits <- read.csv("PCA_Cluster_output/PCA_traits_cluster_output_LDMC.csv")
+
+traits <- traits %>%
+  rename(Species_Code=X) %>%
+  mutate(traits_classification = case_when(clust == "1" ~ "drought intolerant",
+                                           clust == "2" ~ "mixture",
+                                           clust == "3" ~ "drought tolerant")) %>%
+  select(Species_Code, traits_classification)
+
+# merge datasets together
+
+traitsandAI <- left_join(traits, AI.data, by = "Species_Code")
+
+# remove rows with NAs
+# https://stackoverflow.com/questions/26665319/removing-na-in-dplyr-pipe
+
+traitsandAI <- drop_na(traitsandAI) # ended up with 108 species 
+
+write.csv(traitsandAI, "Ladderplot_data_input/traitsandAI.csv", row.names = FALSE)
+
+# let's look at some summaries of what has changed
+summary <- traitsandAI %>%
+  select(-Species_Code) %>%
+  group_by(AI_classification, traits_classification) %>%
+  add_count() %>%
+  distinct(AI_classification, traits_classification, .keep_all = TRUE)
+
+write.csv(summary, "Ladderplot_output/traitsandAI_summary.csv", row.names = FALSE)
+
+#############################
+# Constructing the alluvial plot for hort and AI classification
+
+traitsandAI <- read.csv("Ladderplot_data_input/traitsandAI.csv")
+
+#transform data into 'wide' format
+traitsandAI.wide <- gather(traitsandAI, key="method", value="classification", -Species_Code)
+
+# need to rearrange the levels so that AI_classification doesn't come first in the plot
+traitsandAI.wide[,'method'] <- as.factor(traitsandAI.wide[,'method'])
+traitsandAI.wide[,'method'] <- factor(traitsandAI.wide[,'method'], levels = c("traits_classification", "AI_classification"))
+
+# constructing the alluvial plot
+
+library(ggalluvial)
+library(ggplot2)
+
+traitsandAIplot <- ggplot(traitsandAI.wide,
+                                 aes(x = method, stratum = classification, alluvium = Species_Code,
+                                     fill = classification, label = classification)) +
+  scale_x_discrete(expand = c(.1, .1)) +
+  geom_flow() +
+  geom_stratum(alpha = .5) +
+  annotate("text", x = 1, y = 88, label = "(33.3%)", size = 3) +
+  annotate("text", x = 1, y = 57, label = "(27.8%)", size = 3) +
+  annotate("text", x = 1, y = 19, label = "(38.9%)", size = 3) +
+  annotate("text", x = 2, y = 96.5, label = "(15.5%)", size = 3) +
+  annotate("text", x = 2, y = 46.5, label = "(75.5%)", size = 3) +
+  annotate("text", x = 2, y = 2, label = "(8.9%)", size = 3) +
+  geom_text(stat = "stratum", size = 3) +
+  theme(legend.position = "none") +
+  labs(y = "Number of species",
+       x = "Method")
+
+traitsandAIplot
+
+# save the output
+pdf("Ladderplot_output/traitsandAI.pdf") # Create a new pdf device
+print(traitsandAIplot)
+dev.off() # Close the pdf device
+
+########################################################################################################################
+
+####################### HORT CLASSIFICATION (75% concensus) VS AI CLASSIFICATION VS TRAITS CLASSIFICATION
+
+# Loading in my horticultural classification data
+
+hort.class <- read.csv("Ladderplot_data_input/gh_drought_summary_Samiya.csv")
+
+library(tidyverse)
+
+# get rid of source and line info
+
+hort.class <- hort.class[,1:7]
+
+# filter out the species with less than 4 sources
+
+hort.class <- filter(hort.class, total >= 4) # this gives us 92/113 species
+
+# create percentage columns for each of the columns 'no, 'moderate' and 'yes'
+
+hort.class <- hort.class %>%
+  mutate(No_percentage = No/total*100,
+         Moderate_percentage = Moderate/total*100,
+         Yes_percentage = Yes/total*100)
+
+# assign 'yes', 'no' or 'mixture' classifications 
+# Protocol: 
+# If >=75% of the records is either 'yes', 'no' or 'medium' then that species has that corresponding classification
+# If 'medium' is >=75% then that species is said to be 'yes' for drought tolerance
+# If no classification is >=75% then that species is 'mixture'
+
+hort.class <- hort.class %>%
+  mutate(hort_classification = case_when(No_percentage >= 75 ~ "drought intolerant",
+                                         Moderate_percentage >= 75 ~ "drought tolerant",
+                                         Yes_percentage >= 75 ~ "drought tolerant",
+                                         TRUE ~ "mixture")) %>%
+  select(Species_Code, hort_classification)
+
+# load AI data from Hugh
+
+AI.data <- read.csv("Data_output/SamiyaandReneeandHugh.csv")
+
+AI.data <- select(AI.data, Species_Code, AI_mean)
+
+# create bins for the AI data from Sinoni et al 2015
+
+AI.data <- AI.data %>%
+  mutate(AI_classification = case_when(0.65 >= AI_mean ~ "Arid", 
+                                       0.75 >= AI_mean & AI_mean > 0.65 ~ "Mid",
+                                       AI_mean > 0.75 ~ "Humid")) %>%
+  select(Species_Code, AI_classification)
+
+# load my traits cluster data
+
+traits <- read.csv("PCA_Cluster_output/PCA_traits_cluster_output_LDMC.csv")
+
+traits <- traits %>%
+  rename(Species_Code=X) %>%
+  mutate(traits_classification = case_when(clust == "1" ~ "drought intolerant",
+                                           clust == "2" ~ "mixture",
+                                           clust == "3" ~ "drought tolerant")) %>%
+  select(Species_Code, traits_classification)
+
+# merge datasets together
+
+hortandAI <- left_join(hort.class, AI.data, by = "Species_Code")
+hortandAIandtraits <- left_join(hortandAI, traits, by = "Species_Code")
+
+# remove rows with NAs
+# https://stackoverflow.com/questions/26665319/removing-na-in-dplyr-pipe
+
+hortandAIandtraits <- drop_na(hortandAIandtraits) # ended up with 88 species 
+
+write.csv(hortandAIandtraits, "Ladderplot_data_input/hortandAIandtraits_75percentconcensus.csv", row.names = FALSE)
+
+# let's look at some summaries of what has changed
+summary <- hortandAIandtraits %>%
+  select(-Species_Code) %>%
+  group_by(hort_classification, AI_classification, traits_classification) %>%
+  add_count() %>%
+  distinct(hort_classification, AI_classification, traits_classification, .keep_all = TRUE)
+
+write.csv(summary, "Ladderplot_output/hortandAIandtraits_summary_75%concensus.csv", row.names = FALSE)
+
+#############################
+# Constructing the alluvial plot for hort and AI classification
+
+hortandAIandtraits <- read.csv("Ladderplot_data_input/hortandAIandtraits_75percentconcensus.csv")
+
+#transform data into 'wide' format
+hortandAIandtraits.wide <- gather(hortandAIandtraits, key="method", value="classification", -Species_Code)
+
+# need to rearrange the levels so that AI_classification doesn't come first in the plot
+hortandAIandtraits.wide[,'method'] <- as.factor(hortandAIandtraits.wide[,'method'])
+hortandAIandtraits.wide[,'method'] <- factor(hortandAIandtraits.wide[,'method'], levels = c("traits_classification", "hort_classification", "AI_classification"))
+
+# constructing the alluvial plot
+
+library(ggalluvial)
+library(ggplot2)
+
+hortandAIandtraitsplot <- ggplot(hortandAIandtraits.wide,
+                        aes(x = method, stratum = classification, alluvium = Species_Code,
+                            fill = classification, label = classification)) +
+  scale_x_discrete(expand = c(.1, .1)) +
+  geom_flow() +
+  geom_stratum(alpha = .5) +
+  geom_text(stat = "stratum", size = 3) +
+  theme(legend.position = "none") +
+  labs(y = "Number of species",
+       x = "Method")
+
+hortandAIandtraitsplot
+
+# save the output
+pdf("Ladderplot_output/hortandAIandtraits_75percentconcensus.pdf") # Create a new pdf device
+print(hortandAIandtraitsplot)
+dev.off() # Close the pdf device
+
 #####################################################################################################
 
 ############ HORT CLASSIFICATION VS TRAITSAI CLASSIFICATION
