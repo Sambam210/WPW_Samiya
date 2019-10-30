@@ -1682,3 +1682,120 @@ cluster <- fviz_cluster(res.hcpc,
                         ggtheme = theme_minimal(),
                         main = "PCA")
 cluster # looks worse!
+
+#############################################################################################################################################
+############################################################# PRESENTATIONS #################################################################
+#############################################################################################################################################
+
+###################### 2 DAYS OF TREES (MELBOURNE 2019)
+## just want the cluster plot
+
+### PCA on glasshouse variables 
+# LDMC instead of succulence
+# TLP instead of osmpot (following Bartlett et al 2012 equation)
+
+library(tidyverse)
+library("FactoMineR")
+library("factoextra")
+
+other.variables <- read.csv("PCA_Cluster_data/PCA_data.csv")
+
+other.variables <- filter(other.variables, Species_Code != "Crma", Species_Code != "Atfi",
+                          Species_Code != "Brru") # filter out species with missing leaf area
+
+other.variables <- select(other.variables, Species, Species_Code, mean_LMA_gm2, Thickness_mm_Avg, mean_leaf_area_cm2)
+
+# load the LMA data
+LMA <- read.csv("GH_data/WPW_GH_LMA_clean.csv")
+
+# transform fresh and dry weights into LDMC
+LDMC <- LMA %>%
+  filter(Treatment == "C") %>%
+  select(Species, Species_Code, Fresh_Weight_g, Dry_Weight_g) %>%
+  mutate(LDMC = Dry_Weight_g/Fresh_Weight_g) %>%
+  group_by(Species_Code) %>%
+  summarise(mean_LDMC = mean(LDMC, na.rm = TRUE))
+
+# join to master spreadsheet
+PCA_analysis <- left_join(other.variables, LDMC, by = "Species_Code")
+
+# load the osmpot data
+osmpot <- read.csv("GH_data/WPW_GH_OSMPOT.csv")
+
+# transform osmpot into tlp
+osmpot <- osmpot %>%
+  filter(Treatment == "C") %>%
+  select(Species_Code, OsmPot_MPa) %>%
+  mutate(TLP = (0.832 * OsmPot_MPa) - 0.631) %>%
+  group_by(Species_Code) %>%
+  summarise(mean_TLP = mean(TLP, na.rm = TRUE))
+
+# join to master spreadsheet
+PCA_analysis <- left_join(PCA_analysis, osmpot, by = "Species_Code")
+
+## let's see if the data are linearly related
+
+# removed the categorical species columns
+
+PCA_analysis_pairs <- select(PCA_analysis, -Species, -Species_Code)
+
+# let's see if the data are linearly related
+
+pairs(PCA_analysis_pairs)
+
+# might need to transform the thickness and area variables
+
+PCA_analysis_pairs <- PCA_analysis_pairs %>%
+  mutate(log_Thickness_mm_Avg = log(Thickness_mm_Avg),
+         log_leaf_area_cm2 = log(mean_leaf_area_cm2)) %>%
+  select(-Thickness_mm_Avg, -mean_leaf_area_cm2)
+
+pairs(PCA_analysis_pairs) # looks better
+
+# transform in the main spreadsheet
+
+PCA_analysis <- PCA_analysis %>%
+  mutate(log_Thickness_mm_Avg = log(Thickness_mm_Avg),
+         log_leaf_area_cm2 = log(mean_leaf_area_cm2)) %>%
+  select(-Thickness_mm_Avg, -mean_leaf_area_cm2, -Species)
+
+# make species code the row name
+
+PCA_analysis <- PCA_analysis %>%
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code")
+
+# Hierarchical clustering
+
+# let's only do the PCA on the first 3 dimensions
+
+res.pca <- PCA(PCA_analysis, ncp = 3, graph = FALSE)
+
+# clustering
+res.hcpc <- HCPC(res.pca, graph = FALSE)
+
+# graph, customised using ?fviz_cluster
+cluster <- fviz_cluster(res.hcpc,
+                        repel = TRUE,            # Avoid label overlapping
+                        show.clust.cent = FALSE, # don't show cluster centers
+                        palette = c("#00AFBB","#FC4E07","#E7B800"), 
+                        geom = "point",         # just want the points, not writing
+                        ellipse.alpha = 0.2,    # transparency of ellipses
+                        pointsize = 2,          # size of points
+                        legend = "none",        # remove legend
+                        font.title = 18,        # increased title font size
+                        ggtheme = theme_gray())
+cluster
+
+
+
+scale_fill_manual(values = c("#00AFBB", "#FC4E07", "#E7B800"))
+  
+# save the output
+pdf("PCA_Cluster_output/glasshouse_no_climate_LDMC_TLP.pdf") # Create a new pdf device
+print(var.plot)
+print(ind.plot)
+print(cluster)
+dev.off() # Close the pdf device
+
+
