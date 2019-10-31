@@ -956,4 +956,94 @@ pdf("Ladderplot_output/hortandtraitsAI.pdf") # Create a new pdf device
 print(hortandtraitsAIplot)
 dev.off() # Close the pdf device
 
+#######################################################################################################################################
+############################################################ PRESENTATIONS ###########################################################
+#######################################################################################################################################
 
+############ 2 DAYS OF TREES PRESENTATION (MELBOURNE 2019)
+
+#################################### HORT CLASSIFICATION VS TRAITS CLASSIFICATION W/ LDMC INSTEAD OF SUCCULENCE
+########## 75% concensus
+
+# Loading in my horticultural classification data
+
+hort.class <- read.csv("Ladderplot_data_input/gh_drought_summary_Samiya.csv")
+
+library(tidyverse)
+
+# get rid of source and line info
+
+hort.class <- hort.class[,1:7]
+
+# filter out the species with less than 4 sources
+
+hort.class <- filter(hort.class, total >= 4) # this gives us 92/113 species
+
+# create percentage columns for each of the columns 'no, 'moderate' and 'yes'
+
+hort.class <- hort.class %>%
+  mutate(No_percentage = No/total*100,
+         Moderate_percentage = Moderate/total*100,
+         Yes_percentage = Yes/total*100)
+
+# assign 'yes', 'no' or 'mixture' classifications 
+# Protocol: 
+# If >=75% of the records is either 'yes', 'no' or 'medium' then that species has that corresponding classification
+# If 'medium' is >=75% then that species is said to be 'yes' for drought tolerance
+# If no classification is >=75% then that species is 'mixture'
+
+hort.class <- hort.class %>%
+  mutate(hort_classification = case_when(No_percentage >= 75 ~ "drought intolerant",
+                                         Moderate_percentage >= 75 ~ "drought tolerant",
+                                         Yes_percentage >= 75 ~ "drought tolerant",
+                                         TRUE ~ "mixture")) %>%
+  select(Species_Code, hort_classification)
+
+# load my traits cluster data
+
+traits <- read.csv("PCA_Cluster_output/PCA_traits_cluster_output_LDMC.csv")
+
+traits <- traits %>%
+  rename(Species_Code=X) %>%
+  mutate(traits_classification = case_when(clust == "1" ~ "drought avoiders",
+                                           clust == "2" ~ "mixture",
+                                           clust == "3" ~ "drought tolerators")) %>%
+  select(Species_Code, traits_classification)
+
+# merge the two datasets together
+
+hortandtraits <- left_join(hort.class, traits, by = "Species_Code")
+
+# remove rows with NAs
+# https://stackoverflow.com/questions/26665319/removing-na-in-dplyr-pipe
+
+hortandtraits <- drop_na(hortandtraits) # ended up with 90 species 
+
+#############################
+# Constructing the alluvial plot for hort and traits classification
+
+#transform data into 'wide' format
+hortandtraits.wide <- gather(hortandtraits, key="method", value="classification", -Species_Code)
+
+# constructing the alluvial plot
+
+library(ggalluvial)
+library(ggplot2)
+
+hortandtraitsplot <- ggplot(hortandtraits.wide,
+                            aes(x = method, stratum = classification, alluvium = Species_Code,
+                                fill = classification, label = classification)) +
+  scale_x_discrete(expand = c(0.1,0.1)) +
+  scale_fill_manual(values = c("#CC6633", "#FF3399", "#FF9933", "#FF9900", "#FFFF66")) +
+  geom_flow(stat = "alluvium", lode.guidance = "frontback", color = "darkgray", alpha = 0.3) +
+  geom_stratum(alpha = .5, fill = "white") +
+  geom_text(stat = "stratum", size = 5) +
+  theme(legend.position = "none") +
+  labs(y = "Number of species",
+       x = "Method") +
+  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14, face = "bold"))
+
+hortandtraitsplot
+
+# scale fill manual values
+# http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/ 
