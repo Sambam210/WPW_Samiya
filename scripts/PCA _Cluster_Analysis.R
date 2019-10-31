@@ -1684,6 +1684,125 @@ cluster <- fviz_cluster(res.hcpc,
 cluster # looks worse!
 
 #############################################################################################################################################
+######################################################### PCA ON CLIMATE PRECIP AND AI VARIABLES ############################################
+#############################################################################################################################################
+
+library(tidyverse)
+library("FactoMineR")
+library("factoextra")
+
+other.variables <- read.csv("PCA_Cluster_data/PCA_data.csv")
+
+hugh.data <- read.csv("MFA_data/niche.data.HB.csv")
+
+hugh.data <- hugh.data %>%
+  select(searchTaxon, Annual_precip_mean, Precip_dry_qu_mean, Precip_dry_month_mean, AI_mean) %>% # selecting the relevant variables
+  rename(Species=searchTaxon)
+
+all.data <- left_join(other.variables, hugh.data, by = "Species")
+
+all.data <- filter(all.data, Species_Code != "Phro", Species_Code != "Kebe") # filter out species with missing climate or leaf area
+
+all.data <- select(all.data, Species_Code, Annual_precip_mean, Precip_dry_qu_mean, Precip_dry_month_mean, AI_mean) # select only the climate variables
+
+## let's see if the data are linearly related
+
+# removed the categorical species columns
+
+PCA_analysis_pairs <- select(all.data, -Species_Code)
+
+# let's see if the data are linearly related
+
+pairs(PCA_analysis_pairs) # looks good, everything is linearly related
+
+# make species code the row name
+
+PCA_analysis <- all.data %>%
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code")
+
+# doing the PCA
+
+res.pca <- PCA(PCA_analysis, graph = FALSE)
+
+# looking at the eigenvalues
+
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+# first 3 PCs explain 99% of the data
+
+# let's look at the scree plot
+
+fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 60))
+
+# let's look at the variables
+
+var <- get_pca_var(res.pca)
+var
+
+# plot the variables
+
+var.plot <- fviz_pca_var(res.pca, col.var = "black")
+var.plot
+
+res.desc <- dimdesc(res.pca, axes = c(1,2), proba = 0.05)
+# Description of dimension 1
+res.desc$Dim.1
+# Description of dimension 2
+res.desc$Dim.2
+
+# graph of individuals
+
+ind <- get_pca_ind(res.pca)
+ind
+
+# plot the individuals
+
+ind.plot <- fviz_pca_ind(res.pca, repel = TRUE)
+ind.plot
+
+# Hierarchical clustering
+
+# let's only do the PCA on the first 3 dimensions
+
+res.pca <- PCA(PCA_analysis, ncp = 3, graph = FALSE)
+
+# clustering
+res.hcpc <- HCPC(res.pca, graph = FALSE)
+
+# graph
+cluster <- fviz_cluster(res.hcpc,
+                        repel = TRUE,            # Avoid label overlapping
+                        show.clust.cent = TRUE, # Show cluster centers
+                        palette = "jco",         # Color palette see ?ggpubr::ggpar
+                        ggtheme = theme_minimal(),
+                        main = "PCA")
+cluster
+
+# Let's look at the HCPC output
+
+# display the original data with a new column indicating which cluster they belong to
+
+head(res.hcpc$data.clust)
+# save this output for ladderplot
+PCA_climate_cluster_output <- res.hcpc$data.clust
+write.csv(PCA_climate_cluster_output,"PCA_Cluster_output/PCA_climate_cluster_output.csv", row.names = TRUE) # need row names for species
+
+# display the qualtitative variables that explain the most variance in each cluster
+
+res.hcpc$desc.var$quanti
+
+# principle dimensions that are most associated with clusters
+res.hcpc$desc.axes$quanti
+
+# save the output
+pdf("PCA_Cluster_output/PCA_climate.pdf") # Create a new pdf device
+print(var.plot)
+print(ind.plot)
+print(cluster)
+dev.off() # Close the pdf device
+
+#############################################################################################################################################
 ############################################################# PRESENTATIONS #################################################################
 #############################################################################################################################################
 
