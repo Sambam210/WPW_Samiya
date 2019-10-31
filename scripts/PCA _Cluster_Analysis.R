@@ -1788,14 +1788,3 @@ cluster <- fviz_cluster(res.hcpc,
 cluster
 
 
-
-scale_fill_manual(values = c("#00AFBB", "#FC4E07", "#E7B800"))
-  
-# save the output
-pdf("PCA_Cluster_output/glasshouse_no_climate_LDMC_TLP.pdf") # Create a new pdf device
-print(var.plot)
-print(ind.plot)
-print(cluster)
-dev.off() # Close the pdf device
-
-
