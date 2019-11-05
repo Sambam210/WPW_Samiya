@@ -1111,6 +1111,32 @@ print(cluster)
 dev.off() # Close the pdf device
 # hasn't changed, looks the same as when osmpot wasn't transformed therefore didn't redo ladderplot etc
 
+##### let's make a biplot with the clusters
+
+# load the csv with the clusters
+cluster <- read.csv("PCA_Cluster_output/PCA_traits_cluster_output_LDMC.csv")
+
+# create anew column with the clusters rearranged so they are easy to describe
+cluster <- cluster %>%
+  mutate(cluster_new = case_when(clust == "1" ~ "Cluster 2",
+                                 clust == "2" ~ "Cluster 3",
+                                 clust == "3" ~ "Cluster 1"))
+
+# create the biplot but group according to cluster
+fviz_pca_biplot(res.pca, 
+                col.ind = cluster$cluster_new, # colour individuals by cluster
+                palette = c("#00AFBB","#FC4E07","#E7B800"),
+                addEllipses = TRUE, ellipse.type = "convex", # use convex ellipses like cluster analysis
+                col.var = "black",
+                repel = TRUE,
+                geom = "point", # just want the points, no writing        
+                ellipse.alpha = 0.2, # transparency of ellipses   
+                pointsize = 2, # size of points
+                title = "", # no main title
+                mean.point = FALSE, # don't show group centers
+                legend.title = "", # no legend title
+                ggtheme = theme_gray())         
+
 ######################################################################################################################################
 ################################################## PCA on glasshouse variables and aridity ###############################################################
 #####################################################################################################################################
