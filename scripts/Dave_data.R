@@ -84,8 +84,10 @@ species <- Dave %>%
 
 species <- as.vector(unlist(species$newspecies)) # change species into a vector
 
-x <- str_count(species,"[[:upper:]]")==1 # for each species, says with true or false if they have only one capital letter
+# x <- str_count(species,"[[:upper:]]")==1 # for each species, says with true or false if they have only one capital letter
                                          # https://stringr.tidyverse.org/articles/regular-expressions.html
+
+x <- str_count(species, " ")==1 # for each species, says true or false if they have only one space
 
 y <- data.frame(species,x) # merge the two dataframes together
 
@@ -94,7 +96,7 @@ onlyspecies <- y %>%
   select(species) %>% # only want the species column and not the true column
   distinct(species) # only one line per species
 
-##### 3618/4356 are species and not varieties, etc
+##### 3465/4356 are species and not varieties, etc
 
 ##################################################################################################################################################################
 
