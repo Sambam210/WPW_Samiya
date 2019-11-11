@@ -436,3 +436,21 @@ ggplot(TLeaf, aes(x = Batch, y = Tleaf_C_Max)) +
 plot(Tleaf_C_Max ~ Tleaf_C_Avg, ylim = c(0,100), TLeaf) # by removing Elre5D the distribution looks good
 
 filter(TLeaf, Tleaf_C_Max > 45 & Tleaf_C_Avg < 40)
+
+##########################################################################################################################################
+######################################################## EXPLORING THE FV/FM DATA ########################################################
+
+library(dplyr)
+library(ggplot2)
+
+fvfm <- read.csv("GH_data/WPW_GH_FVFM.csv")
+
+fvfm <- fvfm %>%
+  select(Glasshouse, Experiment, Species, Species_Code, Treatment, Sample_ID, Fv.Fm) %>%
+  filter(Treatment == "C" | Treatment == "D")
+
+ggplot(fvfm, aes(x = Treatment, y = Fv.Fm)) +
+  geom_boxplot() +
+  theme_bw()
+
+
