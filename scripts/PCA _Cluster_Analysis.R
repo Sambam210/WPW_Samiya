@@ -1123,7 +1123,7 @@ cluster <- cluster %>%
                                  clust == "3" ~ "Cluster 1"))
 
 # create the biplot but group according to cluster
-fviz_pca_biplot(res.pca, 
+plot <- fviz_pca_biplot(res.pca, 
                 col.ind = cluster$cluster_new, # colour individuals by cluster
                 palette = c("#00AFBB","#FC4E07","#E7B800"),
                 addEllipses = TRUE, ellipse.type = "convex", # use convex ellipses like cluster analysis
@@ -1135,7 +1135,14 @@ fviz_pca_biplot(res.pca,
                 title = "", # no main title
                 mean.point = FALSE, # don't show group centers
                 legend.title = "", # no legend title
-                ggtheme = theme_gray())         
+                ggtheme = theme_gray())
+
+plot
+
+# save the plot
+
+dev.print(pdf, 'plot.pdf')
+# https://stackoverflow.com/questions/7144118/how-to-save-a-plot-as-image-on-the-disk
 
 #####################################
 ### PCA on glasshouse variables 

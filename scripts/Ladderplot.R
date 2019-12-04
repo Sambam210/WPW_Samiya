@@ -1347,3 +1347,8 @@ hortandtraitsplot
 
 # scale fill manual values
 # http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/ 
+
+# save the plot
+
+dev.print(pdf, 'plot.pdf')
+# https://stackoverflow.com/questions/7144118/how-to-save-a-plot-as-image-on-the-disk
