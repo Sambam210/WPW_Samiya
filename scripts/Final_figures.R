@@ -307,7 +307,10 @@ hortandtraits <- drop_na(hortandtraits) # ended up with 90 species
 #transform data into 'wide' format
 hortandtraits.wide <- gather(hortandtraits, key="method", value="classification", -Species_Code)
 
-hortandtraits.wide[] <-lapply(hortandtraits.wideb, pattern = "_", replacement = "")
+# changing the names for the variables so the graphs look better
+# https://stackoverflow.com/questions/29271549/replace-all-occurrences-of-a-string-in-a-data-frame
+hortandtraits.wide[] <-lapply(hortandtraits.wide, gsub, pattern = "_", replacement = " ")
+hortandtraits.wide[] <-lapply(hortandtraits.wide, gsub, pattern = "hort", replacement = "horticultural")
 
 # constructing the alluvial plot
 
@@ -324,7 +327,8 @@ hortandtraitsplot <- ggplot(hortandtraits.wide,
   geom_text(stat = "stratum", size = 4) +
   theme(legend.position = "none") +
   labs(y = "Number of species",
-       x = "Method") +
+       x = "Method",
+       title = "Fig. 2") +
   theme(axis.text = element_text(size = 12), axis.title = element_text(size = 12))
 
 hortandtraitsplot
