@@ -459,66 +459,46 @@ ggplot(fvfm, aes(x = Treatment, y = Fv.Fm)) +
 library(tidyverse)
 library(ggplot2)
 
+
 desicc <- read.csv("GH_data/WPW_GH_DESICC.csv")
 
-# mean max heat desicc for the controls
-desicc_control <- desicc %>%
+# mean max heat desicc for the controls and droughts
+desicc_summary <- desicc %>%
   select(Species_Code, Treatment, HeatDesicc_Max) %>%
-  filter(Treatment == "C") %>%
-  group_by(Species_Code) %>%
+  filter(Treatment == "C"| Treatment == "D") %>%
+  group_by(Species_Code, Treatment) %>%
   summarise(meanHeatDesicc_Max = mean(HeatDesicc_Max, na.rm = TRUE))
 
-# read in the traits classifications
+# load the traits classifications
 
 traits <- read.csv("Cluster_traits_analysis_data/all_species_classifications.csv")
 
 # merge the two datasets
 
-desicc_traits_control <- left_join(desicc_control, traits, by = "Species_Code")
+desicc_all <- left_join(desicc_summary, traits, by = "Species_Code")
 
-desicc_traits_control <- select(desicc_traits_control, -hort_classification, -Species_Code)
+desicc_all <- select(desicc_all, -hort_classification)
 
-desicc_traits_control <- drop_na(desicc_traits_control)
+desicc_all <- drop_na(desicc_all)
 
-control <- ggplot(desicc_traits_control, aes(x = traits_classification, y = meanHeatDesicc_Max)) +
-  geom_boxplot(alpha=0.5, outlier.shape=NA) +
-  labs(title="Control", x="Traits classification", y = "meanHeatDesicc_Max") +
-  geom_point(position=position_jitterdodge(), aes(color=traits_classification), alpha=0.6) + 
-  scale_color_manual(values = c("#00AFBB", "#FC4E07", "#E7B800")) +
-  guides(color = FALSE) + # remove legend
+# summarise according to trait classification
+
+desicc_all_summary <- desicc_all %>%
+  group_by(Treatment, traits_classification) %>%
+  summarise(mean_HeatDesicc_Max = mean(meanHeatDesicc_Max),
+            se_HeatDesicc_Max = sd(meanHeatDesicc_Max)/sqrt(n()))
+
+desicc_all_summary <- drop_na(desicc_all_summary)
+
+plot <- ggplot(desicc_all_summary, aes(x = traits_classification, y = mean_HeatDesicc_Max, fill = Treatment)) +
+  geom_bar(stat = 'identity', position = position_dodge()) +
+  geom_errorbar(aes(ymin = mean_HeatDesicc_Max - se_HeatDesicc_Max, 
+                    ymax = mean_HeatDesicc_Max + se_HeatDesicc_Max),
+                width = 0.2, position = position_dodge(0.9)) +
   theme_bw()
 
-control  
+plot  
 
-# mean max heat desicc for the droughts
-desicc_drought <- desicc %>%
-  select(Species_Code, Treatment, HeatDesicc_Max) %>%
-  filter(Treatment == "D") %>%
-  group_by(Species_Code) %>%
-  summarise(meanHeatDesicc_Max = mean(HeatDesicc_Max, na.rm = TRUE))
 
-# read in the traits classifications
-
-traits <- read.csv("Cluster_traits_analysis_data/all_species_classifications.csv")
-
-# merge the two datasets
-
-desicc_traits_drought <- left_join(desicc_drought, traits, by = "Species_Code")
-
-desicc_traits_drought <- select(desicc_traits_drought, -hort_classification, -Species_Code)
-
-desicc_traits_drought <- drop_na(desicc_traits_drought)
-
-drought <- ggplot(desicc_traits_drought, aes(x = traits_classification, y = meanHeatDesicc_Max)) +
-  geom_boxplot(alpha=0.5, outlier.shape=NA) +
-  labs(title="Drought", x="Traits classification", y = "meanHeatDesicc_Max") +
-  geom_point(position=position_jitterdodge(), aes(color=traits_classification), alpha=0.6) + 
-  scale_color_manual(values = c("#00AFBB", "#FC4E07", "#E7B800")) +
-  guides(color = FALSE) + # remove legend
-  theme_bw()
-
-drought 
-
-  
   
   
