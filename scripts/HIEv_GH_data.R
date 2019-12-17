@@ -490,14 +490,21 @@ desicc_all_summary <- desicc_all %>%
 
 desicc_all_summary <- drop_na(desicc_all_summary)
 
+# need to relevel things so that drought avoider isn't graphed first
+desicc_all_summary$traits_classification <- factor(desicc_all_summary$traits_classification, levels = c("drought tolerator", "mixture", "drought avoider"))
+# https://stackoverflow.com/questions/18413756/re-ordering-factor-levels-in-data-frame
+
 plot <- ggplot(desicc_all_summary, aes(x = traits_classification, y = mean_HeatDesicc_Max, fill = Treatment)) +
   geom_bar(stat = 'identity', position = position_dodge()) +
   geom_errorbar(aes(ymin = mean_HeatDesicc_Max - se_HeatDesicc_Max, 
                     ymax = mean_HeatDesicc_Max + se_HeatDesicc_Max),
                 width = 0.2, position = position_dodge(0.9)) +
-  theme_bw()
+  labs(y = "HeatDesicc_Max_%", x = "traits classification") +
+  scale_fill_manual(values = c("#6666FF", "#FF3300")) +
+  theme_minimal()
 
 plot  
+
 
 
   
