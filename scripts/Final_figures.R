@@ -6,14 +6,16 @@
 # LDMC instead of succulence
 # TLP instead of osmpot (following Bartlett et al 2012 equation)
 
+## Note that I have added the areas for Brru and Atfi as Renee provided leaf scans. 
+# Now I am only missing Crma
+
 library(tidyverse)
 library("FactoMineR")
 library("factoextra")
 
 other.variables <- read.csv("PCA_Cluster_data/PCA_data.csv")
 
-other.variables <- filter(other.variables, Species_Code != "Crma", Species_Code != "Atfi",
-                          Species_Code != "Brru") # filter out species with missing leaf area
+other.variables <- filter(other.variables, Species_Code != "Crma") # filter out species with missing leaf area
 
 other.variables <- select(other.variables, Species, Species_Code, mean_LMA_gm2, Thickness_mm_Avg, mean_leaf_area_cm2)
 
@@ -71,7 +73,7 @@ PCA_analysis <- PCA_analysis %>%
          log_leaf_area_cm2 = log(mean_leaf_area_cm2)) %>%
   select(-Thickness_mm_Avg, -mean_leaf_area_cm2, -Species)
 
-# rename the columns so they look better in the byplot
+# rename the columns so they look better in the biplot
 
 PCA_analysis <- PCA_analysis %>%
   rename(LMA = mean_LMA_gm2,
@@ -164,7 +166,7 @@ fviz_pca_ind(res.pca,
 res.pca <- PCA(PCA_analysis, ncp = 3, graph = FALSE)
 
 # clustering
-res.hcpc <- HCPC(res.pca, graph = FALSE)
+res.hcpc <- HCPC(res.pca, max = 3, graph = FALSE) # had to specify the max number of clusters as 3 otherwise it was giving 4
 
 # dendrogram
 fviz_dend(res.hcpc, 
@@ -205,7 +207,7 @@ print(var.plot)
 print(ind.plot)
 print(cluster)
 dev.off() # Close the pdf device
-# hasn't changed, looks the same as when osmpot wasn't transformed therefore didn't redo ladderplot etc
+# hasn't changed, looks the same as when osmpot wasn't transformed therefore didn't redo ladderplot etc, also doesn't look different by adding Brru and Atfi
 
 ##### let's make a biplot with the clusters
 
@@ -214,9 +216,13 @@ cluster <- read.csv("PCA_Cluster_output/PCA_traits_cluster_output_LDMC.csv")
 
 # create a new column with the clusters rearranged so they are easy to describe
 cluster <- cluster %>%
-  mutate(cluster_new = case_when(clust == "1" ~ "Cluster 2",
-                                 clust == "2" ~ "Cluster 3",
-                                 clust == "3" ~ "Cluster 1"))
+  mutate(cluster_new = case_when(clust == "1" ~ "Drought avoider",
+                                 clust == "2" ~ "Intermediate",
+                                 clust == "3" ~ "Drought tolerator"))
+
+# need to relevel things so that drought avoider isn't graphed first
+cluster$cluster_new <- factor(cluster$cluster_new, levels = c("drought avoider", "intermediate", "drought tolerator"))
+# https://stackoverflow.com/questions/18413756/re-ordering-factor-levels-in-data-frame
 
 # create the biplot but group according to cluster
 plot <- fviz_pca_biplot(res.pca, 
@@ -278,7 +284,7 @@ hort.class <- hort.class %>%
   mutate(hort_classification = case_when(No_percentage >= 75 ~ "drought intolerant",
                                          Moderate_percentage >= 75 ~ "drought tolerant",
                                          Yes_percentage >= 75 ~ "drought tolerant",
-                                         TRUE ~ "mixture")) %>%
+                                         TRUE ~ "intermediate")) %>%
   select(Species_Code, hort_classification)
 
 # load my traits cluster data
@@ -288,7 +294,7 @@ traits <- read.csv("PCA_Cluster_output/PCA_traits_cluster_output_LDMC.csv")
 traits <- traits %>%
   rename(Species_Code=X) %>%
   mutate(traits_classification = case_when(clust == "1" ~ "drought avoider",
-                                           clust == "2" ~ "mixture",
+                                           clust == "2" ~ "intermediate",
                                            clust == "3" ~ "drought tolerator")) %>%
   select(Species_Code, traits_classification)
 
@@ -299,7 +305,7 @@ hortandtraits <- left_join(hort.class, traits, by = "Species_Code")
 # remove rows with NAs
 # https://stackoverflow.com/questions/26665319/removing-na-in-dplyr-pipe
 
-hortandtraits <- drop_na(hortandtraits) # ended up with 90 species 
+hortandtraits <- drop_na(hortandtraits) # ended up with 92 species 
 
 #############################
 # Constructing the alluvial plot for hort and traits classification
