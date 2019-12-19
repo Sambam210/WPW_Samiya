@@ -220,10 +220,6 @@ cluster <- cluster %>%
                                  clust == "2" ~ "Intermediate",
                                  clust == "3" ~ "Drought tolerator"))
 
-# need to relevel things so that drought avoider isn't graphed first
-cluster$cluster_new <- factor(cluster$cluster_new, levels = c("drought avoider", "intermediate", "drought tolerator"))
-# https://stackoverflow.com/questions/18413756/re-ordering-factor-levels-in-data-frame
-
 # create the biplot but group according to cluster
 plot <- fviz_pca_biplot(res.pca, 
                         col.ind = cluster$cluster_new, # colour individuals by cluster
@@ -347,4 +343,206 @@ hortandtraitsplot
 dev.print(pdf, 'plot.pdf')
 # https://stackoverflow.com/questions/7144118/how-to-save-a-plot-as-image-on-the-disk
 
+#####################################################################################################################################
 
+# PCA for climate precip and AI variables to be included as supplemental material
+
+library(tidyverse)
+library("FactoMineR")
+library("factoextra")
+
+other.variables <- read.csv("PCA_Cluster_data/PCA_data.csv")
+
+hugh.data <- read.csv("MFA_data/niche.data.HB.csv")
+
+hugh.data <- hugh.data %>%
+  select(searchTaxon, Annual_precip_mean, Precip_dry_qu_mean, Precip_dry_month_mean, AI_mean) %>% # selecting the relevant variables
+  rename(Species=searchTaxon)
+
+all.data <- left_join(other.variables, hugh.data, by = "Species")
+
+all.data <- filter(all.data, Species_Code != "Phro", Species_Code != "Kebe") # filter out species with missing climate data
+
+all.data <- select(all.data, Species_Code, Annual_precip_mean, Precip_dry_qu_mean, Precip_dry_month_mean, AI_mean) # select only the climate variables
+
+## let's see if the data are linearly related
+
+# removed the categorical species columns
+
+PCA_analysis_pairs <- select(all.data, -Species_Code)
+
+# let's see if the data are linearly related
+
+pairs(PCA_analysis_pairs) # looks good, everything is linearly related
+
+# make species code the row name
+
+PCA_analysis <- all.data %>%
+  remove_rownames %>%
+  column_to_rownames(var="Species_Code")
+
+
+# rename the columns so they look better in the biplot
+
+PCA_analysis <- PCA_analysis %>%
+  rename('Annual precipitation' = Annual_precip_mean,
+         'Aridity index' = AI_mean,
+         'Precipitation driest quarter' = Precip_dry_qu_mean,
+         'Precipitation driest month' = Precip_dry_month_mean)
+
+# doing the PCA
+
+res.pca <- PCA(PCA_analysis, graph = FALSE)
+
+# looking at the eigenvalues
+
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+# first 3 PCs explain 99% of the data
+
+# let's look at the scree plot
+
+fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 60))
+
+# let's look at the variables
+
+var <- get_pca_var(res.pca)
+var
+
+# plot the variables
+
+var.plot <- fviz_pca_var(res.pca, col.var = "black")
+var.plot
+
+res.desc <- dimdesc(res.pca, axes = c(1,2), proba = 0.05)
+# Description of dimension 1
+res.desc$Dim.1
+# Description of dimension 2
+res.desc$Dim.2
+
+# graph of individuals
+
+ind <- get_pca_ind(res.pca)
+ind
+
+# plot the individuals
+
+ind.plot <- fviz_pca_ind(res.pca, repel = TRUE)
+ind.plot
+
+# Hierarchical clustering
+
+# let's only do the PCA on the first 3 dimensions
+
+res.pca <- PCA(PCA_analysis, ncp = 3, graph = FALSE)
+
+# clustering
+res.hcpc <- HCPC(res.pca, graph = FALSE)
+
+# graph
+cluster <- fviz_cluster(res.hcpc,
+                        repel = TRUE,            # Avoid label overlapping
+                        show.clust.cent = TRUE, # Show cluster centers
+                        palette = "jco",         # Color palette see ?ggpubr::ggpar
+                        ggtheme = theme_minimal(),
+                        main = "PCA")
+cluster
+
+# Let's look at the HCPC output
+
+# display the original data with a new column indicating which cluster they belong to
+
+head(res.hcpc$data.clust)
+# save this output for ladderplot
+PCA_climate_cluster_output <- res.hcpc$data.clust
+write.csv(PCA_climate_cluster_output,"PCA_Cluster_output/PCA_climate_cluster_output.csv", row.names = TRUE) # need row names for species
+
+# display the qualtitative variables that explain the most variance in each cluster
+
+res.hcpc$desc.var$quanti
+
+# principle dimensions that are most associated with clusters
+res.hcpc$desc.axes$quanti
+
+##### let's make a biplot with the clusters
+
+# load the csv with the clusters
+cluster <- read.csv("PCA_Cluster_output/PCA_climate_cluster_output.csv")
+
+# create a new column with the clusters rearranged so they are easy to describe
+cluster <- cluster %>%
+  mutate(cluster_new = case_when(clust == "1" ~ "Dry",
+                                 clust == "2" ~ "Moderate",
+                                 clust == "3" ~ "Wet"))
+
+# create the biplot but group according to cluster
+plot <- fviz_pca_biplot(res.pca, 
+                        col.ind = cluster$cluster_new, # colour individuals by cluster
+                        palette = c("#FC4E07","#E7B800","#00AFBB"),
+                        addEllipses = TRUE, ellipse.type = "convex", # use convex ellipses like cluster analysis
+                        col.var = "black",
+                        repel = TRUE,
+                        geom = "point", # just want the points, no writing        
+                        ellipse.alpha = 0.2, # transparency of ellipses   
+                        pointsize = 2, # size of points
+                        title = "(a)", # no main title
+                        mean.point = FALSE, # don't show group centers
+                        legend.title = "", # no legend title
+                        ggtheme = theme_gray())
+
+plot
+
+# save the plot
+
+dev.print(pdf, 'plot.pdf')
+# https://stackoverflow.com/questions/7144118/how-to-save-a-plot-as-image-on-the-disk
+
+############################################################################################################################################
+##### Ladderplots for the supplementary material
+############################################################################################################################################
+
+#############################
+# Constructing the alluvial plot for traits and climate classification
+
+traitsandclimate <- read.csv("Ladderplot_data_input/traitsandclimate.csv")
+
+#transform data into 'wide' format
+traitsandclimate.wide <- gather(traitsandclimate, key="method", value="classification", -Species_Code)
+
+# changing the names for the variables so the graphs look better
+# https://stackoverflow.com/questions/29271549/replace-all-occurrences-of-a-string-in-a-data-frame
+traitsandclimate.wide[] <-lapply(traitsandclimate.wide, gsub, pattern = "_", replacement = " ")
+traitsandclimate.wide[] <-lapply(traitsandclimate.wide, gsub, pattern = "hort", replacement = "horticultural")
+
+# need to rearrange the levels so that climate_classification doesn't come first in the plot
+traitsandclimate.wide[,'method'] <- as.factor(traitsandclimate.wide[,'method'])
+traitsandclimate.wide[,'method'] <- factor(traitsandclimate.wide[,'method'], levels = c("traits classification", "climate classification"))
+
+# constructing the alluvial plot
+
+library(ggalluvial)
+library(ggplot2)
+
+traitsandclimateplot <- ggplot(traitsandclimate.wide,
+                            aes(x = method, stratum = classification, alluvium = Species_Code,
+                                fill = classification, label = classification)) +
+  scale_x_discrete(expand = c(0.1,0.1)) +
+  scale_fill_manual(values = c("#CC6633", "#FF3399", "#FF9933", "#FF9900", "#FFFF66", "#0033FF")) +
+  geom_flow(stat = "alluvium", lode.guidance = "frontback", color = "darkgray", alpha = 0.5) +
+  geom_stratum(alpha = .5, fill = "white") +
+  geom_text(stat = "stratum", size = 4) +
+  theme(legend.position = "none") +
+  labs(y = "Number of species",
+       x = "Method",
+       title = "(b)") +
+  theme(axis.text = element_text(size = 12), axis.title = element_text(size = 12))
+
+traitsandclimateplot
+
+# scale fill manual values
+# http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/ 
+
+# save the plot
+
+dev.print(pdf, 'plot.pdf')
+# https://stackoverflow.com/questions/7144118/how-to-save-a-plot-as-image-on-the-disk
