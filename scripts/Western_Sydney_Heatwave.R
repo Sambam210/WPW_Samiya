@@ -9,7 +9,6 @@
 # Trees that were removed haved also been documented
 
 library(tidyverse)
-library(ggplot2)
 
 # load up the asessment scores
 
@@ -60,6 +59,54 @@ all <- bind_rows(all, wrong_id)
 # arrange by id
 
 all <- arrange(all, id)
+
+# save output
+
+write.csv(all, "Western_Sydney_Heatwave_output/cleaned_data.csv", row.names = FALSE)
+
+############################################################################################################################################
+
+# Let's do some summary stats and graphs
+
+library(tidyverse)
+library(ggplot2)
+
+data <- read.csv("Western_Sydney_Heatwave_output/cleaned_data.csv")
+
+summary_scores <- data %>%
+  group_by(Score) %>%
+  summarise(frequency=n()) %>%
+  mutate(completeness = (frequency / 5591))
+
+# let's look at just the damaged species
+
+damaged <- data %>%
+  filter(Score != "healthy") %>%
+  group_by(Species, Score) %>%
+  summarise(frequency = n())
+
+
+graph <- ggplot(damaged, aes(x = Species, y = frequency, fill = Score)) +
+  geom_bar(position = "stack", stat = "identity") +
+  labs(title = "Damaged trees")
+
+graph
+# too many species!
+
+# let's just look at lightly scorched species
+
+lightly_scorched <- damaged %>%
+  filter(Score == "lightly scorched")
+
+lightly_scorched <- ggplot(lightly_scorched, aes(x = Species, y = frequency)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Lightly scorched") +
+  coord_flip()
+
+lightly_scorched
+
+
+
 
 
 
