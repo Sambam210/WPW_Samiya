@@ -222,3 +222,101 @@ library(gridExtra)
 
 grid.arrange(healthy_height, lightly_scorched_height, heavily_scorched_height, defoliated_height, nrow = 2, ncol = 2)
 # saved plot manually, for some reason code wasn't working
+
+#########################################################################################################################################
+
+#                                                       LET'S DO THIS BETTER
+
+# Report percentages instead
+
+##########################################################################################################################################
+
+
+library(tidyverse)
+library(ggplot2)
+
+data <- read.csv("Western_Sydney_Heatwave_output/cleaned_data.csv")
+
+# let's pull out the species which we have >= 20 records for
+
+records <- data %>%
+  group_by(Species) %>%
+  summarise(frequency = n()) %>%
+  filter(frequency > 20 | frequency == 20) # 40 species with >= 20 records
+
+# let's pull these species out of the master database
+
+records_data <- left_join(records, data, by = "Species")
+
+# let's look at how many plants were in each score category from those 40 species
+
+damaged <- records_data %>%
+  group_by(Species, Score, frequency) %>%
+  summarise(partial_frequency = n()) %>%
+  mutate(percent = (partial_frequency/frequency)*100)
+
+graph <- ggplot(damaged, aes(x = Species, y = percent, fill = Score)) +
+  geom_bar(position = "stack", stat = "identity") +
+  labs(title = "Trees >= 20 records", x = "Species", y = "Percentage") +
+  coord_flip()
+
+graph
+
+# let's pull out the species with =< 50% healthy trees
+
+damaged_50 <- damaged %>%
+  filter(Score == "healthy") %>%
+  filter(percent < 50 | percent == 50) # only 4 species (Acer, Magnolia, Plantanus, Quercus)
+
+# let's pull these species out of the master database
+
+records_50 <- filter(data, Species == "Acer negundo" | Species == "Magnolia grandiflora" | Species == "Plantanus x acerifolia" 
+                     | Species == "Quercus palustris")
+
+# let's group them according to height and score
+
+summary_records_50 <- records_50 %>%
+  group_by(Species, Score, Height) %>%
+  summarise(frequency = n())
+
+# add in the total frequency column back
+
+summary_records_50 <- summary_records_50 %>%
+  mutate(total_frequency = case_when(Species == "Acer negundo" ~ "74",
+                                     Species == "Magnolia grandiflora" ~ "55",
+                                     Species == "Plantanus x acerifolia" ~ "55",
+                                     Species == "Quercus palustris" ~ "57"))
+
+glimpse(summary_records_50)
+
+# need to change total frequency into integar
+
+summary_records_50$total_frequency <- as.numeric(as.character(summary_records_50$total_frequency))
+
+glimpse(summary_records_50)
+
+# calculate percentage
+
+summary_records_50 <- mutate(summary_records_50, percent = (frequency/total_frequency)*100)
+
+# graph it
+
+summary_records_50$Score <- factor(summary_records_50$Score, levels = c("healthy", "lightly scorched", "heavily scorched", "defoliated"))
+
+most_damaged <- ggplot(summary_records_50, aes(x = Height, y = percent)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Most damaged species", x = "Height (m)", y = "Percentage") +
+  facet_grid(Species ~ Score)
+
+most_damaged
+
+
+
+
+
+
+
+
+
+
+
