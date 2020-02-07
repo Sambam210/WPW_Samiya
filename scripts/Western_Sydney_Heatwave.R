@@ -255,12 +255,54 @@ damaged <- records_data %>%
   summarise(partial_frequency = n()) %>%
   mutate(percent = (partial_frequency/frequency)*100)
 
+damaged$Score <- factor(damaged$Score, levels = c("healthy", "lightly scorched", "heavily scorched", "defoliated"))
+
 graph <- ggplot(damaged, aes(x = Species, y = percent, fill = Score)) +
   geom_bar(position = "stack", stat = "identity") +
+  scale_fill_manual(values = c("#339900", "#FFFF00", "#FF9933", "#FF0000")) +
   labs(title = "Trees >= 20 records", x = "Species", y = "Percentage") +
   coord_flip()
 
 graph
+
+# https://community.rstudio.com/t/creating-a-barplot-with-ordered-bars/13681/3
+# https://community.rstudio.com/t/a-tidy-way-to-order-stacked-bar-chart-by-fill-subset/5134
+
+# exoitc vs native species damage
+
+origin <- read.csv("Western_Sydney_Heatwave_output/40_species.csv")
+
+# join origin to damage datasheet
+
+damage_origin <- left_join(damaged, origin, by = "Species")
+
+# graph
+
+damage_origin$Score <- factor(damage_origin$Score, levels = c("healthy", "lightly scorched", "heavily scorched", "defoliated"))
+
+# native species
+
+native <- filter(damage_origin, Origin == "Native")
+
+native_origin <- ggplot(native, aes(x = Species, y = percent, fill = Score)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_manual(values = c("#339900", "#FFFF00", "#FF9933", "#FF0000")) +
+  labs(title = "Native species", x = "Species", y = "Percentage") +
+  coord_flip()
+
+native_origin
+
+# exotic species
+
+exotic <- filter(damage_origin, Origin == "Exotic")
+
+exotic_origin <- ggplot(exotic, aes(x = Species, y = percent, fill = Score)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_manual(values = c("#339900", "#FFFF00", "#FF9933", "#FF0000")) +
+  labs(title = "Exotic species", x = "Species", y = "Percentage") +
+  coord_flip()
+
+exotic_origin
 
 # let's pull out the species with =< 50% healthy trees
 
@@ -310,7 +352,13 @@ most_damaged <- ggplot(summary_records_50, aes(x = Height, y = percent)) +
 
 most_damaged
 
-
+# save the output
+pdf("Western_Sydney_Heatwave_output/summary_plots.pdf") # Create a new pdf device
+print(graph)
+print(native_origin)
+print(exotic_origin)
+print(most_damaged)
+dev.off() # Close the pdf device
 
 
 
