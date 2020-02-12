@@ -351,7 +351,7 @@ healthy_height <- data %>%
   mutate(percent = (frequency/height_total)*100) %>%
   filter(Height != "0")
 
-healthy_height <- ggplot(healthy_height, aes(x = Height, y = frequency)) +
+healthy_height <- ggplot(healthy_height, aes(x = Height, y = percent)) +
   geom_bar(stat = "identity") +
   labs(title = "Healthy", x = "Height (m)", y = "Percentage")
 
@@ -360,39 +360,45 @@ healthy_height
 # lightly scorched
 
 lightly_scorched_height <- data %>%
+  add_count(Height, sort = FALSE, name = "height_total") %>%
   filter(Score == "lightly scorched") %>%
-  group_by(Height) %>%
-  summarise(frequency = n())
+  group_by(Height, height_total) %>%
+  summarise(frequency = n()) %>%
+  mutate(percent = (frequency/height_total)*100)
 
-lightly_scorched_height <- ggplot(lightly_scorched_height, aes(x = Height, y = frequency)) +
+lightly_scorched_height <- ggplot(lightly_scorched_height, aes(x = Height, y = percent)) +
   geom_bar(stat = "identity") +
-  labs(title = "Lightly scorched", x = "Height (m)", y = "Frequency")
+  labs(title = "Lightly scorched", x = "Height (m)", y = "Percentage")
 
 lightly_scorched_height
 
 # heavily scorched
 
 heavily_scorched_height <- data %>%
+  add_count(Height, sort = FALSE, name = "height_total") %>%
   filter(Score == "heavily scorched") %>%
-  group_by(Height) %>%
-  summarise(frequency = n())
+  group_by(Height, height_total) %>%
+  summarise(frequency = n()) %>%
+  mutate(percent = (frequency/height_total)*100)
 
-heavily_scorched_height <- ggplot(heavily_scorched_height, aes(x = Height, y = frequency)) +
+heavily_scorched_height <- ggplot(heavily_scorched_height, aes(x = Height, y = percent)) +
   geom_bar(stat = "identity") +
-  labs(title = "Heavily scorched", x = "Height (m)", y = "Frequency")
+  labs(title = "Heavily scorched", x = "Height (m)", y = "Percentage")
 
 heavily_scorched_height
 
 # defoliated
 
 defoliated_height <- data %>%
+  add_count(Height, sort = FALSE, name = "height_total") %>%
   filter(Score == "defoliated") %>%
-  group_by(Height) %>%
-  summarise(frequency = n())
+  group_by(Height, height_total) %>%
+  summarise(frequency = n()) %>%
+  mutate(percent = (frequency/height_total)*100)
 
-defoliated_height <- ggplot(defoliated_height, aes(x = Height, y = frequency)) +
+defoliated_height <- ggplot(defoliated_height, aes(x = Height, y = percent)) +
   geom_bar(stat = "identity") +
-  labs(title = "Defoliated", x = "Height (m)", y = "Frequency")
+  labs(title = "Defoliated", x = "Height (m)", y = "Percentage")
 
 defoliated_height
 
