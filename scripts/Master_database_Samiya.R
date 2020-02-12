@@ -30,3 +30,54 @@ write.csv(glasshouse, "Master_database_output/glasshouse_list.csv", row.names = 
 glasshouse <- whatwehave %>%
   filter(!is.na(gl)) %>%
   distinct(scientificNameStd, .keep_all = TRUE) # add correa, cynodon and plantanus. In traits database, Correa is Correa pulchella, cynodon is Cynodon dactylon and plantanus is Plantanus acerifolia. These are not recognised scientific names.
+
+###################################################################################################################################################
+
+# pull out all the traits for the glasshouse species
+
+library(tidyverse)
+
+glasshouse <- Master_Key %>%
+  filter(!is.na(gl)) %>% # some species have multiple entries as we tested multiple varieties
+  select(master, scientificNameStd, gl, tr)
+
+# open traits table manually
+
+# extract all the data for the glasshouse species from the traits table
+all_gl_traits <- left_join(glasshouse, traits, by = c("tr" = "newspecies"))
+
+# write.csv(all_gl_traits, "Master_database_output/all_gh_traits.csv", row.names = FALSE)
+
+# pick out the species that have no traits in the database
+
+missing <- glasshouse %>%
+  filter(is.na(tr))
+# most of these missing species are actually varieties, do we have traits for the species in the trait database?
+
+missing_traits_species_level <- left_join(missing, traits, by = c("scientificNameStd" = "newspecies"))
+
+# join to all glasshouse traits
+
+all_gl_traits2 <- bind_rows(all_gl_traits, missing_traits_species_level)
+
+all_gl_traits2 <- arrange(all_gl_traits2, master)
+
+write.csv(all_gl_traits2, "Master_database_output/all_gh_traits.csv", row.names = FALSE)
+
+##############################
+
+# how many traits do we have for each species?
+
+all <- read.csv("Master_database_output/all_gh_traits.csv")
+
+unique <- all %>%
+  distinct(master, trait_name) %>%
+  add_count(master, sort = TRUE, name = "n_traits") %>%
+  select(-trait_name) %>%
+  distinct(master, .keep_all = TRUE) %>%
+  arrange(master)
+
+write.csv(unique, "Master_database_output/gh_traits_completeness.csv", row.names = FALSE)
+
+
+
