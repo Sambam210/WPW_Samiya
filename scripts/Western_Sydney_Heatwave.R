@@ -304,6 +304,105 @@ exotic_origin <- ggplot(exotic, aes(x = Species, y = percent, fill = Score)) +
 
 exotic_origin
 
+# deciduous vs evergreen species damage
+
+leafloss <- read.csv("Western_Sydney_Heatwave_output/40_species.csv")
+
+# join origin to damage datasheet
+
+damage_leafloss <- left_join(damaged, origin, by = "Species")
+
+# graph
+
+damage_leafloss$Score <- factor(damage_leafloss$Score, levels = c("healthy", "lightly scorched", "heavily scorched", "defoliated"))
+
+# evergreen species
+
+evergreen <- filter(damage_leafloss, Leaf_loss == "Evergreen")
+
+evergreen_leafloss <- ggplot(evergreen, aes(x = Species, y = percent, fill = Score)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_manual(values = c("#339900", "#FFFF00", "#FF9933", "#FF0000")) +
+  labs(title = "Evergreen species", x = "Species", y = "Percentage") +
+  coord_flip()
+
+evergreen_leafloss
+
+# deciduous species
+
+deciduous <- filter(damage_leafloss, Leaf_loss == "Deciduous")
+
+deciduous_leafloss <- ggplot(deciduous, aes(x = Species, y = percent, fill = Score)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_manual(values = c("#339900", "#FFFF00", "#FF9933", "#FF0000")) +
+  labs(title = "Deciduous species", x = "Species", y = "Percentage") +
+  coord_flip()
+
+deciduous_leafloss
+
+############################ let's look at tree dimensions
+# healthy
+
+healthy_height <- data %>%
+  add_count(Height, sort = FALSE, name = "height_total") %>%
+  filter(Score == "healthy") %>%
+  group_by(Height, height_total) %>%
+  summarise(frequency = n()) %>%
+  mutate(percent = (frequency/height_total)*100) %>%
+  filter(Height != "0")
+
+healthy_height <- ggplot(healthy_height, aes(x = Height, y = frequency)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Healthy", x = "Height (m)", y = "Percentage")
+
+healthy_height
+
+# lightly scorched
+
+lightly_scorched_height <- data %>%
+  filter(Score == "lightly scorched") %>%
+  group_by(Height) %>%
+  summarise(frequency = n())
+
+lightly_scorched_height <- ggplot(lightly_scorched_height, aes(x = Height, y = frequency)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Lightly scorched", x = "Height (m)", y = "Frequency")
+
+lightly_scorched_height
+
+# heavily scorched
+
+heavily_scorched_height <- data %>%
+  filter(Score == "heavily scorched") %>%
+  group_by(Height) %>%
+  summarise(frequency = n())
+
+heavily_scorched_height <- ggplot(heavily_scorched_height, aes(x = Height, y = frequency)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Heavily scorched", x = "Height (m)", y = "Frequency")
+
+heavily_scorched_height
+
+# defoliated
+
+defoliated_height <- data %>%
+  filter(Score == "defoliated") %>%
+  group_by(Height) %>%
+  summarise(frequency = n())
+
+defoliated_height <- ggplot(defoliated_height, aes(x = Height, y = frequency)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Defoliated", x = "Height (m)", y = "Frequency")
+
+defoliated_height
+
+# join plots together
+
+library(gridExtra)
+
+grid.arrange(healthy_height, lightly_scorched_height, heavily_scorched_height, defoliated_height, nrow = 2, ncol = 2)
+# saved plot manually, for some reason code wasn't working
+
 # let's pull out the species with =< 50% healthy trees
 
 damaged_50 <- damaged %>%
