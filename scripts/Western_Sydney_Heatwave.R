@@ -482,6 +482,80 @@ library(gridExtra)
 grid.arrange(healthy_width, lightly_scorched_width, heavily_scorched_width, defoliated_width, nrow = 2, ncol = 2)
 # saved plot manually, for some reason code wasn't working
 
+## HEIGHT X WIDTH
+
+# healthy
+
+healthy_height_width <- data %>%
+  mutate(height_x_width = Height * Width) %>%
+  add_count(height_x_width, sort = FALSE, name = "height_x_width_total") %>%
+  filter(Score == "healthy") %>%
+  group_by(height_x_width, height_x_width_total) %>%
+  summarise(frequency = n()) %>%
+  mutate(percent = (frequency/height_x_width_total)*100) %>%
+  filter(height_x_width != "0")
+
+healthy_height_width <- ggplot(healthy_height_width, aes(x = height_x_width, y = percent)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Healthy", x = expression("Height x Width" ~ (m^{2})), y = "Percentage")
+
+healthy_height_width
+
+# lightly scorched
+
+lightly_scorched_height_width <- data %>%
+  mutate(height_x_width = Height * Width) %>%
+  add_count(height_x_width, sort = FALSE, name = "height_x_width_total") %>%
+  filter(Score == "lightly scorched") %>%
+  group_by(height_x_width, height_x_width_total) %>%
+  summarise(frequency = n()) %>%
+  mutate(percent = (frequency/height_x_width_total)*100)
+
+lightly_scorched_height_width <- ggplot(lightly_scorched_height_width, aes(x = height_x_width, y = percent)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Lightly scorched", x = expression("Height x Width" ~ (m^{2})), y = "Percentage")
+
+lightly_scorched_height_width
+
+# heavily scorched
+
+heavily_scorched_height_width <- data %>%
+  mutate(height_x_width = Height * Width) %>%
+  add_count(height_x_width, sort = FALSE, name = "height_x_width_total") %>%
+  filter(Score == "heavily scorched") %>%
+  group_by(height_x_width, height_x_width_total) %>%
+  summarise(frequency = n()) %>%
+  mutate(percent = (frequency/height_x_width_total)*100)
+
+heavily_scorched_height_width <- ggplot(heavily_scorched_height_width, aes(x = height_x_width, y = percent)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Heavily scorched", x = expression("Height x Width" ~ (m^{2})), y = "Percentage")
+
+heavily_scorched_height_width
+
+# defoliated
+
+defoliated_height_width <- data %>%
+  mutate(height_x_width = Height * Width) %>%
+  add_count(height_x_width, sort = FALSE, name = "height_x_width_total") %>%
+  filter(Score == "defoliated") %>%
+  group_by(height_x_width, height_x_width_total) %>%
+  summarise(frequency = n()) %>%
+  mutate(percent = (frequency/height_x_width_total)*100)
+
+defoliated_height_width <- ggplot(defoliated_height_width, aes(x = height_x_width, y = percent)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Defoliated", x = expression("Height x Width" ~ (m^{2})), y = "Percentage")
+
+defoliated_height_width
+
+# join plots together
+
+library(gridExtra)
+
+grid.arrange(healthy_height_width, lightly_scorched_height_width, heavily_scorched_height_width, defoliated_height_width, nrow = 2, ncol = 2)
+# saved plot manually, for some reason code wasn't working
+
 # let's pull out the species with =< 50% healthy trees
 
 damaged_50 <- damaged %>%
@@ -535,6 +609,8 @@ pdf("Western_Sydney_Heatwave_output/summary_plots.pdf") # Create a new pdf devic
 print(graph)
 print(native_origin)
 print(exotic_origin)
+print(evergreen_leafloss)
+print(deciduous_leafloss)
 print(most_damaged)
 dev.off() # Close the pdf device
 
