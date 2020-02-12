@@ -341,6 +341,9 @@ deciduous_leafloss <- ggplot(deciduous, aes(x = Species, y = percent, fill = Sco
 deciduous_leafloss
 
 ############################ let's look at tree dimensions
+
+## HEIGHT
+
 # healthy
 
 healthy_height <- data %>%
@@ -407,6 +410,76 @@ defoliated_height
 library(gridExtra)
 
 grid.arrange(healthy_height, lightly_scorched_height, heavily_scorched_height, defoliated_height, nrow = 2, ncol = 2)
+# saved plot manually, for some reason code wasn't working
+
+## WIDTH
+
+# healthy
+
+healthy_width <- data %>%
+  add_count(Width, sort = FALSE, name = "width_total") %>%
+  filter(Score == "healthy") %>%
+  group_by(Width, width_total) %>%
+  summarise(frequency = n()) %>%
+  mutate(percent = (frequency/width_total)*100) %>%
+  filter(Width != "0")
+
+healthy_width <- ggplot(healthy_width, aes(x = Width, y = percent)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Healthy", x = "Width (m)", y = "Percentage")
+
+healthy_width
+
+# lightly scorched
+
+lightly_scorched_width <- data %>%
+  add_count(Width, sort = FALSE, name = "width_total") %>%
+  filter(Score == "lightly scorched") %>%
+  group_by(Width, width_total) %>%
+  summarise(frequency = n()) %>%
+  mutate(percent = (frequency/width_total)*100)
+
+lightly_scorched_width <- ggplot(lightly_scorched_width, aes(x = Width, y = percent)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Lightly scorched", x = "Width (m)", y = "Percentage")
+
+lightly_scorched_width
+
+# heavily scorched
+
+heavily_scorched_width <- data %>%
+  add_count(Width, sort = FALSE, name = "width_total") %>%
+  filter(Score == "heavily scorched") %>%
+  group_by(Width, width_total) %>%
+  summarise(frequency = n()) %>%
+  mutate(percent = (frequency/width_total)*100)
+
+heavily_scorched_width <- ggplot(heavily_scorched_width, aes(x = Width, y = percent)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Heavily scorched", x = "Width (m)", y = "Percentage")
+
+heavily_scorched_width
+
+# defoliated
+
+defoliated_width <- data %>%
+  add_count(Width, sort = FALSE, name = "width_total") %>%
+  filter(Score == "defoliated") %>%
+  group_by(Width, width_total) %>%
+  summarise(frequency = n()) %>%
+  mutate(percent = (frequency/width_total)*100)
+
+defoliated_width <- ggplot(defoliated_width, aes(x = Width, y = percent)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Defoliated", x = "Width (m)", y = "Percentage")
+
+defoliated_width
+
+# join plots together
+
+library(gridExtra)
+
+grid.arrange(healthy_width, lightly_scorched_width, heavily_scorched_width, defoliated_width, nrow = 2, ncol = 2)
 # saved plot manually, for some reason code wasn't working
 
 # let's pull out the species with =< 50% healthy trees
