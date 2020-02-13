@@ -101,7 +101,32 @@ all_entities <- select(all_entities, -ACT, -NSW, -NT, -QLD, -SA, -VIC, -WA, -num
 
 write.csv(all_entities, "Master_database_output/all_entities_gh.csv", row.names = FALSE)
 
-# 
+# join traits table by matching names in master column
+
+# load traits table
+
+# rename species column so it is unique from the onw in the other database
+
+traits_new <- rename(traits, species_tr = species)
+
+# join
+
+everything <- left_join(all_entities, traits_new, by = c("master" = "newspecies"))
+
+
+# add back the newspecies column
+
+everything$newspecies <- traits_new$newspecies[match(everything$master, traits_new$newspecies)]
+# https://stackoverflow.com/questions/37034242/r-add-a-new-column-to-a-dataframe-using-matching-values-of-another-dataframe/37034516
+
+# organise
+
+everything <- select(everything, master, scientificNameStd, gl, tr, species, plantType, origin, Min_5_traits,
+                     Min_8_traits, category, newspecies, species_tr, List_source, date_sourced, verification, species_number,
+                     multiple_forms, source, trait_index, trait_name_original, trait_name,
+                     value_original, value)
+
+write.csv(everything, "Master_database_output/EVERYTHING_gh.csv", row.names = FALSE)
 
 ##############################
 
