@@ -126,6 +126,12 @@ everything <- select(everything, master, scientificNameStd, gl, tr, species, pla
                      multiple_forms, source, trait_index, trait_name_original, trait_name,
                      value_original, value)
 
+# remove some mistakes
+everything <- read.csv("Master_database_output/EVERYTHING_gh.csv")
+
+everything <- everything %>%
+  filter(!is.na(scientificNameStd) | !is.na(gl))
+
 write.csv(everything, "Master_database_output/EVERYTHING_gh.csv", row.names = FALSE)
 
 ##############################
