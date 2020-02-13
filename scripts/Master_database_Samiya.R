@@ -64,6 +64,45 @@ all_gl_traits2 <- arrange(all_gl_traits2, master)
 
 write.csv(all_gl_traits2, "Master_database_output/all_gh_traits.csv", row.names = FALSE)
 
+# there are some species in the trait database that are cultivars/varieties and we have traits for them but we also want traits for the 
+# actual species
+
+all_gh_traits <- read.csv("Master_database_output/all_gh_traits.csv")
+
+# let's take a step back
+# for all the gh species I want all the cultivars/varieties we have
+
+# open entities table
+
+entities_gh <- entities %>%
+  filter(!is.na(gl))
+
+# extract the scientific names
+
+sci_names <- entities_gh %>%
+  select(scientificNameStd) %>%
+  distinct(scientificNameStd)
+# we are missing some species
+
+# extract those scientific names from the entities table
+
+all_entities <- left_join(sci_names, entities, by = "scientificNameStd")
+
+# join the missing species
+
+missing <- entities_gh %>%
+  filter(is.na(scientificNameStd))
+
+all_entities <- bind_rows(all_entities, missing)
+
+# tidy up
+
+all_entities <- select(all_entities, -ACT, -NSW, -NT, -QLD, -SA, -VIC, -WA, -numGrowers, -numStates)
+
+write.csv(all_entities, "Master_database_output/all_entities_gh.csv", row.names = FALSE)
+
+# 
+
 ##############################
 
 # how many traits do we have for each species?
