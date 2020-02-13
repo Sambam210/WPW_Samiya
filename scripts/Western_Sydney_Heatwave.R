@@ -260,8 +260,41 @@ damaged$Score <- factor(damaged$Score, levels = c("healthy", "lightly scorched",
 graph <- ggplot(damaged, aes(x = Species, y = percent, fill = Score)) +
   geom_bar(position = "stack", stat = "identity") +
   scale_fill_manual(values = c("#339900", "#FFFF00", "#FF9933", "#FF0000")) +
-  labs(title = "Trees >= 20 records", x = "Species", y = "Percentage") +
+  labs(x = "Species", y = "Percentage") +
   coord_flip()
+
+# solution!!!!
+# https://community.rstudio.com/t/r-ggplot2-reorder-stacked-plot/23912/2
+
+order <- damaged %>%
+  filter(Score == "healthy") %>%
+  arrange(percent) %>%
+  rowid_to_column(var='order') %>%
+  select(order, Species)
+
+damaged_new <- left_join(damaged, order, by = "Species")
+
+damaged_new <- select(damaged_new, -Score.y)
+
+damaged_new <- rename(damaged_new, Score = Score.x)
+
+graph <- ggplot(damaged_new, aes(x = reorder(Species, desc(order)), y = percent, fill = Score)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_manual(values = c("#339900", "#FFFF00", "#FF9933", "#FF0000")) +
+  labs(x = "Species", y = "Percentage") +
+  coord_flip()
+
+graph
+
+# grey colours
+# https://ggplot2.tidyverse.org/reference/scale_grey.html
+
+graph <- ggplot(damaged_new, aes(x = reorder(Species, desc(order)), y = percent, fill = Score)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_grey() +
+  labs(x = "Species", y = "Percentage") +
+  coord_flip() +
+  theme_bw()
 
 graph
 
