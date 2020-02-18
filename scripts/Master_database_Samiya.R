@@ -69,6 +69,8 @@ write.csv(all_gl_traits2, "Master_database_output/all_gh_traits.csv", row.names 
 
 all_gh_traits <- read.csv("Master_database_output/all_gh_traits.csv")
 
+########################################################################################################################
+
 # let's take a step back
 # for all the gh species I want all the cultivars/varieties we have
 
@@ -126,15 +128,26 @@ everything <- select(everything, master, scientificNameStd, gl, tr, species, pla
                      multiple_forms, source, trait_index, trait_name_original, trait_name,
                      value_original, value)
 
+write.csv(everything, "Master_database_output/EVERYTHING_gh.csv", row.names = FALSE)
+
 # remove some mistakes
 everything <- read.csv("Master_database_output/EVERYTHING_gh.csv")
 
-everything <- everything %>%
-  filter(!is.na(scientificNameStd) | !is.na(gl))
+# filter out entries with no scientific name and gh name
+extra <- everything %>%
+  filter(is.na(scientificNameStd) , is.na(gl))
 
-write.csv(everything, "Master_database_output/EVERYTHING_gh.csv", row.names = FALSE)
+# remove them from everything dataframe
+everything_new <- anti_join(everything, extra)
 
-##############################
+# check it worked
+check <- distinct(everything_new, gl) # 116 entires, worked!!!
+
+write.csv(everything_new, "Master_database_output/EVERYTHING_gh.csv", row.names = FALSE)
+
+# NOTE: need to manually add in Photinia robusta traits and Arthropodium cirrhatum
+
+###########################################################################################
 
 # how many traits do we have for each species?
 
