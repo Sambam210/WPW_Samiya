@@ -257,15 +257,6 @@ damaged <- records_data %>%
 
 damaged$Score <- factor(damaged$Score, levels = c("healthy", "lightly scorched", "heavily scorched", "defoliated"))
 
-graph <- ggplot(damaged, aes(x = Species, y = percent, fill = Score)) +
-  geom_bar(position = "stack", stat = "identity") +
-  scale_fill_manual(values = c("#339900", "#FFFF00", "#FF9933", "#FF0000")) +
-  labs(x = "Species", y = "Percentage") +
-  coord_flip()
-
-# solution!!!!
-# https://community.rstudio.com/t/r-ggplot2-reorder-stacked-plot/23912/2
-
 order <- damaged %>%
   filter(Score == "healthy") %>%
   arrange(percent) %>%
@@ -278,14 +269,6 @@ damaged_new <- select(damaged_new, -Score.y)
 
 damaged_new <- rename(damaged_new, Score = Score.x)
 
-graph <- ggplot(damaged_new, aes(x = reorder(Species, desc(order)), y = percent, fill = Score)) +
-  geom_bar(position = "stack", stat = "identity") +
-  scale_fill_manual(values = c("#339900", "#FFFF00", "#FF9933", "#FF0000")) +
-  labs(x = "Species", y = "Percentage") +
-  coord_flip()
-
-graph
-
 # grey colours
 # https://ggplot2.tidyverse.org/reference/scale_grey.html
 
@@ -294,12 +277,14 @@ graph <- ggplot(damaged_new, aes(x = reorder(Species, desc(order)), y = percent,
   scale_fill_grey() +
   labs(x = "Species", y = "Percentage") +
   coord_flip() +
+  geom_hline(yintercept = 25, linetype="dotted", color = "white", size=1.5) +
+  geom_hline(yintercept = 50, linetype="dotted", color = "white", size=1.5) +
+  geom_hline(yintercept = 75, linetype="dotted", color = "white", size=1.5) +
   theme_bw()
 
 graph
 
-# https://community.rstudio.com/t/creating-a-barplot-with-ordered-bars/13681/3
-# https://community.rstudio.com/t/a-tidy-way-to-order-stacked-bar-chart-by-fill-subset/5134
+# https://community.rstudio.com/t/r-ggplot2-reorder-stacked-plot/23912/2
 
 # exoitc vs native species damage
 
