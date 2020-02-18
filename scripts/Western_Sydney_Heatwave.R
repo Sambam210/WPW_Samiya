@@ -18,8 +18,8 @@ assessment <- read.csv("Western_Sydney_Heatwave_data/Assessment.csv")
 
 assessment <- assessment %>%
   mutate(Score = case_when(Score == "2" ~ "lightly scorched",
-                                Score == "3" ~ "heavily scorched",
-                                Score == "4" ~ "defoliated")) %>%
+                           Score == "3" ~ "heavily scorched",
+                           Score == "4" ~ "defoliated")) %>%
   filter(Notes != "Removed")
 
 # load up the inventory info from Ale
@@ -153,7 +153,7 @@ defoliated <- ggplot(defoliated, aes(x = reorder(Species, frequency), Species, y
   coord_flip()
 
 defoliated
-  
+
 # save the output
 pdf("Western_Sydney_Heatwave_output/summary_graphs.pdf") # Create a new pdf device
 print(graph)
@@ -632,11 +632,18 @@ print(deciduous_leafloss)
 print(most_damaged)
 dev.off() # Close the pdf device
 
+##########################################################################################################################################
 
+###### Create summary tables with damage, height, width and frequency to work out cost of replacement
 
+library(tidyverse)
 
+data <- read.csv("Western_Sydney_Heatwave_output/cleaned_data.csv")
 
+# just pull out defoliated
 
-
+defoliated <- data %>%
+  filter(Score == "defoliated") %>%
+  se
 
 
