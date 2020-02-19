@@ -277,9 +277,9 @@ graph <- ggplot(damaged_new, aes(x = reorder(Species, desc(order)), y = percent,
   scale_fill_grey() +
   labs(x = "Species", y = "Percentage") +
   coord_flip() +
-  geom_hline(yintercept = 25, linetype="dotted", color = "white", size=1.5) +
-  geom_hline(yintercept = 50, linetype="dotted", color = "white", size=1.5) +
-  geom_hline(yintercept = 75, linetype="dotted", color = "white", size=1.5) +
+  geom_hline(yintercept = 25, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 50, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 75, linetype="solid", color = "white", size=0.5) +
   theme_bw()
 
 graph
@@ -302,11 +302,27 @@ damage_origin$Score <- factor(damage_origin$Score, levels = c("healthy", "lightl
 
 native <- filter(damage_origin, Origin == "Native")
 
-native_origin <- ggplot(native, aes(x = Species, y = percent, fill = Score)) +
+order <- native %>%
+  filter(Score == "healthy") %>%
+  arrange(percent) %>%
+  rowid_to_column(var='order') %>%
+  select(order, Species)
+
+native_new <- left_join(native, order, by = "Species")
+
+native_new <- select(native_new, -Score.y)
+
+native_new <- rename(native_new, Score = Score.x)
+
+native_origin <- ggplot(native_new, aes(x = reorder(Species, desc(order)), y = percent, fill = Score)) +
   geom_bar(position = "stack", stat = "identity") +
-  scale_fill_manual(values = c("#339900", "#FFFF00", "#FF9933", "#FF0000")) +
+  scale_fill_grey() +
   labs(title = "Native species", x = "Species", y = "Percentage") +
-  coord_flip()
+  coord_flip() +
+  geom_hline(yintercept = 25, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 50, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 75, linetype="solid", color = "white", size=0.5) +
+  theme_bw()
 
 native_origin
 
@@ -314,11 +330,27 @@ native_origin
 
 exotic <- filter(damage_origin, Origin == "Exotic")
 
-exotic_origin <- ggplot(exotic, aes(x = Species, y = percent, fill = Score)) +
+order <- exotic %>%
+  filter(Score == "healthy") %>%
+  arrange(percent) %>%
+  rowid_to_column(var='order') %>%
+  select(order, Species)
+
+exotic_new <- left_join(exotic, order, by = "Species")
+
+exotic_new <- select(exotic_new, -Score.y)
+
+exotic_new <- rename(exotic_new, Score = Score.x)
+
+exotic_origin <- ggplot(exotic_new, aes(x = reorder(Species, desc(order)), y = percent, fill = Score)) +
   geom_bar(position = "stack", stat = "identity") +
-  scale_fill_manual(values = c("#339900", "#FFFF00", "#FF9933", "#FF0000")) +
+  scale_fill_grey() +
   labs(title = "Exotic species", x = "Species", y = "Percentage") +
-  coord_flip()
+  coord_flip() +
+  geom_hline(yintercept = 25, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 50, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 75, linetype="solid", color = "white", size=0.5) +
+  theme_bw()
 
 exotic_origin
 
@@ -640,31 +672,17 @@ library(tidyverse)
 
 data <- read.csv("Western_Sydney_Heatwave_output/cleaned_data.csv")
 
-# just pull out defoliated
+# just pull out defoliated and heavily scorched
 
-defoliated <- data %>%
-  filter(Score == "defoliated") %>%
+all_damaged <- data %>%
+  filter(Score == "defoliated" | Score == "heavily scorched") %>%
   select(Species, Height, Score) %>%
-  group_by(Species, Height) %>%
-  rename(Height_defoliated = Height) %>%
-  summarise(frequency_defoliated = n())
+  group_by(Species, Height, Score) %>%
+  summarise(frequency = n()) %>%
+  select(Species, Score, Height, frequency) %>%
+  arrange(Score, Species)
 
-# pull out the heavily scorched
-
-heavily_scorched <- data %>%
-  filter(Score == "heavily scorched") %>%
-  select(Species, Height, Score) %>%
-  group_by(Species, Height) %>%
-  rename(Height_heavily_scorched = Height) %>%
-  summarise(frequency_heavily_scorched = n())
-
-# join two together
-
-all_damage <- left_join(defoliated, heavily_scorched, by = "Species")
-
-
-
-
+write_csv(all_damaged, "Western_Sydney_Heatwave_output/damage_height.csv")
 
 
 
