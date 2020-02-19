@@ -68,169 +68,12 @@ write.csv(all, "Western_Sydney_Heatwave_output/cleaned_data.csv", row.names = FA
 
 ############################################################################################################################################
 
-# Let's do some summary stats and graphs
-
-library(tidyverse)
-library(ggplot2)
-
-data <- read.csv("Western_Sydney_Heatwave_output/cleaned_data.csv")
-
-summary_scores <- data %>%
-  group_by(Score) %>%
-  summarise(frequency=n()) %>%
-  mutate(completeness = (frequency / 5591))
-
-write.csv(summary_scores, "Western_Sydney_Heatwave_output/summary_scores.csv", row.names = FALSE)
-
-# let's look at just the damaged species
-
-damaged <- data %>%
-  filter(Score != "healthy") %>%
-  group_by(Species, Score) %>%
-  summarise(frequency = n())
-
-graph <- ggplot(damaged, aes(x = reorder(Species, frequency), Species, y = frequency, fill = Score)) + # https://stackoverflow.com/questions/37480949/re-ordering-bars-in-rs-barplot/37481077
-  geom_bar(position = "stack", stat = "identity") +
-  scale_fill_manual(values = c("#CC6633", "#FF3399", "#FF9933", "#FF9900", "#FFFF66", "#0033FF")) +
-  labs(title = "Damaged trees", x = "Species", y = "Frequency") +
-  coord_flip()
-
-graph
-
-# let's look at the damaged species IN RELATION to how many of them are healthy
-
-damaged2 <- data %>%
-  filter(Score != "healthy") %>%
-  group_by(Species, Score) %>%
-  summarise(frequency = n()) %>%
-  distinct(Species)
-
-damaged_healthy <- left_join(damaged2, data, by = "Species")
-
-damaged_healthy <- damaged_healthy %>%
-  group_by(Species, Score) %>%
-  summarise(frequency = n())
-
-damaged_healthy <- ggplot(damaged_healthy, aes(x = reorder(Species, frequency), Species, y = frequency, fill = Score)) + # https://stackoverflow.com/questions/37480949/re-ordering-bars-in-rs-barplot/37481077
-  geom_bar(position = "stack", stat = "identity") +
-  labs(title = "Damaged trees", x = "Species", y = "Frequency") +
-  coord_flip()
-
-damaged_healthy
-
-# let's just look at lightly scorched species
-
-lightly_scorched <- damaged %>%
-  filter(Score == "lightly scorched")
-
-lightly_scorched <- ggplot(lightly_scorched, aes(x = reorder(Species, frequency), Species, y = frequency)) +
-  geom_bar(stat = "identity") +
-  labs(title = "Lightly scorched", x = "Species", y = "Frequency") +
-  coord_flip()
-
-lightly_scorched
-
-# let's just look at heavily scorched species
-
-heavily_scorched <- damaged %>%
-  filter(Score == "heavily scorched")
-
-heavily_scorched <- ggplot(heavily_scorched, aes(x = reorder(Species, frequency), Species, y = frequency)) +
-  geom_bar(stat = "identity") +
-  labs(title = "Heavily scorched", x = "Species", y = "Frequency") +
-  coord_flip()
-
-heavily_scorched
-
-# let's just look at defoliated species
-
-defoliated <- damaged %>%
-  filter(Score == "defoliated")
-
-defoliated <- ggplot(defoliated, aes(x = reorder(Species, frequency), Species, y = frequency)) +
-  geom_bar(stat = "identity") +
-  labs(title = "Defoliated", x = "Species", y = "Frequency") +
-  coord_flip()
-
-defoliated
-
-# save the output
-pdf("Western_Sydney_Heatwave_output/summary_graphs.pdf") # Create a new pdf device
-print(graph)
-print(damaged_healthy)
-print(lightly_scorched)
-print(heavily_scorched)
-print(defoliated)
-dev.off() # Close the pdf device
-
-############################ let's look at tree dimensions
-# healthy
-
-healthy_height <- data %>%
-  filter(Score == "healthy") %>%
-  group_by(Height) %>%
-  summarise(frequency = n())
-
-healthy_height <- ggplot(healthy_height, aes(x = Height, y = frequency)) +
-  geom_bar(stat = "identity") +
-  labs(title = "Healthy", x = "Height (m)", y = "Frequency")
-
-healthy_height
-
-# lightly scorched
-
-lightly_scorched_height <- data %>%
-  filter(Score == "lightly scorched") %>%
-  group_by(Height) %>%
-  summarise(frequency = n())
-
-lightly_scorched_height <- ggplot(lightly_scorched_height, aes(x = Height, y = frequency)) +
-  geom_bar(stat = "identity") +
-  labs(title = "Lightly scorched", x = "Height (m)", y = "Frequency")
-
-lightly_scorched_height
-
-# heavily scorched
-
-heavily_scorched_height <- data %>%
-  filter(Score == "heavily scorched") %>%
-  group_by(Height) %>%
-  summarise(frequency = n())
-
-heavily_scorched_height <- ggplot(heavily_scorched_height, aes(x = Height, y = frequency)) +
-  geom_bar(stat = "identity") +
-  labs(title = "Heavily scorched", x = "Height (m)", y = "Frequency")
-
-heavily_scorched_height
-
-# defoliated
-
-defoliated_height <- data %>%
-  filter(Score == "defoliated") %>%
-  group_by(Height) %>%
-  summarise(frequency = n())
-
-defoliated_height <- ggplot(defoliated_height, aes(x = Height, y = frequency)) +
-  geom_bar(stat = "identity") +
-  labs(title = "Defoliated", x = "Height (m)", y = "Frequency")
-
-defoliated_height
-
-# join plots together
-
-library(gridExtra)
-
-grid.arrange(healthy_height, lightly_scorched_height, heavily_scorched_height, defoliated_height, nrow = 2, ncol = 2)
-# saved plot manually, for some reason code wasn't working
 
 #########################################################################################################################################
 
-#                                                       LET'S DO THIS BETTER
-
-# Report percentages instead
+#                                                       GRAPHS
 
 ##########################################################################################################################################
-
 
 library(tidyverse)
 library(ggplot2)
@@ -370,11 +213,27 @@ damage_leafloss$Score <- factor(damage_leafloss$Score, levels = c("healthy", "li
 
 evergreen <- filter(damage_leafloss, Leaf_loss == "Evergreen")
 
-evergreen_leafloss <- ggplot(evergreen, aes(x = Species, y = percent, fill = Score)) +
+order <- evergreen %>%
+  filter(Score == "healthy") %>%
+  arrange(percent) %>%
+  rowid_to_column(var='order') %>%
+  select(order, Species)
+
+evergreen_new <- left_join(evergreen, order, by = "Species")
+
+evergreen_new <- select(evergreen_new, -Score.y)
+
+evergreen_new <- rename(evergreen_new, Score = Score.x)
+
+evergreen_leafloss <- ggplot(evergreen_new, aes(x = reorder(Species, desc(order)), y = percent, fill = Score)) +
   geom_bar(position = "stack", stat = "identity") +
-  scale_fill_manual(values = c("#339900", "#FFFF00", "#FF9933", "#FF0000")) +
+  scale_fill_grey() +
   labs(title = "Evergreen species", x = "Species", y = "Percentage") +
-  coord_flip()
+  coord_flip() +
+  geom_hline(yintercept = 25, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 50, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 75, linetype="solid", color = "white", size=0.5) +
+  theme_bw()
 
 evergreen_leafloss
 
@@ -382,11 +241,27 @@ evergreen_leafloss
 
 deciduous <- filter(damage_leafloss, Leaf_loss == "Deciduous")
 
-deciduous_leafloss <- ggplot(deciduous, aes(x = Species, y = percent, fill = Score)) +
+order <- deciduous %>%
+  filter(Score == "healthy") %>%
+  arrange(percent) %>%
+  rowid_to_column(var='order') %>%
+  select(order, Species)
+
+deciduous_new <- left_join(deciduous, order, by = "Species")
+
+deciduous_new <- select(deciduous_new, -Score.y)
+
+deciduous_new <- rename(deciduous_new, Score = Score.x)
+
+deciduous_leafloss <- ggplot(deciduous_new, aes(x = reorder(Species, desc(order)), y = percent, fill = Score)) +
   geom_bar(position = "stack", stat = "identity") +
-  scale_fill_manual(values = c("#339900", "#FFFF00", "#FF9933", "#FF0000")) +
+  scale_fill_grey() +
   labs(title = "Deciduous species", x = "Species", y = "Percentage") +
-  coord_flip()
+  coord_flip() +
+  geom_hline(yintercept = 25, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 50, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 75, linetype="solid", color = "white", size=0.5) +
+  theme_bw()
 
 deciduous_leafloss
 
