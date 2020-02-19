@@ -644,6 +644,29 @@ data <- read.csv("Western_Sydney_Heatwave_output/cleaned_data.csv")
 
 defoliated <- data %>%
   filter(Score == "defoliated") %>%
-  se
+  select(Species, Height, Score) %>%
+  group_by(Species, Height) %>%
+  rename(Height_defoliated = Height) %>%
+  summarise(frequency_defoliated = n())
+
+# pull out the heavily scorched
+
+heavily_scorched <- data %>%
+  filter(Score == "heavily scorched") %>%
+  select(Species, Height, Score) %>%
+  group_by(Species, Height) %>%
+  rename(Height_heavily_scorched = Height) %>%
+  summarise(frequency_heavily_scorched = n())
+
+# join two together
+
+all_damage <- left_join(defoliated, heavily_scorched, by = "Species")
+
+
+
+
+
+
+
 
 
