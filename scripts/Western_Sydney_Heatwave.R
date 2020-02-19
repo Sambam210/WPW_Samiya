@@ -112,12 +112,45 @@ damaged_new <- select(damaged_new, -Score.y)
 
 damaged_new <- rename(damaged_new, Score = Score.x)
 
+# combine species and frequency into new column
+# https://stackoverflow.com/questions/39098406/add-brackets-to-string-in-data-frame
+# https://stackoverflow.com/questions/18115550/combine-two-or-more-columns-in-a-dataframe-into-a-new-column-with-a-new-name
+
+damaged_new$frequency_new <- paste0("(", damaged_new$frequency , ")")
+
+damaged_new$Species_new <- paste(damaged_new$Species, (damaged_new$frequency_new))
+
+# put an asterisk in from of the exotic species
+# https://stackoverflow.com/questions/39098406/add-brackets-to-string-in-data-frame
+
+origin <- read.csv("Western_Sydney_Heatwave_output/40_species.csv")
+
+origin <- select(origin, Species, Origin)
+
+damaged_new <- left_join(damaged_new, origin, by = "Species")
+
+damaged_new$Species_new_new <- with(damaged_new, ifelse(Origin == "Exotic", paste0("* ", Species_new),
+                                                        paste0(Species_new)))
+
 # grey colours
 # https://ggplot2.tidyverse.org/reference/scale_grey.html
 
-graph <- ggplot(damaged_new, aes(x = reorder(Species, desc(order)), y = percent, fill = Score)) +
+graph <- ggplot(damaged_new, aes(x = reorder(Species_new_new, desc(order)), y = percent, fill = Score)) +
   geom_bar(position = "stack", stat = "identity") +
-  scale_fill_grey() +
+  scale_fill_grey(start = 0.8, end = 0.2) +
+  labs(x = "Species", y = "Percentage") +
+  coord_flip() +
+  geom_hline(yintercept = 25, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 50, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 75, linetype="solid", color = "white", size=0.5) +
+  theme_bw()
+
+graph
+
+# in colour
+graph <- ggplot(damaged_new, aes(x = reorder(Species_new_new, desc(order)), y = percent, fill = Score)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_manual(values = c("#66CC00", "#FFFF00", "#FF6600", "#000000")) +
   labs(x = "Species", y = "Percentage") +
   coord_flip() +
   geom_hline(yintercept = 25, linetype="solid", color = "white", size=0.5) +
@@ -485,47 +518,41 @@ grid.arrange(healthy_height_width, lightly_scorched_height_width, heavily_scorch
 
 damaged_50 <- damaged %>%
   filter(Score == "healthy") %>%
-  filter(percent < 50 | percent == 50) # only 4 species (Acer, Magnolia, Plantanus, Quercus)
+  filter(percent < 50 | percent == 50) # only 4 species (Acer, Magnolia, Platanus, Quercus)
 
 # let's pull these species out of the master database
 
-records_50 <- filter(data, Species == "Acer negundo" | Species == "Magnolia grandiflora" | Species == "Plantanus x acerifolia" 
+records_50 <- filter(data, Species == "Acer negundo" | Species == "Magnolia grandiflora" | Species == "Platanus x acerifolia" 
                      | Species == "Quercus palustris")
 
-# let's group them according to height and score
+# group acording to score and height
 
 summary_records_50 <- records_50 %>%
-  group_by(Species, Score, Height) %>%
-  summarise(frequency = n())
-
-# add in the total frequency column back
-
-summary_records_50 <- summary_records_50 %>%
-  mutate(total_frequency = case_when(Species == "Acer negundo" ~ "74",
-                                     Species == "Magnolia grandiflora" ~ "55",
-                                     Species == "Plantanus x acerifolia" ~ "55",
-                                     Species == "Quercus palustris" ~ "57"))
-
-glimpse(summary_records_50)
-
-# need to change total frequency into integar
-
-summary_records_50$total_frequency <- as.numeric(as.character(summary_records_50$total_frequency))
-
-glimpse(summary_records_50)
-
-# calculate percentage
-
-summary_records_50 <- mutate(summary_records_50, percent = (frequency/total_frequency)*100)
+  select(Species, Score, Height) %>%
+  add_count(Species, Height, name = "Height_total") %>%
+  group_by(Species, Score, Height, Height_total) %>%
+  summarise(frequency = n()) %>%
+  mutate(percent = (frequency/Height_total)*100)
 
 # graph it
 
 summary_records_50$Score <- factor(summary_records_50$Score, levels = c("healthy", "lightly scorched", "heavily scorched", "defoliated"))
 
-most_damaged <- ggplot(summary_records_50, aes(x = Height, y = percent)) +
-  geom_bar(stat = "identity") +
+# most_damaged <- ggplot(summary_records_50, aes(x = Height, y = percent, fill = Score)) +
+#  geom_bar(position = "stack", stat = "identity") +
+#  scale_fill_grey(start = 0.8, end = 0.2) +
+#  labs(title = "Most damaged species", x = "Height (m)", y = "Percentage") +
+#  theme(axis.text.x = element_text(angle=90, hjust=1), # rotate x axis labels
+#        panel.background = element_rect(fill = "white"),
+#        panel.border = element_rect(fill = NA, linetype = "solid", colour = "black")) +
+#  facet_wrap(~Species)
+
+most_damaged <- ggplot(summary_records_50, aes(x = Height, y = percent, fill = Score)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_grey(start = 0.8, end = 0.2) +
   labs(title = "Most damaged species", x = "Height (m)", y = "Percentage") +
-  facet_grid(Species ~ Score)
+  theme_bw() +
+  facet_wrap(~Species)
 
 most_damaged
 
