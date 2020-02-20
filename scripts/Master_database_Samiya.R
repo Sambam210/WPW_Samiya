@@ -145,7 +145,7 @@ check <- distinct(everything_new, gl) # 116 entires, worked!!!
 
 write.csv(everything_new, "Master_database_output/EVERYTHING_gh.csv", row.names = FALSE)
 
-# NOTE: need to manually add in Photinia robusta traits and Arthropodium cirrhatum
+# NOTE: need to manually add in Photinia robusta, Arthropodium cirrhatum, Ficus microcarpa Hillii traits
 
 ###########################################################################################
 
