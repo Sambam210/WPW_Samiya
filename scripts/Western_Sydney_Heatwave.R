@@ -98,10 +98,24 @@ damaged <- records_data %>%
   summarise(partial_frequency = n()) %>%
   mutate(percent = (partial_frequency/frequency)*100)
 
-damaged$Score <- factor(damaged$Score, levels = c("healthy", "lightly scorched", "heavily scorched", "defoliated"))
+# change the names for score categories as per Michelle and Ale's suggestions
+
+damaged[] <-lapply(damaged, gsub, pattern = "healthy", replacement = "no damage")
+damaged[] <-lapply(damaged, gsub, pattern = "lightly scorched", replacement = "lightly damaged")
+damaged[] <-lapply(damaged, gsub, pattern = "heavily scorched", replacement = "heavily damaged")
+
+damaged$Score <- factor(damaged$Score, levels = c("no damage", "lightly damaged", "heavily damaged", "defoliated"))
+
+# for some reason numbers have been changed to characters, change back
+
+damaged$frequency <- as.numeric(as.character(damaged$frequency))
+damaged$partial_frequency <- as.numeric(as.character(damaged$partial_frequency))
+damaged$percent <- as.numeric(as.character(damaged$percent))
+
+glimpse(damaged)
 
 order <- damaged %>%
-  filter(Score == "healthy") %>%
+  filter(Score == "no damage") %>%
   arrange(percent) %>%
   rowid_to_column(var='order') %>%
   select(order, Species)
@@ -586,6 +600,31 @@ all_damaged <- data %>%
 
 write_csv(all_damaged, "Western_Sydney_Heatwave_output/damage_height.csv")
 
+##########################################################################################################################################
+
+# for each species summarise the percentage of trees in each damage category
+
+data <- read.csv("Western_Sydney_Heatwave_output/cleaned_data.csv")
+
+# let's pull out the species which we have >= 20 records for
+
+records <- data %>%
+  group_by(Species) %>%
+  summarise(frequency = n()) %>%
+  filter(frequency > 20 | frequency == 20) # 40 species with >= 20 records
+
+# let's pull these species out of the master database
+
+records_data <- left_join(records, data, by = "Species")
+
+damage_summary <- records_data %>%
+  select(Species, Score) %>%
+  add_count(Species, name = "species_frequency") %>%
+  group_by(Species, Score, species_frequency) %>%
+  summarise(score_frequency = n()) %>%
+  mutate(percent = (score_frequency/species_frequency)*100)
+
+write_csv(damage_summary, "Western_Sydney_Heatwave_output/damage_summary.csv")
 
 
 
