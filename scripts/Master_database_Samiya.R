@@ -161,20 +161,6 @@ write.csv(everything_new, "Master_database_output/EVERYTHING_gh.csv", row.names 
 
 # write.csv(unique, "Master_database_output/gh_traits_completeness.csv", row.names = FALSE)
 
-####################################################################################################
-
-# summary stats for glasshouse manual traits collection
-
-library(tidyverse)
-
-everything <- read.csv("Master_database_input/EVERYTHING_gh.csv")
-
-everything_summary <- everything %>%
-  filter(Min_5_traits == "TRUE") %>%
-  distinct(species, category) %>%
-  group_by(category) %>%
-  summarise(frequency = n())
-
 #########################################################################################################
 
 # let's extract the all the other species present in the traits database
@@ -237,4 +223,18 @@ gh_species_names <- gh_species %>%
 everything_new <- anti_join(everything, gh_species_names)
 
 write.csv(everything_new, "Master_database_output/EVERYTHING_traits.csv", row.names = FALSE)
+
+################################################################################################################################
+
+# summary stats for glasshouse manual traits collection
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_gh.csv")
+
+everything_summary <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(species, category) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
 
