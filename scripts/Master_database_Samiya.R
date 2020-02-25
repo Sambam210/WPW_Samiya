@@ -115,7 +115,6 @@ traits_new <- rename(traits, species_tr = species)
 
 everything <- left_join(all_entities, traits_new, by = c("master" = "newspecies"))
 
-
 # add back the newspecies column
 
 everything$newspecies <- traits_new$newspecies[match(everything$master, traits_new$newspecies)]
