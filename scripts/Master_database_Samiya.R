@@ -178,6 +178,16 @@ everything_summary <- everything %>%
 
 #########################################################################################################
 
+# let's extract the all the other species present in the traits database
+
+library(tidyverse)
+
+# open entities table
+
+entities_tr <- entities %>%
+  filter(!is.na(tr))
+
+
 
 
 
