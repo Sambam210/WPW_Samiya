@@ -301,7 +301,19 @@ everything_new <- anti_join(everything, gh_species_names)
 
 write.csv(everything_new, "Master_database_output/EVERYTHING_traits.csv", row.names = FALSE)
 
+###########################################################################################################################
 
+# summary stats for all manual traits collection
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_output/EVERYTHING_traits.csv")
+
+everything_summary <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(species, category) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
 
 
 
