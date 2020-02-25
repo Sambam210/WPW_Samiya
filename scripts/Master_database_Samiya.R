@@ -145,22 +145,40 @@ check <- distinct(everything_new, gl) # 116 entires, worked!!!
 
 write.csv(everything_new, "Master_database_output/EVERYTHING_gh.csv", row.names = FALSE)
 
-# NOTE: need to manually add in Photinia robusta, Arthropodium cirrhatum, Ficus microcarpa Hillii traits
+# NOTE: need to manually add in Photinia robusta, Arthropodium cirrhatum, Ficus microcarpa Hillii and others traits
 
 ###########################################################################################
 
 # how many traits do we have for each species?
 
-all <- read.csv("Master_database_output/all_gh_traits.csv")
+# all <- read.csv("Master_database_output/all_gh_traits.csv")
 
-unique <- all %>%
-  distinct(master, trait_name) %>%
-  add_count(master, sort = TRUE, name = "n_traits") %>%
-  select(-trait_name) %>%
-  distinct(master, .keep_all = TRUE) %>%
-  arrange(master)
+# unique <- all %>%
+#  distinct(master, trait_name) %>%
+#  add_count(master, sort = TRUE, name = "n_traits") %>%
+#  select(-trait_name) %>%
+#  distinct(master, .keep_all = TRUE) %>%
+#  arrange(master)
 
-write.csv(unique, "Master_database_output/gh_traits_completeness.csv", row.names = FALSE)
+# write.csv(unique, "Master_database_output/gh_traits_completeness.csv", row.names = FALSE)
+
+####################################################################################################
+
+# summary stats for glasshouse manual traits collection
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_gh.csv")
+
+everything_summary <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(species, category) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+
+#########################################################################################################
+
+
 
 
 
