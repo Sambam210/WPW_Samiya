@@ -35,39 +35,39 @@ glasshouse <- whatwehave %>%
 
 # pull out all the traits for the glasshouse species
 
-library(tidyverse)
+# library(tidyverse)
 
-glasshouse <- Master_Key %>%
-  filter(!is.na(gl)) %>% # some species have multiple entries as we tested multiple varieties
-  select(master, scientificNameStd, gl, tr)
+# glasshouse <- Master_Key %>%
+#  filter(!is.na(gl)) %>% # some species have multiple entries as we tested multiple varieties
+#  select(master, scientificNameStd, gl, tr)
 
 # open traits table manually
 
 # extract all the data for the glasshouse species from the traits table
-all_gl_traits <- left_join(glasshouse, traits, by = c("tr" = "newspecies"))
+# all_gl_traits <- left_join(glasshouse, traits, by = c("tr" = "newspecies"))
 
 # write.csv(all_gl_traits, "Master_database_output/all_gh_traits.csv", row.names = FALSE)
 
 # pick out the species that have no traits in the database
 
-missing <- glasshouse %>%
-  filter(is.na(tr))
+# missing <- glasshouse %>%
+#  filter(is.na(tr))
 # most of these missing species are actually varieties, do we have traits for the species in the trait database?
 
-missing_traits_species_level <- left_join(missing, traits, by = c("scientificNameStd" = "newspecies"))
+# missing_traits_species_level <- left_join(missing, traits, by = c("scientificNameStd" = "newspecies"))
 
 # join to all glasshouse traits
 
-all_gl_traits2 <- bind_rows(all_gl_traits, missing_traits_species_level)
+# all_gl_traits2 <- bind_rows(all_gl_traits, missing_traits_species_level)
 
-all_gl_traits2 <- arrange(all_gl_traits2, master)
+# all_gl_traits2 <- arrange(all_gl_traits2, master)
 
-write.csv(all_gl_traits2, "Master_database_output/all_gh_traits.csv", row.names = FALSE)
+# write.csv(all_gl_traits2, "Master_database_output/all_gh_traits.csv", row.names = FALSE)
 
 # there are some species in the trait database that are cultivars/varieties and we have traits for them but we also want traits for the 
 # actual species
 
-all_gh_traits <- read.csv("Master_database_output/all_gh_traits.csv")
+# all_gh_traits <- read.csv("Master_database_output/all_gh_traits.csv")
 
 ########################################################################################################################
 
