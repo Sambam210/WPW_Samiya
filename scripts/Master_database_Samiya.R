@@ -268,8 +268,3 @@ everything_summary <- everything %>%
   summarise(frequency = n())
 
 
-
-
-
-
-

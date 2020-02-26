@@ -626,6 +626,286 @@ damage_summary <- records_data %>%
 
 write_csv(damage_summary, "Western_Sydney_Heatwave_output/damage_summary.csv")
 
+##########################################################################################################################################
+
+#### PCA on assessed trees and climatic variables
+
+niches <- read.csv("Western_Sydney_Heatwave_data/niches_damage_Penrith.csv")
+
+# only look at the means of the climatic variables that I think are important
+
+niches_mean <- select(niches, speciesName, damaged, Annual_mean_temp_mean, Mean_temp_dry_qu_mean, Max_temp_warm_month_mean)
+
+library(tidyverse)
+library("FactoMineR")
+library("factoextra")
+
+# removed the categorical species columns
+
+PCA_analysis_pairs <- select(niches_mean, -speciesName)
+
+# let's see if the data are linearly related
+
+pairs(PCA_analysis_pairs)
+
+# looks ok
+
+# make species code the row name
+
+PCA_analysis <- niches_mean %>%
+  remove_rownames %>%
+  column_to_rownames(var="speciesName")
+
+# doing the PCA
+
+res.pca <- PCA(PCA_analysis, graph = FALSE)
+
+# looking at the eigenvalues
+
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+# first 3 PCs explain 97% of the data
+
+# let's look at the scree plot
+
+fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 60))
+
+# let's look at the variables
+
+var <- get_pca_var(res.pca)
+var
+
+# plot the variables
+
+var.plot <- fviz_pca_var(res.pca, col.var = "black")
+var.plot
+
+# graph of individuals
+
+ind <- get_pca_ind(res.pca)
+ind
+
+# plot the individuals
+
+ind.plot <- fviz_pca_ind(res.pca, repel = TRUE)
+ind.plot
+
+# Hierarchical clustering
+
+# let's only do the PCA on the first 3 dimensions
+
+res.pca <- PCA(PCA_analysis, ncp = 3, graph = FALSE)
+
+# clustering
+res.hcpc <- HCPC(res.pca, max = 3, graph = FALSE)
+
+# dendrogram
+fviz_dend(res.hcpc, 
+          cex = 0.7,                     # Label size
+          palette = "jco",               # Color palette see ?ggpubr::ggpar
+          rect = TRUE, rect_fill = TRUE, # Add rectangle around groups
+          rect_border = "jco",           # Rectangle color
+          labels_track_height = 0.8)     # Augment the room for labels
+
+# graph
+cluster <- fviz_cluster(res.hcpc,
+                        repel = TRUE,            # Avoid label overlapping
+                        show.clust.cent = TRUE, # Show cluster centers
+                        palette = "jco",         # Color palette see ?ggpubr::ggpar
+                        ggtheme = theme_minimal(),
+                        main = "PCA")
+cluster
+
+# Let's look at the HCPC output
+
+# display the qualtitative variables that explain the most variance in each cluster
+
+res.hcpc$desc.var$quanti
+
+# principle dimensions that are most associated with clusters
+res.hcpc$desc.axes$quanti
+
+#####################################
+
+## remove Zelkova and Gleditsia
+
+niches <- read.csv("Western_Sydney_Heatwave_data/niches_damage_Penrith.csv")
+
+# only look at the means of the climatic variables that I think are important
+
+niches_mean <- select(niches, speciesName, damaged, Annual_mean_temp_mean, Mean_temp_dry_qu_mean, Max_temp_warm_month_mean)
+
+niches_mean <- filter(niches_mean, speciesName != "Gleditsia triacanthos", speciesName != "Zelkova serrata")
+
+library(tidyverse)
+library("FactoMineR")
+library("factoextra")
+
+# removed the categorical species columns
+
+PCA_analysis_pairs <- select(niches_mean, -speciesName)
+
+# let's see if the data are linearly related
+
+pairs(PCA_analysis_pairs)
+
+# looks ok
+
+# make species code the row name
+
+PCA_analysis <- niches_mean %>%
+  remove_rownames %>%
+  column_to_rownames(var="speciesName")
+
+# doing the PCA
+
+res.pca <- PCA(PCA_analysis, graph = FALSE)
+
+# looking at the eigenvalues
+
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+# first 3 PCs explain 97% of the data
+
+# let's look at the scree plot
+
+fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 60))
+
+# let's look at the variables
+
+var <- get_pca_var(res.pca)
+var
+
+# plot the variables
+
+var.plot <- fviz_pca_var(res.pca, col.var = "black")
+var.plot
+
+# graph of individuals
+
+ind <- get_pca_ind(res.pca)
+ind
+
+# plot the individuals
+
+ind.plot <- fviz_pca_ind(res.pca, repel = TRUE)
+ind.plot
+
+# Hierarchical clustering
+
+# let's only do the PCA on the first 3 dimensions
+
+res.pca <- PCA(PCA_analysis, ncp = 3, graph = FALSE)
+
+# clustering
+res.hcpc <- HCPC(res.pca, max = 3, graph = FALSE)
+
+# dendrogram
+fviz_dend(res.hcpc, 
+          cex = 0.7,                     # Label size
+          palette = "jco",               # Color palette see ?ggpubr::ggpar
+          rect = TRUE, rect_fill = TRUE, # Add rectangle around groups
+          rect_border = "jco",           # Rectangle color
+          labels_track_height = 0.8)     # Augment the room for labels
+
+# graph
+cluster <- fviz_cluster(res.hcpc,
+                        repel = TRUE,            # Avoid label overlapping
+                        show.clust.cent = TRUE, # Show cluster centers
+                        palette = "jco",         # Color palette see ?ggpubr::ggpar
+                        ggtheme = theme_minimal(),
+                        main = "PCA")
+cluster
+
+# Let's look at the HCPC output
+
+# display the qualtitative variables that explain the most variance in each cluster
+
+res.hcpc$desc.var$quanti
+
+# principle dimensions that are most associated with clusters
+res.hcpc$desc.axes$quanti
+
+#############################################################################################################
+
+# only do PCA on enviro variables and colour code individuals by damage
+
+
+niches <- read.csv("Western_Sydney_Heatwave_data/niches_damage_Penrith.csv")
+
+# only look at the means of the climatic variables that I think are important
+
+niches_mean <- select(niches, speciesName, Annual_mean_temp_mean, Mean_temp_dry_qu_mean, Max_temp_warm_month_mean, Range_Ann_Tmean, Range_Tmax_warmM)
+
+library(tidyverse)
+library("FactoMineR")
+library("factoextra")
+
+# removed the categorical species columns
+
+PCA_analysis_pairs <- select(niches_mean, -speciesName)
+
+# let's see if the data are linearly related
+
+pairs(PCA_analysis_pairs)
+
+# looks ok
+
+# make species code the row name
+
+PCA_analysis <- niches_mean %>%
+  remove_rownames %>%
+  column_to_rownames(var="speciesName")
+
+# doing the PCA
+
+res.pca <- PCA(PCA_analysis, graph = FALSE)
+
+# looking at the eigenvalues
+
+eig.val <- get_eigenvalue(res.pca)
+eig.val
+# first 2 PCs explain 97% of the data
+
+# let's look at the scree plot
+
+fviz_eig(res.pca, addlabels = TRUE, ylim = c(0, 60))
+
+# let's look at the variables
+
+var <- get_pca_var(res.pca)
+var
+
+# plot the variables
+
+var.plot <- fviz_pca_var(res.pca, col.var = "black")
+var.plot
+
+# graph of individuals
+
+ind <- get_pca_ind(res.pca)
+ind
+
+# plot the individuals
+
+ind.plot <- fviz_pca_ind(res.pca, repel = TRUE)
+ind.plot
+
+# create the biplot by colouring individuals according to damage
+plot <- fviz_pca_biplot(res.pca, 
+                        col.ind = niches$damaged, # colour individuals by damage
+                        gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+                        col.var = "black",
+                        repel = TRUE,
+                        geom = c("point", "text"),       
+                        ellipse.alpha = 0.2, # transparency of ellipses   
+                        pointsize = 2, # size of points
+                        mean.point = FALSE, # don't show group centers
+                        legend.title = "", # no legend title
+                        ggtheme = theme_gray())
+
+plot
+
 
 
 
