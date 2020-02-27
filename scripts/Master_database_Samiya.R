@@ -216,7 +216,6 @@ everything <- select(everything, master, scientificNameStd, gl, tr, species, pla
                      multiple_forms, source, trait_index, trait_name_original, trait_name,
                      value_original, value)
 
-
 # filter out entries with no scientific name and tr name
 extra <- everything %>%
   filter(is.na(scientificNameStd) , is.na(tr))
@@ -252,69 +251,6 @@ everything_summary <- everything %>%
   distinct(master, category) %>%
   group_by(category) %>%
   summarise(frequency = n())
-
-#########################################################################################################
-
-# let's extract the all the other species present in the traits database
-
-library(tidyverse)
-
-# open entities table
-
-entities_tr <- entities %>%
-  filter(!is.na(tr))
-
-# extract the master names
-
-master_names <- entities_tr %>%
-  select(master) %>%
-  distinct(master)
-
-# extract those master names from the entities table
-
-all_entities <- left_join(master_names, entities, by = "master")
-
-# tidy up
-
-all_entities <- select(all_entities, -ACT, -NSW, -NT, -QLD, -SA, -VIC, -WA, -numGrowers, -numStates)
-
-# join traits table by matching names in master column
-
-# load traits table
-
-# rename species column so it is unique from the onw in the other database
-
-traits_new <- rename(traits, species_tr = species)
-
-# join
-
-everything <- left_join(all_entities, traits_new, by = c("master" = "newspecies"))
-
-# add back the newspecies column
-
-everything$newspecies <- traits_new$newspecies[match(everything$master, traits_new$newspecies)]
-
-# organise
-
-everything <- select(everything, master, scientificNameStd, gl, tr, species, plantType, origin, Min_5_traits,
-                     Min_8_traits, category, newspecies, species_tr, List_source, date_sourced, verification, species_number,
-                     multiple_forms, source, trait_index, trait_name_original, trait_name,
-                     value_original, value)
-
-# load the gh species I already did
-
-gh_species <- read.csv("Master_database_input/EVERYTHING_gh.csv")
-
-# select only the master names
-
-gh_species_names <- gh_species %>%
-  select(master) %>%
-  distinct(master)
-
-# remove them from everything dataframe
-everything_new <- anti_join(everything, gh_species_names)
-
-write.csv(everything_new, "Master_database_output/EVERYTHING_traits.csv", row.names = FALSE)
 
 ###########################################################################################################################
 
