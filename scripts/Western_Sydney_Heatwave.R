@@ -937,7 +937,7 @@ records_data[] <-lapply(records_data, gsub, pattern = "healthy", replacement = "
 records_data[] <-lapply(records_data, gsub, pattern = "lightly scorched", replacement = "lightly damaged")
 records_data[] <-lapply(records_data, gsub, pattern = "heavily scorched", replacement = "heavily damaged")
 
-records_data$Score <- factor(records_data$Score, levels = c("no damage", "lightly damaged", "heavily damaged", "defoliated"))
+records_data$Score <- factor(records_data$Score, levels = c("no damage", "lightly damaged", "heavily damaged", "defoliated"), ordered = T)
 
 # add origin and leaf loss info
 
@@ -974,19 +974,23 @@ summary(model)
 
 # calculating the odds ratio
 
-exp(cbind(OR = coef(model), confint(model)))
+# exp(cbind(OR = coef(model), confint(model)))
 
 # interpretation
-
 # https://stats.idre.ucla.edu/r/faq/ologit-coefficients/
+# The above interp didn't work as I had more levels for the response variable
+
+# used this instead
+# https://data.library.virginia.edu/fitting-and-interpreting-a-proportional-odds-model/
+# When odds ratios ar <1
 # http://onbiostatistics.blogspot.com/2012/02/how-to-interpret-odds-ratios-that-are.html
 
-# If you are an exotic species, the odds of being damaged (lightly damaged, heavily damaged, defolitated) versus undamaged is 3.4
-# times that of native species
+# using the coefficients from the model
+# For exotic species, the odds of being healthy is 8.1% lower ((1-0.919)*100%) than native species, holding constant all other variables
 
-# If you are a deciduous species, the odds of being damaged (lightly damaged, heavily damaged, defolitated) versus undamaged is 3
-# times that of evergreen species
+# For deciduous species, the odds of being healthy is 7.2% lower ((1-0.927)*100%) than native species, holding constant all other variables 
 
+# For a deciduous and exotic species, the odds of being healthy is 20.9% lower ((1-0.790)*100%) than native and evergreen species
 
 # significance of model
 # https://stats.stackexchange.com/questions/428364/interpreting-odds-ratios-in-ordinal-logistic-regression
@@ -994,5 +998,66 @@ exp(cbind(OR = coef(model), confint(model)))
 
 # https://stats.stackexchange.com/questions/166566/multicollinearity-problems-with-polr-function-in-the-mass-package-for-ordinal
 
+####################################################################################################################################
 
+# prob best just to use two categories
+# damaged and undamaged as a binomial regression
+
+library(tidyverse)
+
+data <- read.csv("Western_Sydney_Heatwave_output/cleaned_data.csv")
+
+# let's pull out the species which we have >= 20 records for
+
+records <- data %>%
+  group_by(Species) %>%
+  summarise(frequency = n()) %>%
+  filter(frequency > 20 | frequency == 20) # 40 species with >= 20 records
+
+# let's pull these species out of the master database
+
+records_data <- left_join(records, data, by = "Species")
+
+# only select the variables we are interested in
+
+records_data <- select(records_data, Species, Score)
+
+# change the names for score categories as per Michelle and Ale's suggestions
+
+records_data[] <-lapply(records_data, gsub, pattern = "healthy", replacement = "no damage")
+records_data[] <-lapply(records_data, gsub, pattern = "lightly scorched", replacement = "damaged")
+records_data[] <-lapply(records_data, gsub, pattern = "heavily scorched", replacement = "damaged")
+records_data[] <-lapply(records_data, gsub, pattern = "defoliated", replacement = "damaged")
+
+records_data$Score <- factor(records_data$Score, levels = c("no damage", "damaged"))
+
+# add origin and leaf loss info
+
+origin <- read.csv("Western_Sydney_Heatwave_output/40_species.csv")
+
+origin <- select(origin, -frequency)
+
+records_data <- left_join(records_data, origin, by = "Species")
+
+# create a new binary variable for origin
+records_data <- records_data %>%
+  mutate(origin_binary = case_when(Origin == "Exotic" ~ "1",
+                                   Origin == "Native" ~ "0"))
+
+records_data$origin_binary <- as.numeric(as.character(records_data$origin_binary))
+
+# create a new binary variable for leaf loss
+records_data <- records_data %>%
+  mutate(leaf_loss_binary = case_when(Leaf_loss == "Deciduous" ~ "1",
+                                      Leaf_loss == "Evergreen" ~ "0"))
+
+records_data$leaf_loss_binary <- as.numeric(as.character(records_data$leaf_loss_binary))
+
+glimpse(records_data)
+
+# doing the logistic regression
+
+model <- glm(Score ~ origin_binary + leaf_loss_binary, family = binomial(link = "logit"), data = records_data)
+
+summary(model)
 
