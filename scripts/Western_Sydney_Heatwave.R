@@ -988,10 +988,11 @@ exp(cbind(OR = coef(model), confint(model)))
 # times that of evergreen species
 
 
+# significance of model
+# https://stats.stackexchange.com/questions/428364/interpreting-odds-ratios-in-ordinal-logistic-regression
+# https://towardsdatascience.com/implementing-and-interpreting-ordinal-logistic-regression-1ee699274cf5
 
-
-
-
+# https://stats.stackexchange.com/questions/166566/multicollinearity-problems-with-polr-function-in-the-mass-package-for-ordinal
 
 
 
