@@ -1003,6 +1003,8 @@ summary(model)
 # prob best just to use two categories
 # damaged and undamaged as a binomial regression
 
+# https://stats.idre.ucla.edu/r/dae/logit-regression/
+
 library(tidyverse)
 
 data <- read.csv("Western_Sydney_Heatwave_output/cleaned_data.csv")
@@ -1053,11 +1055,28 @@ records_data <- records_data %>%
 
 records_data$leaf_loss_binary <- as.numeric(as.character(records_data$leaf_loss_binary))
 
+# create a new binary variable for damage
+records_data <- records_data %>%
+  mutate(damage_binary = case_when(Score == "damaged" ~ "1",
+                                      Score == "no damage" ~ "0"))
+
+records_data$damage_binary <- as.numeric(as.character(records_data$damage_binary))
+
 glimpse(records_data)
 
 # doing the logistic regression
 
-model <- glm(Score ~ origin_binary + leaf_loss_binary, family = binomial(link = "logit"), data = records_data)
+model <- glm(damage_binary ~ origin_binary + leaf_loss_binary, family = binomial, data = records_data)
 
 summary(model)
 
+# interpretation
+# https://stats.idre.ucla.edu/other/mult-pkg/faq/general/faq-how-do-i-interpret-odds-ratios-in-logistic-regression/
+# notice that predictor variables are added not minused like ordinal logistic regression
+# used same interpretation link as ordinal logistic regression: https://data.library.virginia.edu/fitting-and-interpreting-a-proportional-odds-model/
+
+# For exotic species, the odds of being healthy is 92% ((1-0.07)*100%) lower than native species, holding constant all other variables
+
+# For deciduous species, the odds of being healthy is 92.7% ((1-0.0727)100%) lower than evergreen species, holding constant all other variables
+
+# For exotic and deciduous species, the odds of being healthy is 78.78% ((1-0.2121)*100%) lower than native, evergreen species
