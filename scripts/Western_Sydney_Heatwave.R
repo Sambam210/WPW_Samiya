@@ -943,7 +943,7 @@ records_data$Score <- factor(records_data$Score, levels = c("no damage", "lightl
 
 origin <- read.csv("Western_Sydney_Heatwave_output/40_species.csv")
 
-origin <- select(origin, Species, Origin, Leaf_loss)
+origin <- select(origin, -frequency)
 
 records_data <- left_join(records_data, origin, by = "Species")
 
@@ -954,6 +954,13 @@ records_data <- records_data %>%
 
 records_data$origin_binary <- as.numeric(as.character(records_data$origin_binary))
 
+# create a new binary variable for leaf loss
+records_data <- records_data %>%
+  mutate(leaf_loss_binary = case_when(Leaf_loss == "Deciduous" ~ "1",
+                                   Leaf_loss == "Evergreen" ~ "0"))
+
+records_data$leaf_loss_binary <- as.numeric(as.character(records_data$leaf_loss_binary))
+
 glimpse(records_data)
 
 # doing the ordinal regression
@@ -961,7 +968,7 @@ glimpse(records_data)
 install.packages("MASS")
 library("MASS")
 
-model <- polr(Score ~ origin_binary, data = records_data, Hess = TRUE)
+model <- polr(Score ~ origin_binary + leaf_loss_binary, data = records_data, Hess = TRUE)
 
 summary(model)
 
@@ -974,9 +981,11 @@ exp(cbind(OR = coef(model), confint(model)))
 # https://stats.idre.ucla.edu/r/faq/ologit-coefficients/
 # http://onbiostatistics.blogspot.com/2012/02/how-to-interpret-odds-ratios-that-are.html
 
-# If you are an exotic species, the odds of being damaged (lightly damaged, heavily damaged, defolitated) versus undamaged is 8.6
+# If you are an exotic species, the odds of being damaged (lightly damaged, heavily damaged, defolitated) versus undamaged is 3.4
 # times that of native species
 
+# If you are a deciduous species, the odds of being damaged (lightly damaged, heavily damaged, defolitated) versus undamaged is 3
+# times that of evergreen species
 
 
 
