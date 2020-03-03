@@ -986,16 +986,20 @@ summary(model)
 # http://onbiostatistics.blogspot.com/2012/02/how-to-interpret-odds-ratios-that-are.html
 
 # using the coefficients from the model
-# For exotic species, the odds of being healthy is 8.1% lower ((1-0.919)*100%) than native species, holding constant all other variables
+# For exotic species, the probability of being healthy is 8.1% lower ((1-0.919)*100%) than native species, holding constant all other variables
 
-# For deciduous species, the odds of being healthy is 7.2% lower ((1-0.927)*100%) than native species, holding constant all other variables 
+# For deciduous species, the probability of being healthy is 7.2% lower ((1-0.927)*100%) than native species, holding constant all other variables 
 
-# For a deciduous and exotic species, the odds of being healthy is 20.9% lower ((1-0.790)*100%) than native and evergreen species
+# For a deciduous and exotic species, the probability of being healthy is 20.9% lower ((1-0.790)*100%) than native and evergreen species
 
 # significance of model
 # https://stats.stackexchange.com/questions/428364/interpreting-odds-ratios-in-ordinal-logistic-regression
 # https://towardsdatascience.com/implementing-and-interpreting-ordinal-logistic-regression-1ee699274cf5
 
+null <- polr(Score ~ 1, data = records_data, Hess = TRUE)
+anova(model, null, test = "Chisq")
+
+# why I can't do an interaction???
 # https://stats.stackexchange.com/questions/166566/multicollinearity-problems-with-polr-function-in-the-mass-package-for-ordinal
 
 ####################################################################################################################################
@@ -1075,8 +1079,32 @@ summary(model)
 # notice that predictor variables are added not minused like ordinal logistic regression
 # used same interpretation link as ordinal logistic regression: https://data.library.virginia.edu/fitting-and-interpreting-a-proportional-odds-model/
 
-# For exotic species, the odds of being healthy is 92% ((1-0.07)*100%) lower than native species, holding constant all other variables
+# For exotic species, the probability of being healthy is 92% ((1-0.07)*100%) lower than native species, holding constant all other variables
 
-# For deciduous species, the odds of being healthy is 92.7% ((1-0.0727)100%) lower than evergreen species, holding constant all other variables
+# For deciduous species, the probability of being healthy is 92.7% ((1-0.0727)100%) lower than evergreen species, holding constant all other variables
 
-# For exotic and deciduous species, the odds of being healthy is 78.78% ((1-0.2121)*100%) lower than native, evergreen species
+# For exotic and deciduous species, the probability of being healthy is 78.78% ((1-0.2121)*100%) lower than native, evergreen species
+
+# significance
+# https://ww2.coastal.edu/kingw/statistics/R-tutorials/logistic.html
+
+anova(model, test = "Chisq")
+
+# or
+# https://stats.idre.ucla.edu/r/dae/logit-regression/
+
+confint(model)
+
+install.packages("aod")
+library("aod")
+
+wald.test(b = coef(model), Sigma = vcov(model), Terms = 2) # overall effect of origin is significant
+
+wald.test(b = coef(model), Sigma = vcov(model), Terms = 3) # overall effect of leaf loss is significant
+
+# or
+
+null <- glm(Score ~ 1, family = binomial, data = records_data)
+anova(model, null, test = "Chisq")
+
+
