@@ -999,6 +999,13 @@ summary(model)
 null <- polr(Score ~ 1, data = records_data, Hess = TRUE)
 anova(model, null, test = "Chisq")
 
+# p values
+# https://stats.idre.ucla.edu/r/dae/ordinal-logistic-regression/
+
+(ctable <- coef(summary(model)))
+p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
+(ctable <- cbind(ctable, "p value" = p))
+
 # why I can't do an interaction???
 # https://stats.stackexchange.com/questions/166566/multicollinearity-problems-with-polr-function-in-the-mass-package-for-ordinal
 
