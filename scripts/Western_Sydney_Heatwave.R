@@ -906,6 +906,83 @@ plot <- fviz_pca_biplot(res.pca,
 
 plot
 
+#######################################################################################################################################
+
+###### ORDINAL REGRESSION
+
+# https://stats.idre.ucla.edu/r/dae/ordinal-logistic-regression/
+
+library(tidyverse)
+
+data <- read.csv("Western_Sydney_Heatwave_output/cleaned_data.csv")
+
+# let's pull out the species which we have >= 20 records for
+
+records <- data %>%
+  group_by(Species) %>%
+  summarise(frequency = n()) %>%
+  filter(frequency > 20 | frequency == 20) # 40 species with >= 20 records
+
+# let's pull these species out of the master database
+
+records_data <- left_join(records, data, by = "Species")
+
+# only select the variables we are interested in
+
+records_data <- select(records_data, Species, Score)
+
+# change the names for score categories as per Michelle and Ale's suggestions
+
+records_data[] <-lapply(records_data, gsub, pattern = "healthy", replacement = "no damage")
+records_data[] <-lapply(records_data, gsub, pattern = "lightly scorched", replacement = "lightly damaged")
+records_data[] <-lapply(records_data, gsub, pattern = "heavily scorched", replacement = "heavily damaged")
+
+records_data$Score <- factor(records_data$Score, levels = c("no damage", "lightly damaged", "heavily damaged", "defoliated"))
+
+# add origin and leaf loss info
+
+origin <- read.csv("Western_Sydney_Heatwave_output/40_species.csv")
+
+origin <- select(origin, Species, Origin, Leaf_loss)
+
+records_data <- left_join(records_data, origin, by = "Species")
+
+# create a new binary variable for origin
+records_data <- records_data %>%
+  mutate(origin_binary = case_when(Origin == "Exotic" ~ "1",
+                                 Origin == "Native" ~ "0"))
+
+records_data$origin_binary <- as.numeric(as.character(records_data$origin_binary))
+
+glimpse(records_data)
+
+# doing the ordinal regression
+
+install.packages("MASS")
+library("MASS")
+
+model <- polr(Score ~ origin_binary, data = records_data, Hess = TRUE)
+
+summary(model)
+
+# calculating the odds ratio
+
+exp(cbind(OR = coef(model), confint(model)))
+
+# interpretation
+
+# https://stats.idre.ucla.edu/r/faq/ologit-coefficients/
+# http://onbiostatistics.blogspot.com/2012/02/how-to-interpret-odds-ratios-that-are.html
+
+# If you are an exotic species, the odds of being damaged (lightly damaged, heavily damaged, defolitated) versus undamaged is 8.6
+# times that of native species
+
+
+
+
+
+
+
 
 
 
