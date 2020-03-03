@@ -986,11 +986,11 @@ summary(model)
 # http://onbiostatistics.blogspot.com/2012/02/how-to-interpret-odds-ratios-that-are.html
 
 # using the coefficients from the model
-# For exotic species, the probability of being healthy is 8.1% lower ((1-0.919)*100%) than native species, holding constant all other variables
+# For exotic species, the probability of having no damage is 8.1% lower ((1-0.919)*100%) than native species, holding constant all other variables
 
-# For deciduous species, the probability of being healthy is 7.2% lower ((1-0.927)*100%) than native species, holding constant all other variables 
+# For deciduous species, the probability of having no damage is 7.2% lower ((1-0.927)*100%) than native species, holding constant all other variables 
 
-# For a deciduous and exotic species, the probability of being healthy is 20.9% lower ((1-0.790)*100%) than native and evergreen species
+# For a deciduous and exotic species, the probability of having no damage is 20.9% lower ((1-0.790)*100%) than native and evergreen species
 
 # significance of model
 # https://stats.stackexchange.com/questions/428364/interpreting-odds-ratios-in-ordinal-logistic-regression
@@ -1083,21 +1083,25 @@ summary(model)
 
 # interpretation
 # https://stats.idre.ucla.edu/other/mult-pkg/faq/general/faq-how-do-i-interpret-odds-ratios-in-logistic-regression/
+# https://stats.idre.ucla.edu/r/dae/ordinal-logistic-regression/
 # notice that predictor variables are added not minused like ordinal logistic regression
-# used same interpretation link as ordinal logistic regression: https://data.library.virginia.edu/fitting-and-interpreting-a-proportional-odds-model/
+# used same interpretation/getting probabilities link as ordinal logistic regression: https://data.library.virginia.edu/fitting-and-interpreting-a-proportional-odds-model/
 
-# For exotic species, the probability of being healthy is 92% ((1-0.07)*100%) lower than native species, holding constant all other variables
+# For exotic species, the probability of having no damage is 92% ((1-0.07)*100%) lower than native species, holding constant all other variables
+# or
+# For native species, the probability of having no damage is 12.5 (1/0.07) times that of exotic species, holding constant all other variables
 
-# For deciduous species, the probability of being healthy is 92.7% ((1-0.0727)100%) lower than evergreen species, holding constant all other variables
+# For deciduous species, the probability of having no damage is 92.7% ((1-0.0727)100%) lower than evergreen species, holding constant all other variables
+# or
+# For evergreen species, the probability of having no damage is 13.7 (1/0.0727) times that of decidusous species, holding constant all other variables
 
-# For exotic and deciduous species, the probability of being healthy is 78.78% ((1-0.2121)*100%) lower than native, evergreen species
+# For exotic, deciduous species, the probability of having no damage is 78.78% ((1-0.2121)*100%) lower than native, evergreen species
+# or
+# For native, evergreeen species, the probability of having no damage is 4.7 (1/0.2121) times that of exotic, deciduous species
+
 
 # significance
-# https://ww2.coastal.edu/kingw/statistics/R-tutorials/logistic.html
 
-anova(model, test = "Chisq")
-
-# or
 # https://stats.idre.ucla.edu/r/dae/logit-regression/
 
 confint(model)
@@ -1114,4 +1118,5 @@ wald.test(b = coef(model), Sigma = vcov(model), Terms = 3) # overall effect of l
 null <- glm(Score ~ 1, family = binomial, data = records_data)
 anova(model, null, test = "Chisq")
 
-
+# or (from Drew's stats slides)
+drop1(model, test="Chisq")
