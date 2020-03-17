@@ -1120,3 +1120,21 @@ anova(model, null, test = "Chisq")
 
 # or (from Drew's stats slides)
 drop1(model, test="Chisq")
+
+##############################################################################################################
+
+##### Generating a list of species (ones that were heavily damaged or defoliated)
+####  to work on cost of replacement
+
+species <- read.csv("Western_Sydney_Heatwave_output/damage_summary.csv")
+
+library(tidyverse)
+
+species <- species %>%
+  filter(Score != "healthy") %>%
+  select(Species) %>%
+  distinct(Species)
+
+write.csv(species, "Western_Sydney_Heatwave_output/damaged_species.csv", row.names = FALSE)
+
+
