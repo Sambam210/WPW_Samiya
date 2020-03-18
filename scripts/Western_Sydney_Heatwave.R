@@ -1137,4 +1137,7 @@ species <- species %>%
 
 write.csv(species, "Western_Sydney_Heatwave_output/damaged_species.csv", row.names = FALSE)
 
+# note: I have manually removed Callistemon sp., Cupressus sp., Malus sp., Pyrus calleryana var.
+# from the list
+
 
