@@ -588,9 +588,20 @@ library(tidyverse)
 
 data <- read.csv("Western_Sydney_Heatwave_output/cleaned_data.csv")
 
+# let's pull out the species which we have >= 20 records for
+
+records <- data %>%
+  group_by(Species) %>%
+  summarise(frequency = n()) %>%
+  filter(frequency > 20 | frequency == 20) # 40 species with >= 20 records
+
+# let's pull these species out of the master database
+
+records_data <- left_join(records, data, by = "Species")
+
 # just pull out defoliated, heavily scorched and lightly scorched
 
-all_damaged <- data %>%
+all_damaged <- records_data %>%
   filter(Score == "defoliated" | Score == "heavily scorched" | Score == "lightly scorched") %>%
   select(Species, Height, Width, Score) %>%
   group_by(Species, Height, Width, Score) %>%
