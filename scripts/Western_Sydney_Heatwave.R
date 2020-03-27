@@ -588,17 +588,17 @@ library(tidyverse)
 
 data <- read.csv("Western_Sydney_Heatwave_output/cleaned_data.csv")
 
-# just pull out defoliated and heavily scorched
+# just pull out defoliated, heavily scorched and lightly scorched
 
 all_damaged <- data %>%
-  filter(Score == "defoliated" | Score == "heavily scorched") %>%
-  select(Species, Height, Score) %>%
-  group_by(Species, Height, Score) %>%
+  filter(Score == "defoliated" | Score == "heavily scorched" | Score == "lightly scorched") %>%
+  select(Species, Height, Width, Score) %>%
+  group_by(Species, Height, Width, Score) %>%
   summarise(frequency = n()) %>%
-  select(Species, Score, Height, frequency) %>%
+  select(Species, Score, Height, Width, frequency) %>%
   arrange(Score, Species)
 
-write_csv(all_damaged, "Western_Sydney_Heatwave_output/damage_height.csv")
+write_csv(all_damaged, "Western_Sydney_Heatwave_output/damage_height_width.csv")
 
 ##########################################################################################################################################
 
