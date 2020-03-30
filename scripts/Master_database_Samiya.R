@@ -258,7 +258,7 @@ everything_summary <- everything %>%
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_output/EVERYTHING_traits.csv")
+everything <- read.csv("Master_database_output/EVERYTHING_traits_30_March.csv")
 
 everything_summary <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
