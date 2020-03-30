@@ -266,9 +266,36 @@ everything_summary <- everything %>%
   group_by(category) %>%
   summarise(frequency = n())
 
+##############################################################################################################################
 
+# summary of all the species i have minimum traits for for Linda
 
+library(tidyverse)
 
+everything <- read.csv("Master_database_output/EVERYTHING_traits_30_March.csv")
 
+everything_summary <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(category == "SP" | category == "SYN") %>%
+  distinct(scientificNameStd)
+
+everything_gh <- read.csv("Master_database_output/EVERYTHING_gh.csv")
+
+everything_gh_summary <- everything_gh %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(category == "SP" | category == "SYN") %>%
+  distinct(scientificNameStd)
+
+# join together
+
+min_traits <- bind_rows(everything_summary, everything_gh_summary)
+
+min_traits <- min_traits %>%
+  distinct(scientificNameStd) %>%
+  arrange(scientificNameStd)
+
+write.csv(min_traits, "Master_database_output/summary_traits_Linda.csv", row.names = FALSE)
+
+#########################################################################################################
 
 
