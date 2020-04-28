@@ -143,7 +143,7 @@ LMA <- LMA %>%
 
 SamiyaandRenee <- left_join(SamiyaandRenee, LMA, by = "Species_Code") # joining the LMA data
 
-# leaf area and lobosity ( I calculated these)
+# leaf area and lobosity (I calculated these)
 
 leaf_area <- read.csv("Data/leaf_lobosity_area.csv")
 
