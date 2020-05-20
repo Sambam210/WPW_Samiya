@@ -303,6 +303,7 @@ hortandtraits <- left_join(hort.class, traits, by = "Species_Code")
 # https://stackoverflow.com/questions/26665319/removing-na-in-dplyr-pipe
 
 hortandtraits <- drop_na(hortandtraits) # ended up with 92 species 
+write.csv(hortandtraits,"Ladderplot_data_input/hortandtraits_LDMC_75%concensus_new_area.csv", row.names = FALSE)
 
 #############################
 # Constructing the alluvial plot for hort and traits classification
@@ -381,7 +382,6 @@ pairs(PCA_analysis_pairs) # looks good, everything is linearly related
 PCA_analysis <- all.data %>%
   remove_rownames %>%
   column_to_rownames(var="Species_Code")
-
 
 # rename the columns so they look better in the biplot
 
