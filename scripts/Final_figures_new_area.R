@@ -316,6 +316,10 @@ hortandtraits.wide <- gather(hortandtraits, key="method", value="classification"
 hortandtraits.wide[] <-lapply(hortandtraits.wide, gsub, pattern = "_", replacement = " ")
 hortandtraits.wide[] <-lapply(hortandtraits.wide, gsub, pattern = "hort", replacement = "horticultural")
 
+# need to rearrange the levels
+# hortandtraits.wide[,'classification'] <- as.factor(hortandtraits.wide[,'classification'])
+# hortandtraits.wide[,'classification'] <- factor(hortandtraits.wide[,'classification'], levels = c("drought intolerant", "drought avoider", "intermediate","drought tolerant","drought tolerator"))
+
 # constructing the alluvial plot
 
 library(ggalluvial)
