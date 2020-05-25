@@ -258,7 +258,7 @@ everything_summary <- everything %>%
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_output/EVERYTHING_traits_30_March.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_26May.csv")
 
 everything_summary <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
@@ -298,4 +298,24 @@ write.csv(min_traits, "Master_database_output/summary_traits_Linda.csv", row.nam
 
 #########################################################################################################
 
+# Extracting data for Ale
 
+library(tidyverse)
+
+ale <- read.csv("Master_database_input/tree_species_summary_AO.csv")
+
+traits <- read.csv("Master_database_input/EVERYTHING_traits_26May.csv")
+
+traits <- select(traits, species, origin, trait_name, value)
+
+traits <- filter(traits, trait_name == "leaf_loss"| trait_name == "form"| 
+                 trait_name == "max_height_nature"| trait_name == "max_height"|
+                 trait_name == "height"| trait_name == "max_width"|
+                 trait_name == "width"| trait_name == "habit_canopy")
+
+ale_traits <- left_join(ale, traits, by = "species")
+
+write.csv(ale_traits, "Master_database_output/tree_species_summary_traits.csv", row.names = FALSE)
+# manually added the glasshouse species
+
+#######################################################################################
