@@ -313,9 +313,29 @@ traits <- filter(traits, trait_name == "leaf_loss"| trait_name == "form"|
                  trait_name == "height"| trait_name == "max_width"|
                  trait_name == "width"| trait_name == "habit_canopy")
 
-ale_traits <- left_join(ale, traits, by = "species")
+ale_all_traits <- left_join(ale, traits, by = "species")
 
-write.csv(ale_traits, "Master_database_output/tree_species_summary_traits.csv", row.names = FALSE)
-# manually added the glasshouse species
+# add the gh species
+gh <- read.csv("Master_database_input/EVERYTHING_gh.csv")
+
+gh <- select(gh, species, origin, trait_name, value)
+
+gh <- filter(gh, trait_name == "leaf_loss"| trait_name == "form"| 
+                   trait_name == "max_height_nature"| trait_name == "max_height"|
+                   trait_name == "height"| trait_name == "max_width"|
+                   trait_name == "width"| trait_name == "habit_canopy")
+
+ale_gh_traits <- left_join(ale, gh, by = "species")
+
+# join both datasets
+all_traits <- bind_rows(ale_all_traits, ale_gh_traits)
+
+all_traits <- arrange(all_traits, species)
+
+all_traits <- distinct(all_traits, species, origin, trait_name, value)
+
+all_traits <- na.omit(all_traits)
+
+write.csv(all_traits, "Master_database_output/tree_species_summary_traits_ST.csv", row.names = FALSE)
 
 #######################################################################################
