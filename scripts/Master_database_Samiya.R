@@ -339,3 +339,31 @@ all_traits <- na.omit(all_traits)
 write.csv(all_traits, "Master_database_output/tree_species_summary_traits_ST.csv", row.names = FALSE)
 
 #######################################################################################
+
+# Extracting data for the species that have 5 min traits but traits need
+# to be manually added
+
+library(tidyverse)
+
+david_traits <- read.csv("Master_database_input/UptodateDB.csv")
+
+extract <- filter(david_traits, newspecies == "Datura sanguinea" | newspecies == "Convolvulus sabatius mauritanicus" 
+                  | newspecies == "Cyathea cooperi" | newspecies =="Dodonaea viscosa subsp angustissima" | 
+                    newspecies == "Dodonaea viscosa subsp cuneata" | newspecies == "Philotheca myoporoides Profusion" | 
+                    newspecies == "Philotheca myoporoides Winter Rouge" | newspecies == "Eucalyptus camaldulensis var obtusa" | 
+                    newspecies == "Eucalyptus cladocalyx nana" | newspecies == "Eucalyptus diversifolia subsp diversifolia" | 
+                    newspecies == "Grapophyllum ilicifolium" | newspecies == "Hebe buxifolia" | 
+                    newspecies == "Hibiscus rosasinensis" | newspecies == "Omalanthus populifolius" | 
+                    newspecies == "Koelreuteria bipinnata" | newspecies == "Liriope spicata Variegata" | 
+                    newspecies == "Lomandra confertifolia Wingarra" | newspecies == "Lomandra fluvitalis Shara" | 
+                    newspecies == "Mahonia lomariifolia" | newspecies == "Melaleuca nesophila Little Nessy" | 
+                    newspecies == "Microlaena stipoides")
+
+extract <- arrange(extract, newspecies, trait_index)
+
+write.csv(extract, "Master_database_output/missing_traits_5mintraits.csv", row.names = FALSE)
+# some species numbers missing, need to check
+
+#########################################################################################################
+
+
