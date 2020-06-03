@@ -390,4 +390,12 @@ summary <- whatihave %>%
   group_by(verification) %>%
   summarise(frequency = n())
 
+# summarise in terms of number of street trees
+summary <- whatihave %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(trait_name == "placement") %>%
+  filter(value == "street" | value == "avenue" | value == "powerline") %>%
+  distinct(master) %>%
+  summarise(frequency = n())
+  
 ####################################################################################
