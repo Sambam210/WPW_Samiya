@@ -366,4 +366,28 @@ write.csv(extract, "Master_database_output/missing_traits_5mintraits.csv", row.n
 
 #########################################################################################################
 
+# stats for milestone report
 
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_26May.csv")
+
+gh <- read.csv("Master_database_input/EVERYTHING_gh.csv")
+
+# join both together
+
+whatihave <- bind_rows(everything, gh)
+
+# summarise by plant type
+summary <- whatihave %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(master, plantType) %>%
+  group_by(plantType) %>%
+  summarise(frequency = n())
+
+# summarise how many data points I have entered
+summary <- whatihave %>%
+  group_by(verification) %>%
+  summarise(frequency = n())
+
+####################################################################################
