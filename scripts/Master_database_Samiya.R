@@ -358,7 +358,7 @@ extract <- filter(david_traits, newspecies == "Datura sanguinea" | newspecies ==
                     newspecies == "Lomandra confertifolia Wingarra" | newspecies == "Lomandra fluvitalis Shara" | 
                     newspecies == "Mahonia lomariifolia" | newspecies == "Melaleuca nesophila Little Nessy" | 
                     newspecies == "Microlaena stipoides" | newspecies == "Lomandra fluviatilis Shara" | 
-                    newspecies == "Photinia fraserii Red Robin" | newspecies == "Salvia microphylla Hotlips" | 
+                    newspecies == "Photinia x fraseri Red Robin" | newspecies == "Salvia microphylla Hotlips" | 
                     newspecies == "Scaevola Super Clusters" | newspecies == "Sedum spectabile" | 
                     newspecies == "Tabebuia palmeri" | newspecies == "Themeda triandra Mingo" | 
                     newspecies == "Westringia fruticosa MUNDI")
