@@ -361,7 +361,7 @@ extract <- filter(david_traits, newspecies == "Datura sanguinea" | newspecies ==
                     newspecies == "Photinia x fraseri Red Robin" | newspecies == "Salvia microphylla Hotlips" | 
                     newspecies == "Scaevola Super Clusters" | newspecies == "Sedum spectabile" | 
                     newspecies == "Tabebuia palmeri" | newspecies == "Themeda triandra Mingo" | 
-                    newspecies == "Westringia fruticosa MUNDI")
+                    newspecies == "Westringia fruticosa MUNDI" | newspecies == "Bergenia crassifolia")
 
 extract <- arrange(extract, newspecies, trait_index)
 
