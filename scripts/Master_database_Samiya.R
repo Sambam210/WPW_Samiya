@@ -357,7 +357,11 @@ extract <- filter(david_traits, newspecies == "Datura sanguinea" | newspecies ==
                     newspecies == "Koelreuteria bipinnata" | newspecies == "Liriope spicata Variegata" | 
                     newspecies == "Lomandra confertifolia Wingarra" | newspecies == "Lomandra fluvitalis Shara" | 
                     newspecies == "Mahonia lomariifolia" | newspecies == "Melaleuca nesophila Little Nessy" | 
-                    newspecies == "Microlaena stipoides")
+                    newspecies == "Microlaena stipoides" | newspecies == "Lomandra fluviatilis Shara" | 
+                    newspecies == "Photinia fraserii Red Robin" | newspecies == "Salvia microphylla Hotlips" | 
+                    newspecies == "Scaevola Super Clusters" | newspecies == "Sedum spectabile" | 
+                    newspecies == "Tabebuia palmeri" | newspecies == "Themeda triandra Mingo" | 
+                    newspecies == "Westringia fruticosa MUNDI")
 
 extract <- arrange(extract, newspecies, trait_index)
 
