@@ -426,16 +426,71 @@ all_entities_summary <- everything %>%
 
 five_min_traits <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
-  distinct(master, category) %>%
+  distinct(species, category) %>%
   group_by(category) %>%
   summarise(frequency = n())
   
-  
-  
-  
-  
-  
+# summarising in terms of plant type
+
+plant_type <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  drop_na(plantType) %>% # removes the GCs that have the 5 min traits but not plant type
+  distinct(species, plantType) %>% 
+  group_by(plantType) %>%
+  summarise(frequency = n())
 
 
+# summarising in terms of origin
+
+origin <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  drop_na(origin) %>%
+  distinct(species, origin) %>%
+  group_by(origin) %>%
+  summarise(frequency = n())  
+  
+# summarise by native species with 5 min traits, states found
+
+# first need to see if there are any native species that do not have the states found trait
+states <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(origin == "Native") %>%
+  filter(category == "SP" | category == "SYN") %>%
+  distinct(species)
+
+states_found <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(trait_name == "states_found") %>%
+  distinct(species)
+  
+missing <- anti_join(states, states_found) # 37 species
+
+# trait completeness
+
+# entities with the 5 minimum traits
+
+species <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(species)
+# 2177 entities
+
+traits <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(species, trait_name) %>%
+  group_by(trait_name) %>%
+  summarise(frequency = n())
+# some of the 5 min traits have less than 2177 
+
+# light level
+light <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(species, trait_name) %>%
+  filter(trait_name == "light_level") %>%
+  select(species)
+
+missing_light <- anti_join(species, light) # 7 species  
+  
+  
+  
 
 
