@@ -403,3 +403,39 @@ summary <- whatihave %>%
   summarise(frequency = n())
   
 ####################################################################################
+
+# Summary of the database so far
+# June 2020
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_24June.csv")
+
+# number of entities in the datatbase
+all_entities <- everything %>%
+  distinct(master)
+# 7845 distinct entities in the database
+
+# group by plant type
+all_entities_summary <- everything %>%
+  distinct(master, category) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+
+# entities with the 5 minimum traits
+
+five_min_traits <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(master, category) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+  
+  
+  
+  
+  
+  
+
+
+
+
