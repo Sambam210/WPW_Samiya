@@ -361,7 +361,9 @@ extract <- filter(david_traits, newspecies == "Datura sanguinea" | newspecies ==
                     newspecies == "Photinia x fraseri Red Robin" | newspecies == "Salvia microphylla Hotlips" | 
                     newspecies == "Scaevola Super Clusters" | newspecies == "Sedum spectabile" | 
                     newspecies == "Tabebuia palmeri" | newspecies == "Themeda triandra Mingo" | 
-                    newspecies == "Westringia fruticosa MUNDI" | newspecies == "Bergenia crassifolia")
+                    newspecies == "Westringia fruticosa MUNDI" | newspecies == "Bergenia crassifolia" | 
+                    newspecies == "Buxus sempervirens Suffruticosa" | newspecies == "Dianella tasmanica Tasred" | 
+                    newspecies == "Eucalyptus leucoxylon subsp megalocarpa")
 
 extract <- arrange(extract, newspecies, trait_index)
 
@@ -413,14 +415,21 @@ everything <- read.csv("Master_database_input/EVERYTHING_traits_24June.csv")
 
 # number of entities in the datatbase
 all_entities <- everything %>%
-  distinct(master)
-# 7845 distinct entities in the database
+  distinct(tr)
+# 4179 distinct entities in the database
 
 # group by plant type
 all_entities_summary <- everything %>%
-  distinct(master, category) %>%
+  distinct(tr, category) %>%
   group_by(category) %>%
   summarise(frequency = n())
+
+#blah <- everything %>%
+#  distinct(tr, category) %>%
+#  drop_na(tr) %>%
+#  group_by(tr) %>%
+#  summarise(frequency = n()) %>%
+#  filter(frequency != 1)
 
 # entities with the 5 minimum traits
 
@@ -434,17 +443,16 @@ five_min_traits <- everything %>%
 
 plant_type <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
-  drop_na(plantType) %>% # removes the GCs that have the 5 min traits but not plant type
+  filter(category != "GC") %>%
   distinct(species, plantType) %>% 
   group_by(plantType) %>%
   summarise(frequency = n())
-
 
 # summarising in terms of origin
 
 origin <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
-  drop_na(origin) %>%
+  filter(category != "GC") %>%
   distinct(species, origin) %>%
   group_by(origin) %>%
   summarise(frequency = n())  
@@ -452,34 +460,43 @@ origin <- everything %>%
 # summarise by native species with 5 min traits, states found
 
 # first need to see if there are any native species that do not have the states found trait
-states <- everything %>%
-  filter(Min_5_traits == "TRUE") %>%
-  filter(origin == "Native") %>%
-  filter(category == "SP" | category == "SYN") %>%
-  distinct(species)
+#states <- everything %>%
+#  filter(Min_5_traits == "TRUE") %>%
+#  filter(origin == "Native") %>%
+#  filter(category == "SP" | category == "SYN") %>%
+#  distinct(species)
+
+#states_found <- everything %>%
+#  filter(Min_5_traits == "TRUE") %>%
+#  filter(trait_name == "states_found") %>%
+#  distinct(species)
+  
+#missing <- anti_join(states, states_found) # 0 species
 
 states_found <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
+  filter(origin == "Native") %>%
   filter(trait_name == "states_found") %>%
-  distinct(species)
-  
-missing <- anti_join(states, states_found) # 37 species
+  group_by(value) %>%
+  summarise(frequency = n())
 
 # trait completeness
 
-# entities with the 5 minimum traits
+# entities with the 5 minimum traits (without the GCs)
 
 species <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
+  filter(category != "GC") %>%
   distinct(species)
-# 2177 entities
+# 2060 entities
 
 traits <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
+  filter(category != "GC") %>%
   distinct(species, trait_name) %>%
   group_by(trait_name) %>%
   summarise(frequency = n())
-# some of the 5 min traits have less than 2177 
+# some of the 5 min traits have less than 2060 
 
 # light level
 light <- everything %>%
