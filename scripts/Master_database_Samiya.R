@@ -495,19 +495,61 @@ traits <- everything %>%
   filter(category != "GC") %>%
   distinct(species, trait_name) %>%
   group_by(trait_name) %>%
-  summarise(frequency = n())
-# some of the 5 min traits have less than 2060 
+  summarise(frequency = n()) %>%
+  arrange(desc(frequency)) %>%
+  mutate(percent_completeness = (frequency/2060)*100)
+
+write.csv(traits, "Master_database_output/traitcompleteness_June2020.csv", row.names = FALSE)
+
+# if some of the 5 min traits have less than 2060 then use the following code
+
+# leaf loss
+#leaf <- everything %>%
+#  filter(Min_5_traits == "TRUE") %>%
+#  filter(category != "GC") %>%
+#  distinct(species, trait_name) %>%
+#  filter(trait_name == "leaf_loss") %>%
+#  select(species)
+
+#missing_leaf <- anti_join(species, leaf) # 2 species
 
 # light level
-light <- everything %>%
-  filter(Min_5_traits == "TRUE") %>%
-  distinct(species, trait_name) %>%
-  filter(trait_name == "light_level") %>%
-  select(species)
+#light <- everything %>%
+#  filter(Min_5_traits == "TRUE") %>%
+#  filter(category != "GC") %>%
+#  distinct(species, trait_name) %>%
+#  filter(trait_name == "light_level") %>%
+#  select(species)
 
-missing_light <- anti_join(species, light) # 7 species  
+#missing_light <- anti_join(species, light) # 2 species  
+
+# max height
+#height <- everything %>%
+#  filter(Min_5_traits == "TRUE") %>%
+#  filter(category != "GC") %>%
+#  distinct(species, trait_name) %>%
+#  filter(trait_name == "max_height") %>%
+#  select(species)
+
+#missing_height <- anti_join(species, height) # 2 species
   
-  
-  
+# max width
+#width <- everything %>%
+#  filter(Min_5_traits == "TRUE") %>%
+#  filter(category != "GC") %>%
+#  distinct(species, trait_name) %>%
+#  filter(trait_name == "max_width") %>%
+#  select(species)
+
+#missing_width <- anti_join(species, width) # 4 species
+
+# placement stats
+placement <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(category != "GC") %>%
+  filter(trait_name == "placement") %>%
+  group_by(value) %>%
+  summarise(frequency = n())
+
 
 
