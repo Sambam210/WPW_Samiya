@@ -551,5 +551,60 @@ placement <- everything %>%
   group_by(value) %>%
   summarise(frequency = n())
 
+### work for Malin
 
+# extract the GCs with the % min traits
 
+GCs <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(category == "GC") %>%
+  distinct(species) %>%
+  select(species) %>%
+  arrange(species)
+
+write.csv(GCs, "Master_database_output/Malin/5_min_traits_GCs.csv", row.names = FALSE)
+
+# extract species with the 5 mintraits that don't have placement and usage
+species <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(category != "GC") %>%
+  distinct(species)
+
+# placement
+placement <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(category != "GC") %>%
+  distinct(species, trait_name) %>%
+  filter(trait_name == "placement") %>%
+  select(species)
+
+missing_placement <- anti_join(species, placement) # 143 species
+
+# usage
+usage <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(category != "GC") %>%
+  distinct(species, trait_name) %>%
+  filter(trait_name == "usage") %>%
+  select(species)
+
+missing_usage <- anti_join(species, usage) # 115 species
+
+# join the two lists together
+
+placementandusage <- rbind(missing_placement, missing_usage)
+
+placementandusage <- distinct(placementandusage, species)
+
+# extract info of those species from the database
+
+placmentandusagespecies <- left_join(placementandusage, everything, by = "species")
+
+placementandusagespecies <- select(placmentandusagespecies, master, scientificNameStd,
+                                   gl, tr, species, plantType, origin, Min_5_traits,
+                                   Min_8_traits, category, newspecies, species_tr,
+                                   List_source, date_sourced, verification, species_number,
+                                   multiple_forms, source, trait_index, trait_name_original,
+                                   trait_name, value_original, value)
+
+write.csv(placementandusagespecies, "Master_database_output/Malin/placementandusage_missing.csv", row.names = FALSE)
