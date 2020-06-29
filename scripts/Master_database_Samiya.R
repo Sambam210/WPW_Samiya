@@ -303,14 +303,14 @@ everything <- read.csv("Master_database_input/EVERYTHING_traits_24June.csv")
 
 # species with traits in the database
 all_entities <- everything %>%
-  filter(category == "SP") %>%
+  filter(category == "SP" | category == "SYN") %>%
   distinct(scientificNameStd, tr) %>%
   drop_na(tr) %>% 
   select(scientificNameStd)
 
 # species with 5 min traits in the database
 min5traits <- everything %>%
-  filter(category == "SP") %>%
+  filter(category == "SP" | category == "SYN") %>%
   filter(Min_5_traits == "TRUE") %>%
   distinct(scientificNameStd, tr) %>%
   select(scientificNameStd)
