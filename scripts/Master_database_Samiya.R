@@ -296,6 +296,29 @@ min_traits <- min_traits %>%
 
 write.csv(min_traits, "Master_database_output/summary_traits_Linda.csv", row.names = FALSE)
 
+############
+# Sending the list again to Linda
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_24June.csv")
+
+# species with traits in the database
+all_entities <- everything %>%
+  filter(category == "SP") %>%
+  distinct(scientificNameStd, tr) %>%
+  drop_na(tr) %>% 
+  select(scientificNameStd)
+
+# species with 5 min traits in the database
+min5traits <- everything %>%
+  filter(category == "SP") %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(scientificNameStd, tr) %>%
+  select(scientificNameStd)
+  
+write.csv(all_entities, "Master_database_output/all_species_Linda.csv", row.names = FALSE)
+
+write.csv(min5traits, "Master_database_output/min5traits_Linda.csv", row.names = FALSE)
+
 #########################################################################################################
 
 # Extracting data for Ale
@@ -413,7 +436,7 @@ library(tidyverse)
 
 everything <- read.csv("Master_database_input/EVERYTHING_traits_24June.csv")
 
-# number of entities in the datatbase
+# number of entities in the database
 all_entities <- everything %>%
   distinct(tr)
 # 4179 distinct entities in the database
