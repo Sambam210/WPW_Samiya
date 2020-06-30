@@ -23,7 +23,7 @@ assessment <- assessment %>%
   filter(Notes != "Removed")
 
 # load up the inventory info from Ale
-# not that this is not the original file, I did added a column called "Assessed" to document the trees we missed
+# note that this is not the original file, I did added a column called "Assessed" to document the trees we missed
 
 inventory <- read.csv("Western_Sydney_Heatwave_data/Penrith_inventory_summary.csv")
 
@@ -86,6 +86,8 @@ records <- data %>%
   group_by(Species) %>%
   summarise(frequency = n()) %>%
   filter(frequency > 20 | frequency == 20) # 40 species with >= 20 records
+
+#write.csv(records, "Western_Sydney_Heatwave_output/frequency_20occurrences.csv", row.names = FALSE)
 
 # let's pull these species out of the master database
 
