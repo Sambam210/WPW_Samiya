@@ -361,6 +361,34 @@ all_traits <- na.omit(all_traits)
 
 write.csv(all_traits, "Master_database_output/tree_species_summary_traits_ST.csv", row.names = FALSE)
 
+################
+
+# Aerotropolis species
+
+aero <- read.csv("Master_database_input/SP_AERO.csv")
+
+traits <- read.csv("Master_database_input/EVERYTHING_traits_24June.csv")
+
+gh <- read.csv("Master_database_input/EVERYTHING_gh.csv")
+
+all_traits <- bind_rows(traits, gh)
+
+all_traits <- select(all_traits, master, origin, trait_name, value)
+
+aero <- aero %>%
+  select(SPECIES_AERO) %>%
+  rename(master = SPECIES_AERO)
+
+aero_traits <- left_join(aero, all_traits, by = "master")
+
+aero_traits <- rename(aero_traits, species = master)
+
+# see how many species we have traits for
+aero_traits_summary <- distinct(aero_traits, species)
+
+# save trait output
+write.csv(aero_traits, "Master_database_output/aero_traits.csv", row.names = FALSE)
+
 #######################################################################################
 
 # Extracting data for the species that have 5 min traits but traits need
