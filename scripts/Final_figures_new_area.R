@@ -419,6 +419,19 @@ var
 var.plot <- fviz_pca_var(res.pca, col.var = "black")
 var.plot
 
+# Contributions of variables to PC1
+
+fviz_contrib(res.pca, choice = "var", axes = 1, top = 4) # red dashed line is the expected average contribution (i.e. 4 variables = 25%)
+# aridity index, precip driest quarter, precip driest month
+
+# Contributions of variables to PC2
+
+fviz_contrib(res.pca, choice = "var", axes = 2, top = 4)
+# annual precip
+
+# dimension description
+# identify the most significanlty associated variables for a given PC
+
 res.desc <- dimdesc(res.pca, axes = c(1,2), proba = 0.05)
 # Description of dimension 1
 res.desc$Dim.1
