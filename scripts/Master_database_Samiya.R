@@ -662,7 +662,7 @@ write.csv(placementandusagespecies, "Master_database_output/Malin/placementandus
 
 ########################################################################################################################################
 
-# ocerlap with PlantFile source
+# overlap with PlantFile source
 
 # Ale said ~850 species overlap
 
@@ -725,3 +725,71 @@ traits_long <- mutate(traits_long, percent_complete = (total/19)*100)
 traits_long <- filter(traits_long, missing < 19) # for some reason I have joined species that aren't actually in the database
 
 write.csv(traits_long, "Master_database_output/Plantfile/plantfile_database_comparison.csv", row.names = FALSE)
+
+#####################################
+
+# species that aren't overlaped with plantfile
+
+# check how many of the 19 traits we have in the database
+
+library(tidyverse)
+
+# load Ale's data
+
+ale <- read.csv("Master_database_input/WPWvsPlantFile_spp.csv")
+
+ale <- select(ale, New_binomial)
+
+ale <- rename(ale, scientificNameStd = New_binomial)
+
+# extract trait data for those species
+
+trait_db <- read.csv("Master_database_input/EVERYTHING_traits_24June.csv")
+
+trait_db <- select(trait_db, scientificNameStd, trait_name, Min_5_traits)
+
+trait_db <- filter(trait_db, Min_5_traits == "TRUE") # filter for min 5 trait species
+
+# one entry for each combination of species and trait name
+
+trait_db <- distinct(trait_db, scientificNameStd, trait_name)
+
+# extract the species NOT in Ale's list
+
+traits <- anti_join(trait_db, ale, by = "scientificNameStd")
+
+check <- distinct(traits, scientificNameStd) # 868 species
+
+traits$value <- rep("1",nrow(traits)) # add a new column populated by "1", essentially replacing the characters with a number
+
+traits <- distinct(traits, scientificNameStd, trait_name, .keep_all = TRUE)
+
+# convert into long format
+# https://stackoverflow.com/questions/34684925/how-to-use-the-spread-function-properly-in-tidyr
+
+traits_long <- spread(traits, key = trait_name, value = value, fill = 0)
+
+# subset only the traits in common with plantfile
+
+traits_long <- traits_long %>%
+  select(scientificNameStd, common_name, form, bark_texture, leaf_loss, supp_watering, habit_canopy,
+         growth_rate, max_height, max_width, foliage_colour, flower_colour, flower_period, 
+         fruit_colour, fruit_period, ecological_services, usage, placement, risk, light_level)
+
+str(traits_long) # need to change characters into numeric
+
+traits_long[,2:20] <- sapply(traits_long[,2:20], as.numeric)
+
+# add a total records column
+traits_long$total <- rowSums(traits_long[,2:20])
+
+# missing traits
+traits_long <- mutate(traits_long, missing = 19 - total)
+
+traits_long <- arrange(traits_long, desc(missing))
+
+traits_long <- mutate(traits_long, percent_complete = (total/19)*100)
+
+traits_long <- na.omit( traits_long) # get rid of random NA in species
+
+write.csv(traits_long, "Master_database_output/Plantfile/species_not_in_plantfile.csv", row.names = FALSE)
