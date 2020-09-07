@@ -666,7 +666,7 @@ library(tidyverse)
 
 everything <- read.csv("Master_database_input/EVERYTHING_traits_7Sept.csv")
 
-malin <- read.csv("MAster_database_output/Malin/placementandusage_missing_Malin_complete.csv")
+malin <- read.csv("Master_database_output/Malin/placementandusage_missing_Malin_complete.csv")
 
 # filter for the data that Malin collected
 
@@ -815,3 +815,30 @@ traits_long <- mutate(traits_long, percent_complete = (total/19)*100)
 traits_long <- na.omit( traits_long) # get rid of random NA in species
 
 write.csv(traits_long, "Master_database_output/Plantfile/species_not_in_plantfile.csv", row.names = FALSE)
+
+##### extracting these species for Malin so she can look for traits
+
+library(tidyverse)
+
+# load Ale's data
+
+ale <- read.csv("Master_database_input/WPWvsPlantFile_spp.csv")
+
+ale <- select(ale, New_binomial)
+
+ale <- rename(ale, scientificNameStd = New_binomial)
+
+# extract trait data for those species
+
+trait_db <- read.csv("Master_database_input/EVERYTHING_traits_7Sept_Malin_add.csv")
+
+trait_db <- filter(trait_db, Min_5_traits == "TRUE") # filter for min 5 trait species
+
+# extract the species NOT in Ale's list
+
+traits <- anti_join(trait_db, ale, by = "scientificNameStd")
+
+check <- distinct(traits, scientificNameStd) # 915 species
+
+write.csv(traits, "Master_database_output/Malin/Malin_species_not_in_plantfile.csv", row.names = FALSE)
+
