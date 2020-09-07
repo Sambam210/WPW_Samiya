@@ -615,7 +615,7 @@ GCs <- everything %>%
 
 write.csv(GCs, "Master_database_output/Malin/5_min_traits_GCs.csv", row.names = FALSE)
 
-# extract species with the 5 mintraits that don't have placement and usage
+# extract species with the 5 min traits that don't have placement and usage
 species <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
   filter(category != "GC") %>%
@@ -659,6 +659,28 @@ placementandusagespecies <- select(placmentandusagespecies, master, scientificNa
                                    trait_name, value_original, value)
 
 write.csv(placementandusagespecies, "Master_database_output/Malin/placementandusage_missing.csv", row.names = FALSE)
+
+####### Adding Malin's collected placement and usage data to the database
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_7Sept.csv")
+
+malin <- read.csv("MAster_database_output/Malin/placementandusage_missing_Malin_complete.csv")
+
+# filter for the data that Malin collected
+
+malin <- malin %>%
+  filter(verification == "manual_collection_Malin")
+  
+# join the two lists together
+
+all <- rbind(everything, malin)
+
+all <- all %>%
+  arrange(master, trait_index)
+
+write_csv(all, "Master_database_output/Malin/placementandusage_Malin_add.csv")
 
 ########################################################################################################################################
 
