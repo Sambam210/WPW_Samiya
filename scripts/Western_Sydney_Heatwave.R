@@ -136,22 +136,25 @@ damaged_new$frequency_new <- paste0("(", damaged_new$frequency , ")")
 
 damaged_new$Species_new <- paste(damaged_new$Species, (damaged_new$frequency_new))
 
-# put an asterisk in from of the exotic species
+# put symbols in front of the exotic and deciduous species
 # https://stackoverflow.com/questions/39098406/add-brackets-to-string-in-data-frame
 
 origin <- read.csv("Western_Sydney_Heatwave_output/40_species.csv")
 
-origin <- select(origin, Species, Origin)
+origin <- select(origin, Species, Origin, Leaf_loss)
 
 damaged_new <- left_join(damaged_new, origin, by = "Species")
 
 damaged_new$Species_new_new <- with(damaged_new, ifelse(Origin == "Exotic", paste0("* ", Species_new),
                                                         paste0(Species_new)))
 
+damaged_new$Species_new_new_new <- with(damaged_new, ifelse(Leaf_loss == "Deciduous", paste0("^", Species_new_new),
+                                                        paste0(Species_new_new)))
+
 # grey colours
 # https://ggplot2.tidyverse.org/reference/scale_grey.html
 
-graph <- ggplot(damaged_new, aes(x = reorder(Species_new_new, desc(order)), y = percent, fill = Score)) +
+graph <- ggplot(damaged_new, aes(x = reorder(Species_new_new_new, desc(order)), y = percent, fill = Score)) +
   geom_bar(position = "stack", stat = "identity") +
   scale_fill_grey(start = 0.8, end = 0.2) +
   labs(x = "Species", y = "Percentage") +
@@ -164,7 +167,7 @@ graph <- ggplot(damaged_new, aes(x = reorder(Species_new_new, desc(order)), y = 
 graph
 
 # in colour
-graph <- ggplot(damaged_new, aes(x = reorder(Species_new_new, desc(order)), y = percent, fill = Score)) +
+graph <- ggplot(damaged_new, aes(x = reorder(Species_new_new_new, desc(order)), y = percent, fill = Score)) +
   geom_bar(position = "stack", stat = "identity") +
   scale_fill_manual(values = c("#66CC00", "#FFFF00", "#FF6600", "#000000")) +
   labs(x = "Species", y = "Percentage") +
