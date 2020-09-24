@@ -568,8 +568,8 @@ summary_records_50$Score <- factor(summary_records_50$Score, levels = c("healthy
 
 most_damaged <- ggplot(summary_records_50, aes(x = Height, y = percent, fill = Score)) +
   geom_bar(position = "stack", stat = "identity") +
-  scale_fill_grey(start = 0.8, end = 0.2) +
-  labs(title = "Most damaged species", x = "Height (m)", y = "Percentage") +
+  scale_fill_manual(values = c("#66CC00", "#FFFF00", "#FF6600", "#000000")) +
+  labs(title = "", x = "Height (m)", y = "Percentage") +
   theme_bw() +
   facet_wrap(~Species)
 
@@ -584,6 +584,79 @@ print(evergreen_leafloss)
 print(deciduous_leafloss)
 print(most_damaged)
 dev.off() # Close the pdf device
+
+#######
+# Appendix S2 from scratch
+library(tidyverse)
+library(ggplot2)
+
+data <- read.csv("Western_Sydney_Heatwave_output/cleaned_data.csv")
+
+# let's pull out the species which we have >= 20 records for
+
+records <- data %>%
+  group_by(Species) %>%
+  summarise(frequency = n()) %>%
+  filter(frequency > 20 | frequency == 20) # 40 species with >= 20 records
+
+# let's pull these species out of the master database
+
+records_data <- left_join(records, data, by = "Species")
+
+# let's look at how many plants were in each score category from those 40 species
+
+damaged <- records_data %>%
+  group_by(Species, Score, frequency) %>%
+  summarise(partial_frequency = n()) %>%
+  mutate(percent = (partial_frequency/frequency)*100)
+
+# let's pull out the species with =< 50% healthy trees
+
+damaged_50 <- damaged %>%
+  filter(Score == "healthy") %>%
+  filter(percent < 50 | percent == 50) # only 4 species (Acer, Magnolia, Platanus, Quercus)
+
+# let's pull these species out of the master database
+
+records_50 <- filter(data, Species == "Acer negundo" | Species == "Magnolia grandiflora" | Species == "Platanus x acerifolia" 
+                     | Species == "Quercus palustris")
+
+# group acording to score and height
+
+summary_records_50 <- records_50 %>%
+  select(Species, Score, Height) %>%
+  add_count(Species, Height, name = "Height_total") %>%
+  group_by(Species, Score, Height, Height_total) %>%
+  summarise(frequency = n()) %>%
+  mutate(percent = (frequency/Height_total)*100)
+
+# change the names for score categories as per Michelle and Ale's suggestions
+
+summary_records_50[] <-lapply(summary_records_50, gsub, pattern = "healthy", replacement = "no damage")
+summary_records_50[] <-lapply(summary_records_50, gsub, pattern = "lightly scorched", replacement = "lightly damaged")
+summary_records_50[] <-lapply(summary_records_50, gsub, pattern = "heavily scorched", replacement = "heavily damaged")
+
+summary_records_50$Score <- factor(summary_records_50$Score, levels = c("no damage", "lightly damaged", "heavily damaged", "defoliated"))
+
+# for some reason numbers have been changed to characters, change back
+
+summary_records_50$Height <- as.numeric(as.character(summary_records_50$Height))
+summary_records_50$Height_total <- as.numeric(as.character(summary_records_50$Height_total))
+summary_records_50$frequency <- as.numeric(as.character(summary_records_50$frequency))
+summary_records_50$percent <- as.numeric(as.character(summary_records_50$percent))
+
+glimpse(summary_records_50)
+
+# graph it
+
+most_damaged <- ggplot(summary_records_50, aes(x = Height, y = percent, fill = Score)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_manual(values = c("#66CC00", "#FFFF00", "#FF6600", "#000000")) +
+  labs(title = "", x = "Height (m)", y = "Percentage") +
+  theme_bw() +
+  facet_wrap(~Species)
+
+most_damaged
 
 ##########################################################################################################################################
 
