@@ -612,16 +612,16 @@ damaged <- records_data %>%
 
 # let's pull out the species with =< 50% healthy trees
 
-damaged_50 <- damaged %>%
-  filter(Score == "healthy") %>%
-  filter(percent < 50 | percent == 50) # only 4 species (Acer, Magnolia, Platanus, Quercus)
+# damaged_50 <- damaged %>%
+#  filter(Score == "healthy") %>%
+#  filter(percent < 50 | percent == 50) # only 4 species (Acer, Magnolia, Platanus, Quercus)
 
-# let's pull these species out of the master database
+# let's pull out species out of the master database that had 10% or more heavily damaged or defoliated individuals
 
 records_50 <- filter(data, Species == "Acer negundo" | Species == "Magnolia grandiflora" | Species == "Platanus x acerifolia" 
-                     | Species == "Quercus palustris")
+                     | Species == "Quercus palustris" | Species == "Pyrus calleryana var.")
 
-# group acording to score and height
+# group according to score and height
 
 summary_records_50 <- records_50 %>%
   select(Species, Score, Height) %>%
@@ -1209,6 +1209,70 @@ anova(model, null, test = "Chisq")
 
 # or (from Drew's stats slides)
 drop1(model, test="Chisq")
+
+#############################
+# logistic regression for species with 50% damage
+# only lookign at heavily damaged and defoliated
+
+library(tidyverse)
+
+data <- read.csv("Western_Sydney_Heatwave_output/cleaned_data.csv")
+
+# let's pull out the species which we have >= 20 records for
+
+records <- data %>%
+  group_by(Species) %>%
+  summarise(frequency = n()) %>%
+  filter(frequency > 20 | frequency == 20) # 40 species with >= 20 records
+
+# let's pull these species out of the master database
+
+records_data <- left_join(records, data, by = "Species")
+
+# let's look at how many plants were in each score category from those 40 species
+
+damaged <- records_data %>%
+  group_by(Species, Score, frequency) %>%
+  summarise(partial_frequency = n()) %>%
+  mutate(percent = (partial_frequency/frequency)*100)
+
+
+# let's pull the species out of the master database that had 10% or more heavily damaged and defoliated individuals
+
+records_50 <- filter(data, Species == "Acer negundo" | Species == "Magnolia grandiflora" | Species == "Platanus x acerifolia" 
+                     | Species == "Quercus palustris" | Species == "Pyrus calleryana var.")
+
+# only select the variables we are interested in
+
+records_50 <- select(records_50, Species, Height, Score)
+
+# change the names for score categories as per Michelle and Ale's suggestions
+
+records_50[] <-lapply(records_50, gsub, pattern = "healthy", replacement = "no damage")
+records_50[] <-lapply(records_50, gsub, pattern = "lightly scorched", replacement = "no damaged")
+records_50[] <-lapply(records_50, gsub, pattern = "heavily scorched", replacement = "damaged")
+records_50[] <-lapply(records_50, gsub, pattern = "defoliated", replacement = "damaged")
+
+records_50$Score <- factor(records_50$Score, levels = c("no damage", "damaged"))
+
+# create a new binary variable for damage
+records_50 <- records_50 %>%
+  mutate(damage_binary = case_when(Score == "damaged" ~ "1",
+                                   Score == "no damage" ~ "0"))
+
+records_50$damage_binary <- as.numeric(as.character(records_50$damage_binary))
+records_50$Height <- as.numeric(as.character(records_50$Height))
+
+glimpse(records_50)
+
+# doing the logistic regression
+
+model <- glm(damage_binary ~ Height, family = binomial, data = records_50)
+
+summary(model)
+
+# significance
+drop1(model, test="Chisq") # significant
 
 ##############################################################################################################
 
