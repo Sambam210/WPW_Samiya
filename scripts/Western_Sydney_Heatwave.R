@@ -102,11 +102,11 @@ damaged <- records_data %>%
 
 # change the names for score categories as per Michelle and Ale's suggestions
 
-damaged[] <-lapply(damaged, gsub, pattern = "healthy", replacement = "no damage")
+damaged[] <-lapply(damaged, gsub, pattern = "healthy", replacement = "undamaged")
 damaged[] <-lapply(damaged, gsub, pattern = "lightly scorched", replacement = "lightly damaged")
 damaged[] <-lapply(damaged, gsub, pattern = "heavily scorched", replacement = "heavily damaged")
 
-damaged$Score <- factor(damaged$Score, levels = c("no damage", "lightly damaged", "heavily damaged", "defoliated"))
+damaged$Score <- factor(damaged$Score, levels = c("undamaged", "lightly damaged", "heavily damaged", "defoliated"))
 
 # for some reason numbers have been changed to characters, change back
 
@@ -117,7 +117,7 @@ damaged$percent <- as.numeric(as.character(damaged$percent))
 glimpse(damaged)
 
 order <- damaged %>%
-  filter(Score == "no damage") %>%
+  filter(Score == "undamaged") %>%
   arrange(percent) %>%
   rowid_to_column(var='order') %>%
   select(order, Species)
@@ -544,7 +544,7 @@ damaged_50 <- damaged %>%
 records_50 <- filter(data, Species == "Acer negundo" | Species == "Magnolia grandiflora" | Species == "Platanus x acerifolia" 
                      | Species == "Quercus palustris")
 
-# group acording to score and height
+# group according to score and height
 
 summary_records_50 <- records_50 %>%
   select(Species, Score, Height) %>%
@@ -632,11 +632,11 @@ summary_records_50 <- records_50 %>%
 
 # change the names for score categories as per Michelle and Ale's suggestions
 
-summary_records_50[] <-lapply(summary_records_50, gsub, pattern = "healthy", replacement = "no damage")
+summary_records_50[] <-lapply(summary_records_50, gsub, pattern = "healthy", replacement = "undamaged")
 summary_records_50[] <-lapply(summary_records_50, gsub, pattern = "lightly scorched", replacement = "lightly damaged")
 summary_records_50[] <-lapply(summary_records_50, gsub, pattern = "heavily scorched", replacement = "heavily damaged")
 
-summary_records_50$Score <- factor(summary_records_50$Score, levels = c("no damage", "lightly damaged", "heavily damaged", "defoliated"))
+summary_records_50$Score <- factor(summary_records_50$Score, levels = c("undamaged", "lightly damaged", "heavily damaged", "defoliated"))
 
 # for some reason numbers have been changed to characters, change back
 
