@@ -602,6 +602,62 @@ placement <- everything %>%
   group_by(value) %>%
   summarise(frequency = n())
 
+# Summary of the database so far
+# October 2020
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_13Oct.csv")
+
+# number of entities in the database
+all_entities <- everything %>%
+  distinct(tr)
+# 4285 distinct entities in the database
+
+# group by plant type
+all_entities_summary <- everything %>%
+  distinct(tr, category) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+
+# entities with the 5 minimum traits
+
+five_min_traits <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(species, category) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+
+# summarising in terms of plant type
+
+plant_type <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(category != "GC") %>% # exclude GCs
+  distinct(species, plantType) %>% 
+  group_by(plantType) %>%
+  summarise(frequency = n())
+
+# trait completeness
+
+# entities with the 5 minimum traits (without the GCs)
+
+species <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(category != "GC") %>%
+  distinct(species)
+# 2205 entities
+
+traits <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(category != "GC") %>%
+  distinct(species, trait_name) %>%
+  group_by(trait_name) %>%
+  summarise(frequency = n()) %>%
+  arrange(desc(frequency)) %>%
+  mutate(percent_completeness = (frequency/2205)*100)
+
+write.csv(traits, "Master_database_output/traitcompleteness_October2020.csv", row.names = FALSE)
+
 ### work for Malin
 
 # extract the GCs with the % min traits
