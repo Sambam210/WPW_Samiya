@@ -238,6 +238,26 @@ plot <- fviz_pca_biplot(res.pca,
 
 plot
 
+# plot for growth form (following reviewer's comments)
+
+plot <- fviz_pca_biplot(res.pca, 
+                        col.ind = cluster$Growth_Form, # colour individuals by growth form
+                        pointshape = 19, # makes everything circles
+                        col.var = "black",
+                        repel = TRUE,
+                        geom = "point", # just want the points, no writing        
+                        ellipse.alpha = 0.2, # transparency of ellipses   
+                        pointsize = 2, # size of points
+                        title = "Fig. 1", # no main title
+                        mean.point = FALSE, # don't show group centers
+                        legend.title = "", # no legend title
+                        ggtheme = theme_gray())
+
+
+plot
+
+# https://stackoverflow.com/questions/61156095/r-pca-with-the-fviz-pca-ind-function-can-we-have-two-categorical-variables-o
+
 # save the plot
 
 dev.print(pdf, 'plot.pdf')
