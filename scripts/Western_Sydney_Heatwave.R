@@ -181,6 +181,71 @@ graph
 
 # https://community.rstudio.com/t/r-ggplot2-reorder-stacked-plot/23912/2
 
+## graph native, exotic, deciduous, evergreen species separately for ESA 2020 presentation
+# native species
+
+native <- filter(damaged_new, Origin == "Native")
+
+native_graph <- ggplot(native, aes(x = reorder(Species_new_new_new, desc(order)), y = percent, fill = Score)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_manual(values = c("#66CC00", "#FFFF00", "#FF6600", "#000000")) +
+  labs(x = "Species", y = "Percentage") +
+  coord_flip() +
+  geom_hline(yintercept = 25, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 50, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 75, linetype="solid", color = "white", size=0.5) +
+  theme_bw()
+
+native_graph
+
+# exotic species
+
+exotic <- filter(damaged_new, Origin == "Exotic")
+
+exotic_graph <- ggplot(exotic, aes(x = reorder(Species_new_new_new, desc(order)), y = percent, fill = Score)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_manual(values = c("#66CC00", "#FFFF00", "#FF6600", "#000000")) +
+  labs(x = "Species", y = "Percentage") +
+  coord_flip() +
+  geom_hline(yintercept = 25, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 50, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 75, linetype="solid", color = "white", size=0.5) +
+  theme_bw()
+
+exotic_graph
+
+# deciduous species
+
+deciduous <- filter(damaged_new, Leaf_loss == "Deciduous")
+
+deciduous_graph <- ggplot(deciduous, aes(x = reorder(Species_new_new_new, desc(order)), y = percent, fill = Score)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_manual(values = c("#66CC00", "#FFFF00", "#FF6600", "#000000")) +
+  labs(x = "Species", y = "Percentage") +
+  coord_flip() +
+  geom_hline(yintercept = 25, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 50, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 75, linetype="solid", color = "white", size=0.5) +
+  theme_bw()
+
+deciduous_graph
+
+# evergreen species
+
+evergreen <- filter(damaged_new, Leaf_loss == "Evergreen")
+
+evergreen_graph <- ggplot(evergreen, aes(x = reorder(Species_new_new_new, desc(order)), y = percent, fill = Score)) +
+  geom_bar(position = "stack", stat = "identity") +
+  scale_fill_manual(values = c("#66CC00", "#FFFF00", "#FF6600", "#000000")) +
+  labs(x = "Species", y = "Percentage") +
+  coord_flip() +
+  geom_hline(yintercept = 25, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 50, linetype="solid", color = "white", size=0.5) +
+  geom_hline(yintercept = 75, linetype="solid", color = "white", size=0.5) +
+  theme_bw()
+
+evergreen_graph
+
 # exoitc vs native species damage
 
 origin <- read.csv("Western_Sydney_Heatwave_output/40_species.csv")
