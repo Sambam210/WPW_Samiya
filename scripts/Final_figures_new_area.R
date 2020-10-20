@@ -216,22 +216,24 @@ dev.off() # Close the pdf device
 cluster <- read.csv("PCA_Cluster_output/PCA_traits_cluster_output_LDMC_new_area.csv")
 
 # create a new column with the clusters rearranged so they are easy to describe
+#edited according to review comments
 cluster <- cluster %>%
-  mutate(cluster_new = case_when(clust == "1" ~ "Drought avoider",
+  mutate(cluster_new = case_when(clust == "1" ~ "Dehydration avoider",
                                  clust == "2" ~ "Intermediate",
-                                 clust == "3" ~ "Drought tolerator"))
+                                 clust == "3" ~ "Dehydration tolerator"))
 
 # create the biplot but group according to cluster
 plot <- fviz_pca_biplot(res.pca, 
                         col.ind = cluster$cluster_new, # colour individuals by cluster
                         palette = c("#00AFBB","#FC4E07","#E7B800"),
+                        pointshape = 19, # makes everything circles
                         addEllipses = TRUE, ellipse.type = "convex", # use convex ellipses like cluster analysis
                         col.var = "black",
                         repel = TRUE,
                         geom = "point", # just want the points, no writing        
                         ellipse.alpha = 0.2, # transparency of ellipses   
                         pointsize = 2, # size of points
-                        title = "Fig. 1", # no main title
+                        title = "Fig. 1",
                         mean.point = FALSE, # don't show group centers
                         legend.title = "", # no legend title
                         ggtheme = theme_gray())
@@ -248,7 +250,7 @@ plot <- fviz_pca_biplot(res.pca,
                         geom = "point", # just want the points, no writing        
                         ellipse.alpha = 0.2, # transparency of ellipses   
                         pointsize = 2, # size of points
-                        title = "Fig. 1", # no main title
+                        title = "", # no main title
                         mean.point = FALSE, # don't show group centers
                         legend.title = "", # no legend title
                         ggtheme = theme_gray())
@@ -296,11 +298,12 @@ hort.class <- hort.class %>%
 # If >=75% of the records is either 'yes', 'no' or 'medium' then that species has that corresponding classification
 # If 'medium' is >=75% then that species is said to be 'yes' for drought tolerance
 # If no classification is >=75% then that species is 'mixture'
+# edited according to review comments
 
 hort.class <- hort.class %>%
-  mutate(hort_classification = case_when(No_percentage >= 75 ~ "drought intolerant",
-                                         Moderate_percentage >= 75 ~ "drought tolerant",
-                                         Yes_percentage >= 75 ~ "drought tolerant",
+  mutate(hort_classification = case_when(No_percentage >= 75 ~ "dehydration intolerant",
+                                         Moderate_percentage >= 75 ~ "dehydration tolerant",
+                                         Yes_percentage >= 75 ~ "dehydration tolerant",
                                          TRUE ~ "intermediate")) %>%
   select(Species_Code, hort_classification)
 
@@ -308,11 +311,12 @@ hort.class <- hort.class %>%
 
 traits <- read.csv("PCA_Cluster_output/PCA_traits_cluster_output_LDMC_new_area.csv")
 
+# edited according to reviewer comments
 traits <- traits %>%
   rename(Species_Code=X) %>%
-  mutate(traits_classification = case_when(clust == "1" ~ "drought avoider",
+  mutate(traits_classification = case_when(clust == "1" ~ "dehydration avoider",
                                            clust == "2" ~ "intermediate",
-                                           clust == "3" ~ "drought tolerator")) %>%
+                                           clust == "3" ~ "dehydration tolerator")) %>%
   select(Species_Code, traits_classification)
 
 # merge the two datasets together
@@ -352,7 +356,7 @@ hortandtraitsplot <- ggplot(hortandtraits.wide,
   scale_fill_manual(values = c("#CC6633", "#FF3399", "#FF9933", "#FF9900", "#FFFF66")) +
   geom_flow(stat = "alluvium", lode.guidance = "frontback", color = "darkgray", alpha = 0.5) +
   geom_stratum(alpha = .5, fill = "white") +
-  geom_text(stat = "stratum", size = 4) +
+  geom_text(stat = "stratum", size = 3.5) +
   theme(legend.position = "none") +
   labs(y = "Number of species",
        x = "Method",
@@ -551,6 +555,8 @@ traitsandclimate.wide <- gather(traitsandclimate, key="method", value="classific
 # https://stackoverflow.com/questions/29271549/replace-all-occurrences-of-a-string-in-a-data-frame
 traitsandclimate.wide[] <-lapply(traitsandclimate.wide, gsub, pattern = "_", replacement = " ")
 traitsandclimate.wide[] <-lapply(traitsandclimate.wide, gsub, pattern = "hort", replacement = "horticultural")
+# need to replace 'drought' with 'dehydration' following review comments
+traitsandclimate.wide[] <-lapply(traitsandclimate.wide, gsub, pattern = "drought", replacement = "dehydration")
 
 # need to rearrange the levels so that climate_classification doesn't come first in the plot
 traitsandclimate.wide[,'method'] <- as.factor(traitsandclimate.wide[,'method'])
@@ -568,7 +574,7 @@ traitsandclimateplot <- ggplot(traitsandclimate.wide,
   scale_fill_manual(values = c("#CC6633", "#FF3399", "#FF9933", "#FF9900", "#FFFF66", "#0033FF")) +
   geom_flow(stat = "alluvium", lode.guidance = "frontback", color = "darkgray", alpha = 0.5) +
   geom_stratum(alpha = .5, fill = "white") +
-  geom_text(stat = "stratum", size = 4) +
+  geom_text(stat = "stratum", size = 3.5) +
   theme(legend.position = "none") +
   labs(y = "Number of species",
        x = "Method",
