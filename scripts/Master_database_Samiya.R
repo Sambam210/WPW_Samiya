@@ -898,3 +898,49 @@ check <- distinct(traits, scientificNameStd) # 915 species
 
 write.csv(traits, "Master_database_output/Malin/Malin_species_not_in_plantfile.csv", row.names = FALSE)
 
+###########################################################################################
+#### Aerotropolis project
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_6Nov.csv")
+
+gh <- read.csv("Master_database_input/EVERYTHING_gh_6Nov.csv")
+
+# join both together
+
+whatihave <- bind_rows(everything, gh)
+
+aerotropolis <- read.csv("Master_database_input/Aerotropolis_species.csv") # 226 species
+
+# extract info for the species from trait database
+
+info <- left_join(aerotropolis, whatihave, by = "master") 
+
+# some stats
+
+species <- info %>%
+  select(master) %>%
+  distinct(master) # they gave us 223 'species'
+
+x <- info %>%
+  select(trait_name) %>%
+  group_by(trait_name) %>%
+  summarise(frequency = n()) # judging by the number of NAs, we are missing traits for 87 species
+
+# extract the species we have traits for
+
+blah <- info %>%
+  select(master, trait_name) %>%
+  drop_na(trait_name) %>%
+  distinct(master) %>%
+  select(master) # have traits for 138 'species'
+
+write.csv(species, "Master_database_output/Aerotropolis/species_traits_list.csv", row.names = FALSE)
+
+summary <- info %>%
+  distinct(master, Min_5_traits) %>%
+  group_by(Min_5_traits) %>%
+  summarise(frequency = n()) # but only 114 'species' have the 5 minimum traits
+
+write.csv(info, "Master_database_output/Aerotropolis/species_traits.csv", row.names = FALSE)
