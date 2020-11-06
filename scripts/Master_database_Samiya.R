@@ -936,7 +936,7 @@ blah <- info %>%
   distinct(master) %>%
   select(master) # have traits for 138 'species'
 
-write.csv(species, "Master_database_output/Aerotropolis/species_traits_list.csv", row.names = FALSE)
+write.csv(blah, "Master_database_output/Aerotropolis/species_traits_list.csv", row.names = FALSE)
 
 summary <- info %>%
   distinct(master, Min_5_traits) %>%
