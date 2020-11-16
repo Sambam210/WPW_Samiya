@@ -301,9 +301,9 @@ hort.class <- hort.class %>%
 # edited according to review comments
 
 hort.class <- hort.class %>%
-  mutate(hort_classification = case_when(No_percentage >= 75 ~ "dehydration intolerant",
-                                         Moderate_percentage >= 75 ~ "dehydration tolerant",
-                                         Yes_percentage >= 75 ~ "dehydration tolerant",
+  mutate(hort_classification = case_when(No_percentage >= 75 ~ "drought intolerant",
+                                         Moderate_percentage >= 75 ~ "drought tolerant",
+                                         Yes_percentage >= 75 ~ "drought tolerant",
                                          TRUE ~ "intermediate")) %>%
   select(Species_Code, hort_classification)
 
@@ -353,10 +353,10 @@ hortandtraitsplot <- ggplot(hortandtraits.wide,
                             aes(x = method, stratum = classification, alluvium = Species_Code,
                                 fill = classification, label = classification)) +
   scale_x_discrete(expand = c(0.1,0.1)) +
-  scale_fill_manual(values = c("#CC6633", "#FF3399", "#FF9933", "#FF9900", "#FFFF66")) +
+  scale_fill_manual(values = c("#3399FF", "#FF3399", "#FF0000", "#FF9900", "#6633CC")) +
   geom_flow(stat = "alluvium", lode.guidance = "frontback", color = "darkgray", alpha = 0.5) +
-  geom_stratum(alpha = .5, fill = "white") +
-  geom_text(stat = "stratum", size = 3.5) +
+  geom_stratum(alpha = 0.5, fill = "white") +
+  geom_text(stat = "stratum", size = 3.8) +
   theme(legend.position = "none") +
   labs(y = "Number of species",
        x = "Method",
