@@ -738,6 +738,41 @@ all <- all %>%
 
 write_csv(all, "Master_database_output/Malin/placementandusage_Malin_add.csv")
 
+# adding Malin's collected info for the species not found in Plantfile
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_23Nov.csv")
+
+malin <- read.csv("Master_database_output/Malin/Malin_species_not_in_plantfile_201120.csv")
+
+# filter for the data that Malin collected
+
+malin <- malin %>%
+  filter(verification == "manual_collection_Malin")
+
+# join the two lists together
+
+all <- rbind(everything, malin)
+
+all <- all %>%
+  arrange(master, trait_index)
+
+# remove duplicates from Malin
+
+test <- distinct(all, master, scientificNameStd, gl, tr, species, plantType, origin, Min_5_traits, Min_8_traits, category,
+                 newspecies, species_tr, List_source, date_sourced, verification, species_number, multiple_forms, 
+                 source, trait_index, trait_name_original, trait_name, value_original, value)
+
+
+# what's the difference
+
+allMalin <- filter(all, verification == "manual_collection_Malin") # this is doubling up
+alltest <- filter(test, verification == "manual_collection_Malin")
+
+write_csv(test, "Master_database_output/Malin/EVERYTHING_traits_Malin_add.csv")
+
+
 ########################################################################################################################################
 
 # overlap with PlantFile source
