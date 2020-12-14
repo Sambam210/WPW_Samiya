@@ -772,6 +772,16 @@ alltest <- filter(test, verification == "manual_collection_Malin")
 
 write_csv(test, "Master_database_output/Malin/EVERYTHING_traits_Malin_add.csv")
 
+# Malin has written the numbers for some traits wrong, I have changed them manually in excel, need to order them
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_14Dec.csv")
+
+everything <- everything %>%
+  arrange(master, trait_index, verification)
+
+write_csv(everything, "Master_database_output/Malin/database_14Dec.csv")
 
 ########################################################################################################################################
 
