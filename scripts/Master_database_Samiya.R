@@ -943,6 +943,34 @@ check <- distinct(traits, scientificNameStd) # 915 species
 
 write.csv(traits, "Master_database_output/Malin/Malin_species_not_in_plantfile.csv", row.names = FALSE)
 
+######################################################################################################################
+#### Extract species that are missing common name
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_20Jan2021.csv")
+
+gh <- read.csv("Master_database_input/EVERYTHING_gh_20Jan2021.csv")
+
+# join two lists together
+
+all <- rbind(everything, gh)
+
+# extract species with the 5 min traits that don't have common name
+species <- all %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(species)
+
+name <- all %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(species, trait_name) %>%
+  filter(trait_name == "common_name") %>%
+  select(species)
+
+missing_name <- anti_join(species, name) # 208 species
+
+write.csv(missing_name,"Master_database_output/missing_common_name.csv", row.names = FALSE)
+
 ###########################################################################################
 #### Aerotropolis project
 
