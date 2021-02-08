@@ -90,6 +90,12 @@ PCA_analysis <- PCA_analysis %>%
   remove_rownames %>%
   column_to_rownames(var="Species_Code")
 
+# change names of trait (following reviewer comments 
+# (https://stackoverflow.com/questions/6081439/changing-column-names-of-a-data-frame)
+names(PCA_analysis)[names(PCA_analysis) == "LMA"] <- "Leaf Mass per Area"
+names(PCA_analysis)[names(PCA_analysis) == "LDMC"] <- "Leaf Dry Matter Content"
+names(PCA_analysis)[names(PCA_analysis) == "TLP"] <- "Turgor Loss Point"
+
 # doing the PCA
 
 res.pca <- PCA(PCA_analysis, graph = FALSE)
@@ -244,6 +250,26 @@ plot
 
 plot <- fviz_pca_biplot(res.pca, 
                         col.ind = cluster$Growth_Form, # colour individuals by growth form
+                        pointshape = 19, # makes everything circles
+                        col.var = "black",
+                        repel = TRUE,
+                        geom = "point", # just want the points, no writing        
+                        ellipse.alpha = 0.2, # transparency of ellipses   
+                        pointsize = 2, # size of points
+                        title = "", # no main title
+                        mean.point = FALSE, # don't show group centers
+                        legend.title = "", # no legend title
+                        ggtheme = theme_gray())
+
+
+plot
+
+# plot for woody vs non woody (following reviewer's comments)
+
+wood <- read.csv("PCA_Cluster_data/PCA_data.csv")
+
+plot <- fviz_pca_biplot(res.pca, 
+                        col.ind = wood$Growth_structure, # colour individuals by growth form
                         pointshape = 19, # makes everything circles
                         col.var = "black",
                         repel = TRUE,
