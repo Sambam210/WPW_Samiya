@@ -319,6 +319,41 @@ write.csv(all_entities, "Master_database_output/all_species_Linda.csv", row.name
 
 write.csv(min5traits, "Master_database_output/min5traits_Linda.csv", row.names = FALSE)
 
+##################
+# Sending the list to Ale for photos
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_16Feb2021.csv")
+
+gh <- read.csv("Master_database_input/EVERYTHING_gh_16Feb2021.csv")
+
+# join together
+
+all <- bind_rows(everything, gh)
+
+all <- select(all, scientificNameStd, species, plantType, origin, category, Min_5_traits)
+
+all <- filter(all, Min_5_traits == "TRUE")
+
+all <- select(all, -scientificNameStd)
+
+all <- distinct(all, species, .keep_all = TRUE)
+
+# summarise
+
+summary_category <- all %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+
+summary_plantType <- all %>%
+  group_by(plantType) %>%
+  summarise(frequency = n())
+
+summary <- all %>%
+  group_by(plantType, category) %>%
+  summarise(frequency = n())
+
+write.csv(all, "Master_database_output/min5traits_ale_Feb2021.csv", row.names = FALSE)
+
 #########################################################################################################
 
 # Extracting data for Ale
