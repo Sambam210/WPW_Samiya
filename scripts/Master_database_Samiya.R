@@ -1006,6 +1006,48 @@ missing_name <- anti_join(species, name) # 208 species
 
 write.csv(missing_name,"Master_database_output/missing_common_name.csv", row.names = FALSE)
 
+#### Extract species that are missing flower colour and flower period
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_16Feb2021.csv")
+
+gh <- read.csv("Master_database_input/EVERYTHING_gh_16Feb2021.csv")
+
+# join two lists together
+
+all <- rbind(everything, gh)
+
+species <- all %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(species)
+
+# extract species with the 5 min traits that don't have flower colour
+colour <- all %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(species, trait_name) %>%
+  filter(trait_name == "flower_colour") %>%
+  select(species)
+
+missing_colour <- anti_join(species, colour) # 108 species
+
+# extract species with the 5 min traits that don't have flower period
+period <- all %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(species, trait_name) %>%
+  filter(trait_name == "flower_period") %>%
+  select(species)
+
+missing_period <- anti_join(species, period) # 190 species
+
+# join the two lists together
+
+missing_colour_period <- rbind(missing_period, missing_colour)
+
+missing_colour_period <- distinct(missing_colour_period, species) #224 species
+
+write.csv(missing_colour_period,"Master_database_output/missing_colour_period.csv", row.names = FALSE)
+
 ###########################################################################################
 #### Aerotropolis project
 
