@@ -1094,3 +1094,20 @@ summary <- info %>%
   summarise(frequency = n()) # but only 114 'species' have the 5 minimum traits
 
 write.csv(info, "Master_database_output/Aerotropolis/species_traits.csv", row.names = FALSE)
+
+####################################################################################################################
+##### Give Janine copy of database
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_23Feb2021.csv")
+
+# filter out the 5 min traits species
+
+everything <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(species, trait_name, value, .keep_all = TRUE) %>%
+  select(scientificNameStd, species, plantType, origin, category, trait_name, value)
+
+write.csv(everything,"Master_database_output/Janine/sample_traitdatabase_ST_Feb2021.csv", row.names = FALSE)  
+
