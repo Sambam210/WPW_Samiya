@@ -1111,3 +1111,116 @@ everything <- everything %>%
 
 write.csv(everything,"Master_database_output/Janine/sample_traitdatabase_ST_Feb2021.csv", row.names = FALSE)  
 
+######################################################################################################################
+######################################################################################################################
+####                                                DATABASE CHECKS                                               ####
+######################################################################################################################
+######################################################################################################################
+
+# names
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_25Feb2021.csv")
+
+# filter out the 5 min traits species
+
+sciname <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  select(scientificNameStd) %>%
+  drop_na(scientificNameStd) %>%
+  distinct(scientificNameStd) # 1800 scientific names
+
+species <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  select(species) %>%
+  drop_na(species) %>%
+  distinct(species) # 2392 species names
+
+summary <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(species, .keep_all = TRUE) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+
+# from above, 1652 SP + 163 SYN = 1815 scientific names
+# BUT
+# several 5Mintrait SP do not have a scientific name (found through excel)
+# These are:
+# Amaryllis belladonna, Carex fascicularis, Chamelaucium floriferum, Diplolaena grandiflora, Echium candicans, Kalanchoe beharensis,
+# Persicaria polymorpha, Vinca major, Vinca minor
+# 1815-9 = 1806 scientific names
+# Where is the mismatch?
+# some SYN and SP might both have 5 min traits
+
+# anyway, work with the 1800 species
+
+check <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(scientificNameStd, .keep_all = TRUE) %>%
+  drop_na(scientificNameStd) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+
+names <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(scientificNameStd, .keep_all = TRUE) %>%
+  drop_na(scientificNameStd) %>%
+  select(scientificNameStd, category)
+
+# culvars that do not have 5mintraits for species
+
+# Species not sure
+# Acacia cognata
+# Anigozanthos rufus
+# Brachyscome microcarpa
+# Chamaelaucium uncinatum
+# Eremophila racemosa
+# Leptospermum nitidum
+# Leptospermum petersonii
+# Leptospermum polygalifolium
+# Lomandra glauca
+# Ehrharta stipoides (has a synonym)
+# Themeda triandra (has a synonym)
+
+# but in this list these problem species are fine!
+names2 <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  distinct(scientificNameStd, category, .keep_all = TRUE) %>%
+  drop_na(scientificNameStd) %>%
+  select(scientificNameStd, category)
+
+# check glasshouse species
+# check if eveything has the 7 min traits
+
+
+
+
+# run scientific names through Taxonstand to get Family names
+
+library(Taxonstand)
+
+sciname_TLPed <- Taxonstand::TPL(sciname$scientificNameStd, infra = TRUE, corr = TRUE, repeats = 100)
+sciname_TLPed
+
+write.csv(sciname_TLPed,"Master_database_output/taxonomy_checks/taxonstandcheck_ST_25.2.2021.csv", row.names = FALSE)
+
+library(taxize)#############################################################################################################################
+##### This runs the taxonomic check with taxize and gnr_resolve to produce the taxonomically corrected species list
+##### This function might take a while as TPL has to access a server. In case you get an error (e.g., Service Unavailable) you can batch this process.
+trees2check_GNRed<- gnr_resolve(as.character(trees2check$ORIGINAL_name), http="post")   # this takes 3' on my computer
+
+# from this tibble you have to extract the matched_name field and reassign correct binomials to each of the original records.
+# you might want to drop the Authors' names from the binomial for simplicity during the analyses. As before, you can reassign it at the end on final tables and thesis.
+
+
+
+# you could use both functions to run taxo checks sequentially and make sure the overall taxonomy is current (See Ossola et al., 2020, GUTI).
+
+
+
+
+
+
+
+
