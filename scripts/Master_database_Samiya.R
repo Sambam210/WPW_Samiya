@@ -1121,42 +1121,41 @@ write.csv(everything,"Master_database_output/Janine/sample_traitdatabase_ST_Feb2
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_25Feb2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_27Feb2021.csv")
 
 # filter out the 5 min traits species
 
 sciname <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
   select(scientificNameStd) %>%
   drop_na(scientificNameStd) %>%
-  distinct(scientificNameStd) # 1800 scientific names
+  distinct(scientificNameStd) # 1806 scientific names
 
 species <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
   select(species) %>%
   drop_na(species) %>%
-  distinct(species) # 2392 species names
+  distinct(species) # 2376 species names
 
 summary <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
   distinct(species, .keep_all = TRUE) %>%
   group_by(category) %>%
   summarise(frequency = n())
 
-# from above, 1652 SP + 163 SYN = 1815 scientific names
-# BUT
-# several 5Mintrait SP do not have a scientific name (found through excel)
-# These are:
-# Amaryllis belladonna, Carex fascicularis, Chamelaucium floriferum, Diplolaena grandiflora, Echium candicans, Kalanchoe beharensis,
-# Persicaria polymorpha, Vinca major, Vinca minor
-# 1815-9 = 1806 scientific names
+# from above, 1650 SP + 163 SYN = 1813 scientific names
+
 # Where is the mismatch?
 # some SYN and SP might both have 5 min traits
 
-# anyway, work with the 1800 species
+# anyway, work with the 1806 species
 
 check <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
   distinct(scientificNameStd, .keep_all = TRUE) %>%
   drop_na(scientificNameStd) %>%
   group_by(category) %>%
@@ -1164,6 +1163,7 @@ check <- everything %>%
 
 names <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
   distinct(scientificNameStd, .keep_all = TRUE) %>%
   drop_na(scientificNameStd) %>%
   select(scientificNameStd, category)
@@ -1186,12 +1186,80 @@ names <- everything %>%
 # but in this list these problem species are fine!
 names2 <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
   distinct(scientificNameStd, category, .keep_all = TRUE) %>%
   drop_na(scientificNameStd) %>%
   select(scientificNameStd, category)
 
-# check glasshouse species
-# check if eveything has the 7 min traits
+# check if eveything has the 10 min traits
+
+tenmintraits <- everything %>%
+  select(scientificNameStd, species, Min_5_traits, trait_name, value) %>%
+  filter(trait_name == "common_name" | trait_name == "light_level" | trait_name == "form" | trait_name == "max_height" 
+         | trait_name == "max_width" | trait_name == "leaf_loss" | trait_name == "flower_colour" | trait_name == "flower_period" 
+         | trait_name == "placement" | trait_name == "usage")
+
+tenmintraits <- distinct(tenmintraits, scientificNameStd, species, Min_5_traits, trait_name) # one row for each entity and trait
+
+tenmintraits["Score"] <- 1 # add new column populated by '1'
+
+glimpse(tenmintraits)
+
+summary <- tenmintraits %>%
+  group_by(scientificNameStd, species, Min_5_traits) %>%
+  mutate(Sum = sum(Score))
+
+# check
+
+mistakes <- filter(summary, Min_5_traits == "TRUE" & Sum < 10)
+
+mistakes2 <- filter(summary, Min_5_traits != "TRUE" & Sum == "10")
+
+
+# remove solely indoor/container plants
+
+all <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>% 
+  select(species, trait_name, value) %>%
+  filter (trait_name == "placement") %>%
+  distinct(species, trait_name, value)
+
+all["Score"] <- 1 # add new column populated by '1'
+
+glimpse(all)
+
+summary_all <- all %>%
+  group_by(species) %>%
+  mutate(Sum = sum(Score)) %>%
+  select(species, Sum) %>%
+  distinct(species, Sum)
+
+indoor <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  select(species, trait_name, value) %>%
+  filter (trait_name == "placement") %>%
+  filter(value == "container" | value == "indoor") %>%
+  distinct(species, trait_name, value)
+
+indoor["Score"] <- 1 # add new column populated by '1'
+
+glimpse(indoor)
+
+summary_indoor <- indoor %>%
+  group_by(species) %>%
+  mutate(Sum = sum(Score)) %>%
+  select(species, Sum) %>%
+  distinct(species, Sum)
+
+# find similarities in the two tables in terms of species and sum
+
+same <- semi_join(summary_indoor, summary_all)
+
+# up to Allium schoenoprasum
+
+
 
 
 
