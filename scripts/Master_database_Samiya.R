@@ -1137,7 +1137,7 @@ species <- everything %>%
   filter(Include_in_tool == "Yes") %>%
   select(species) %>%
   drop_na(species) %>%
-  distinct(species) # 2376 species names
+  distinct(species) # 2378 species names
 
 summary <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
@@ -1405,19 +1405,140 @@ Farzin_list <- all_entities %>%
   drop_na(scientificNameStd) %>%
   arrange(scientificNameStd) # 1914 species
 
-# check that the hybrid and GC parents are on this list
+write.csv(Farzin_list, "Master_database_output/Farzin/species_list_ST_1Mar2021.csv", row.names = FALSE)
+
+##### Extract a list of the scientificNameStd, species, plantType for Claire to find photos
+
+Claire_list <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  distinct(scientificNameStd, species, category) %>%
+  arrange(scientificNameStd) # 2640 species
+
+write.csv(Claire_list, "Master_database_output/Claire/species_list_ST_1Mar2021_photos.csv", row.names = FALSE)
+
+# from before
+everything <- read.csv("Master_database_input/EVERYTHING_traits_1Mar2021.csv")
+
+species <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  select(species) %>%
+  drop_na(species) %>%
+  distinct(species) # 2378 species names
+
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_1Mar2021.csv")
+
+species_gh <- everything_gh %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  select(species) %>%
+  drop_na(species) %>%
+  distinct(species) # 262 species names
+
+# 2378 + 262 = 2640, yay!!!!
+
+summary_Claire <- Claire_list %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+
+summary <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  distinct(species, .keep_all = TRUE) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+
+summary_gh <- everything_gh %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  distinct(species, .keep_all = TRUE) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+
+# have 5 extra species when I add together
+
+Claire_list_SP <- Claire_list %>%
+  filter(category == "SP") %>%
+  select(scientificNameStd, species) %>%
+  distinct(scientificNameStd, species)
+
+everything_SP <- everything %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  filter(category == "SP") %>%
+  select(scientificNameStd, species) %>%
+  distinct(scientificNameStd, species)
+
+everything_gh_SP <- everything_gh %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  filter(category == "SP") %>%
+  select(scientificNameStd, species) %>%
+  distinct(scientificNameStd, species)
+
+all_SP <- bind_rows(everything_SP, everything_gh_SP)
+
+all_SP_dist <- distinct(all_SP)
+
+all_SP_count <- all_SP %>%
+  group_by(scientificNameStd, species) %>%
+  summarise(frequency = n()) # 1758 species
+
+all_SP_count_sum <- select(all_SP_count, species)
+
+all_SP_count_2 <- all_SP %>%
+  group_by(species) %>%
+  summarise(frequency = n()) # 1753 species
+
+all_SP_count_2 <- select(all_SP_count, species)
+
+# what's the diff?
+x <- all_SP_count_sum$scientificNameStd == all_SP_count_sum$species
+
+x <- as.data.frame(x, stringsAsFactors = FALSE) # some scientific names did not match species names!
 
 
+
+
+
+# check that the hybrid and GC parents are on this Farzin's list
+
+parents <- read.csv("Master_database_input/hybrids_genus_cultivars_parents.csv")
+
+glimpse(parents)
+
+parents_long <- parents %>%
+  gather(parent_type, parent, Parent_1:Parent_4)
+
+new_species <- parents_long %>%
+  select(parent) %>%
+  distinct(parent)
+
+# remove blanks
+
+new_species <- new_species[new_species$parent!="",]
+new_species <- as.data.frame(new_species, stringsAsFactors = FALSE)
+glimpse(new_species)
+
+# see if these species are included in longer list
+
+colnames(new_species) <- "scientificNameStd"
+
+blah <- anti_join(new_species, Farzin_list, by = "scientificNameStd") # 2 obs, but when I look on Farzin's list they are included
 
 
 # run scientific names through Taxonstand to get Family names
 
 library(Taxonstand)
 
-sciname_TLPed <- Taxonstand::TPL(sciname$scientificNameStd, infra = TRUE, corr = TRUE, repeats = 100)
+list <- read.csv("Master_database_output/Farzin/species_list_ST_1Mar2021.csv")
+
+sciname_TLPed <- Taxonstand::TPL(list$scientificNameStd, infra = TRUE, corr = TRUE, repeats = 100)
 sciname_TLPed
 
-write.csv(sciname_TLPed,"Master_database_output/taxonomy_checks/taxonstandcheck_ST_25.2.2021.csv", row.names = FALSE)
+
+write.csv(sciname_TLPed,"Master_database_output/taxonomy_checks/taxonstandcheck_ST_1.3.2021.csv", row.names = FALSE)
 
 library(taxize)#############################################################################################################################
 ##### This runs the taxonomic check with taxize and gnr_resolve to produce the taxonomically corrected species list
