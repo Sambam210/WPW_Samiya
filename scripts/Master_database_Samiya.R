@@ -1257,9 +1257,155 @@ summary_indoor <- indoor %>%
 
 same <- semi_join(summary_indoor, summary_all)
 
-# up to Allium schoenoprasum
 
+###### Check the glasshouse species
 
+library(tidyverse)
+
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_1Mar2021.csv")
+
+# filter out the 5 min traits species
+
+sciname_gh <- everything_gh %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  select(scientificNameStd) %>%
+  drop_na(scientificNameStd) %>%
+  distinct(scientificNameStd) # 110 scientific names
+
+species_gh <- everything_gh %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  select(species) %>%
+  drop_na(species) %>%
+  distinct(species) # 262 species names
+
+summary_gh <- everything_gh %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  distinct(species, .keep_all = TRUE) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+
+# from above, 105 SP + 7 SYN = 112 scientific names
+
+# Where is the mismatch?
+# some SYN and SP might both have 5 min traits
+
+# anyway, work with the 110 species
+
+check_gh <- everything_gh %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  distinct(scientificNameStd, .keep_all = TRUE) %>%
+  drop_na(scientificNameStd) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+
+names_gh <- everything_gh %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  distinct(scientificNameStd, .keep_all = TRUE) %>%
+  drop_na(scientificNameStd) %>%
+  select(scientificNameStd, category)
+
+# culvars that do not have 5mintraits for species
+
+# Syzygium smithii
+
+# but in this list these problem species are fine!
+names2_gh <- everything_gh %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  distinct(scientificNameStd, category, .keep_all = TRUE) %>%
+  drop_na(scientificNameStd) %>%
+  select(scientificNameStd, category)
+
+# check if eveything has the 10 min traits
+
+tenmintraits_gh <- everything_gh %>%
+  select(scientificNameStd, species, Min_5_traits, trait_name, value) %>%
+  filter(trait_name == "common_name" | trait_name == "light_level" | trait_name == "form" | trait_name == "max_height" 
+         | trait_name == "max_width" | trait_name == "leaf_loss" | trait_name == "flower_colour" | trait_name == "flower_period" 
+         | trait_name == "placement" | trait_name == "usage")
+
+tenmintraits_gh <- distinct(tenmintraits_gh, scientificNameStd, species, Min_5_traits, trait_name) # one row for each entity and trait
+
+tenmintraits_gh["Score"] <- 1 # add new column populated by '1'
+
+glimpse(tenmintraits)
+
+summary_gh <- tenmintraits_gh %>%
+  group_by(scientificNameStd, species, Min_5_traits) %>%
+  mutate(Sum = sum(Score))
+
+# check
+
+mistakes <- filter(summary_gh, Min_5_traits == "TRUE" & Sum < 10)
+
+mistakes2 <- filter(summary_gh, Min_5_traits != "TRUE" & Sum == "10")
+
+# remove solely indoor/container plants
+
+all_gh <- everything_gh %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>% 
+  select(species, trait_name, value) %>%
+  filter (trait_name == "placement") %>%
+  distinct(species, trait_name, value)
+
+all_gh["Score"] <- 1 # add new column populated by '1'
+
+glimpse(all_gh)
+
+summary_all_gh <- all_gh %>%
+  group_by(species) %>%
+  mutate(Sum = sum(Score)) %>%
+  select(species, Sum) %>%
+  distinct(species, Sum)
+
+indoor_gh <- everything_gh %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  select(species, trait_name, value) %>%
+  filter (trait_name == "placement") %>%
+  filter(value == "container" | value == "indoor") %>%
+  distinct(species, trait_name, value)
+
+indoor_gh["Score"] <- 1 # add new column populated by '1'
+
+glimpse(indoor_gh)
+
+summary_indoor_gh <- indoor_gh %>%
+  group_by(species) %>%
+  mutate(Sum = sum(Score)) %>%
+  select(species, Sum) %>%
+  distinct(species, Sum)
+
+# find similarities in the two tables in terms of species and sum
+
+same_gh <- semi_join(summary_indoor_gh, summary_all_gh)
+
+############## join the 'all' traits and 'glasshouse' traits together
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_1Mar2021.csv")
+
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_1Mar2021.csv")
+
+all_entities <- bind_rows(everything, everything_gh)
+
+#### Extract a list of the scientificNameStd for Farzin to check against models
+
+Farzin_list <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  distinct(scientificNameStd) %>%
+  drop_na(scientificNameStd) %>%
+  arrange(scientificNameStd) # 1914 species
+
+# check that the hybrid and GC parents are on this list
 
 
 
