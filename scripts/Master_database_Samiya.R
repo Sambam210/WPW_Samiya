@@ -1577,6 +1577,25 @@ drought <- all_entities %>%
   filter(trait_name == "drought_tolerance") %>%
   select(scientificNameStd, species, trait_name, value)
 
+drought_summary <- drought %>%
+  group_by(scientificNameStd, species) %>%
+  summarise(number_records = n())
+# 1744 records, same as trait completeness!
+
+drought["number"] <- 1 # add new column populated by '1'
+
+drought_summary <- drought %>%
+  group_by(scientificNameStd, species, value) %>%
+  summarise(number_records = sum(number))
+
+drought_long <- drought_summary %>%
+  spread(key = value, value = number_records, fill = 0) %>%
+  mutate(total_records = sum(No, Yes)) %>%
+  arrange(desc(total_records)) %>%
+  group_by(total_records) %>%
+  mutate(number_species = n())
+
+write.csv(drought_long, "Master_database_output/drought_summary/drought_summary_ST_March2021.csv", row.names = FALSE)
 
 # run scientific names through Taxonstand to get Family names
 
