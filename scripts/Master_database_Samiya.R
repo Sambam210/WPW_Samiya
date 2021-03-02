@@ -1121,7 +1121,7 @@ write.csv(everything,"Master_database_output/Janine/sample_traitdatabase_ST_Feb2
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_27Feb2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_1Mar2021.csv")
 
 # filter out the 5 min traits species
 
@@ -1130,7 +1130,7 @@ sciname <- everything %>%
   filter(Include_in_tool == "Yes") %>%
   select(scientificNameStd) %>%
   drop_na(scientificNameStd) %>%
-  distinct(scientificNameStd) # 1806 scientific names
+  distinct(scientificNameStd) # 1805 scientific names
 
 species <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
@@ -1146,12 +1146,18 @@ summary <- everything %>%
   group_by(category) %>%
   summarise(frequency = n())
 
-# from above, 1650 SP + 163 SYN = 1813 scientific names
+# from above, 1653 SP + 162 SYN = 1815 scientific names
 
 # Where is the mismatch?
 # some SYN and SP might both have 5 min traits
 
-# anyway, work with the 1806 species
+# Species with multiple synonyms that have 5 min traits: Abelia uniflora, Myoporum tenuifolium, Pittosporum phillyraeoides
+
+# Species and synonyms that have 5 min traits: Bauhinia variegata, Coronidium scorpioides,
+# Cupressus arizonica, Eucalyptus leucoxylon, Ficinia nodosa, Melaleuca fulgens,
+# Syringa vulgaris, Syzygium tierneyanum, Virgilia oroboides
+
+# anyway, work with the 1805 species
 
 check <- everything %>%
   filter(Min_5_traits == "TRUE") %>%
@@ -1214,7 +1220,6 @@ summary <- tenmintraits %>%
 mistakes <- filter(summary, Min_5_traits == "TRUE" & Sum < 10)
 
 mistakes2 <- filter(summary, Min_5_traits != "TRUE" & Sum == "10")
-
 
 # remove solely indoor/container plants
 
@@ -1498,10 +1503,6 @@ x <- all_SP_count_sum$scientificNameStd == all_SP_count_sum$species
 
 x <- as.data.frame(x, stringsAsFactors = FALSE) # some scientific names did not match species names!
 
-
-
-
-
 # check that the hybrid and GC parents are on this Farzin's list
 
 parents <- read.csv("Master_database_input/hybrids_genus_cultivars_parents.csv")
@@ -1526,6 +1527,55 @@ glimpse(new_species)
 colnames(new_species) <- "scientificNameStd"
 
 blah <- anti_join(new_species, Farzin_list, by = "scientificNameStd") # 2 obs, but when I look on Farzin's list they are included
+
+
+############## check coverage of the traits
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_1Mar2021.csv")
+
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_1Mar2021.csv")
+
+all_entities <- bind_rows(everything, everything_gh)
+
+# trait completeness
+
+# entities with the 5 minimum traits to be included in the database
+
+species <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  distinct(species)
+# 2640 entities, same as in Claire's list!
+
+traits <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  distinct(species, trait_name) %>%
+  group_by(trait_name) %>%
+  summarise(frequency = n()) %>%
+  arrange(desc(frequency)) %>%
+  mutate(percent_completeness = (frequency/2640)*100)
+# all 10traits at 100% completion!!!
+
+write.csv(traits, "Master_database_output/traitcompleteness_March2021.csv", row.names = FALSE)
+
+######## drought tolerance trait coverage
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_1Mar2021.csv")
+
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_1Mar2021.csv")
+
+all_entities <- bind_rows(everything, everything_gh)
+
+drought <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  filter(trait_name == "drought_tolerance") %>%
+  select(scientificNameStd, species, trait_name, value)
 
 
 # run scientific names through Taxonstand to get Family names
