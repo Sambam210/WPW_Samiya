@@ -1503,6 +1503,35 @@ x <- all_SP_count_sum$scientificNameStd == all_SP_count_sum$species
 
 x <- as.data.frame(x, stringsAsFactors = FALSE) # some scientific names did not match species names!
 
+# what is the difference between Claire and Farzin's list in terms of scinames?
+
+library(tidyverse)
+
+Farzin <- read.csv("Master_database_output/Farzin/species_list_ST_1Mar2021.csv") # 1914 species
+
+Claire <- read.csv("Master_database_output/Claire/species_list_ST_1Mar2021_photos.csv")
+
+Claire <- Claire %>%
+  filter(category == "SP" | category == "SYN") %>%
+  select(scientificNameStd) # 1927 species
+
+Claire_sum <- Claire %>%
+  group_by(scientificNameStd) %>%
+  summarise(frequency = n())
+
+# identified the below synonyms that were already identified as problematic
+
+# Species with multiple synonyms that have 5 min traits: Abelia uniflora, Myoporum tenuifolium, Pittosporum phillyraeoides
+
+# Species and synonyms that have 5 min traits: Bauhinia variegata, Coronidium scorpioides,
+# Cupressus arizonica, Eucalyptus leucoxylon, Ficinia nodosa, Melaleuca fulgens,
+# Syringa vulgaris, Syzygium tierneyanum, Virgilia oroboides
+
+diff <- anti_join(Claire, Farzin, by = "scientificNameStd")
+
+##### BETULA PLATYPHYLLA NOT INCLUDED IN FARZIN LIST FOR SOME REASON ##################
+##### HAVE CHANGED BETULA PLATYPHYLLA AND ITS 2 CULVARS TO 'NO' IN THE 'INCLUDE_IN_TOOL' COLUMN ############
+
 # check that the hybrid and GC parents are on this Farzin's list
 
 parents <- read.csv("Master_database_input/hybrids_genus_cultivars_parents.csv")
@@ -1620,6 +1649,31 @@ trees2check_GNRed<- gnr_resolve(as.character(trees2check$ORIGINAL_name), http="p
 
 
 # you could use both functions to run taxo checks sequentially and make sure the overall taxonomy is current (See Ossola et al., 2020, GUTI).
+
+
+#### check how many plants have a lot of unique values for the 'form' trait
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_3Mar2021.csv")
+
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_1Mar2021.csv")
+
+all_entities <- bind_rows(everything, everything_gh)
+
+form <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  filter(trait_name == "form") %>%
+  select(species, value) %>%
+  distinct(species, value) %>%
+  group_by(species) %>%
+  summarise(frequency = n()) 
+# 2637 species but remember I removed Betula platyphylla and its two cultivars
+
+# will need to check again once Michelle tells me what to delete/change
+
+#### check that 'plant type' is one of the values specified in the 'form' trait
 
 
 
