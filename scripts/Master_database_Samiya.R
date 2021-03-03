@@ -1657,7 +1657,7 @@ library(tidyverse)
 
 everything <- read.csv("Master_database_input/EVERYTHING_traits_3Mar2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_1Mar2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_3Mar2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -1675,10 +1675,43 @@ form <- all_entities %>%
 
 #### check that 'plant type' is one of the values specified in the 'form' trait
 
+plant_type <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  select(species, plantType) %>%
+  distinct(species, plantType)
+# 2637 species, yay!!!!
 
+plant_form <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  filter(trait_name == "form") %>%
+  select(species, value) %>%
+  distinct(species, value)
 
+names(plant_form)[names(plant_form) == "value"] <- "plantType"
 
+# need to capitalise the first letter
+# https://stackoverflow.com/questions/16249570/uppercase-the-first-letter-in-data-frame
 
+str_sub(plant_form$plantType, 1, 1) <- str_sub(plant_form$plantType, 1, 1) %>% str_to_upper()
+
+# difference
+
+diff2 <- setdiff(plant_type, plant_form) # 36 species, fixed now
+
+### capitalise all the words in the 'common name'
+# https://stackoverflow.com/questions/6364783/capitalize-the-first-letter-of-both-words-in-a-two-word-string
+
+common_name <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  filter(trait_name == "common_name") %>%
+  distinct(species, value, .keep_all = TRUE)
+
+common_name$value <- gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", common_name$value, perl=TRUE)
+
+# but want to change on all_entities not subset!
 
 
 
