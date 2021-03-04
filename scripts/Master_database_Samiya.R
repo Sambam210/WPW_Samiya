@@ -1715,7 +1715,7 @@ diff2 <- setdiff(plant_type, plant_form) # 36 species, fixed now
 
 # solution
 all_entities$value_new <- all_entities$value # create a new column 'value_new' which is a copy of 'value'
-all_entities$try <- ifelse(all_entities$trait_name == "common_name", gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", all_entities$value_new, perl=TRUE),
+all_entities$value_new <- ifelse(all_entities$trait_name == "common_name", gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", all_entities$value_new, perl=TRUE),
                            all_entities$value_new)
 
 
@@ -1753,37 +1753,58 @@ measurements$trait_name_new <- ifelse(measurements$trait_name == "min_width", "w
                                       measurements$trait_name_new)
 
 
+glimpse(measurements)
+
+measurements$value <- as.numeric(as.character(measurements$value))
+
 summary <- measurements %>%
   group_by(species, plantType, trait_name_new) %>%
-  summarise(max = max(value))
+  summarise(max = max(value), min = min(value), average = mean(value, trim = 1), range = max - min)
 
-glimpse(summary)
-
-summary$max <- as.numeric(as.character(summary$max))
+filter(summary, range < 0) # no mistakes
 
 # summary graphs
 
 library(ggplot2)
 
-max_height <- summary %>%
-  filter(trait_name_new == "height")
+# height
 
-max <- ggplot(max_height, aes(x = plantType, y = max)) +
+height <- filter(summary, trait_name_new == "height")
+
+max <- ggplot(height, aes(x = plantType, y = max)) +
   geom_boxplot()
 max
 
 # find the mistakes
-filter(max_height, plantType == "Grass" , max >= 5)
-filter(max_height, plantType == "Herb", max >= 2)
-shrub_change <- filter(max_height, plantType == "Shrub", max >= 6)
+filter(height, plantType == "Grass" , max >= 5)
+filter(height, plantType == "Herb", max >= 2)
+shrub_change <- filter(height, plantType == "Shrub", max >= 6) # 81 species, takinging too long, might change later
+tree_change <- filter(height, plantType == "Tree", max >= 35)
 
+min <- ggplot(height, aes(x = plantType, y = min)) +
+  geom_boxplot()
+min
 
-# create mean, median, range values
+# find the mistakes
+filter(height, plantType == "Grass" , min >= 5)
+filter(height, plantType == "Shrub", min >= 8)
+min_trees <- filter(height, plantType == "Tree", min >= 20)
 
-all_entities <- all_entities %>%
-  filter(Min_5_traits == "TRUE") %>%
-  filter(Include_in_tool == "Yes")
+# width
 
-all_entities$trait_name_new <- all_entities$trait_name # create a new variable to trait name
+width <- filter(summary, trait_name_new == "width")
+
+max <- ggplot(width, aes(x = plantType, y = max)) +
+  geom_boxplot()
+max
+
+# find the mistakes
+filter(width, plantType == "Climber", max > 20)
+filter(width, plantType == "Grass", max > 20)
+filter(width, plantType == "Herb", max > 20)
+filter(width, plantType == "Palm", max > 20)
+filter(width, plantType == "Shrub", max > 10)
+filter(width, plantType == "Succulent", max > 5)
+filter(width, plantType == "Tree", max > 30)
 
 
