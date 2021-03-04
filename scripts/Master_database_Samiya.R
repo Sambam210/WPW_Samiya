@@ -1703,15 +1703,87 @@ diff2 <- setdiff(plant_type, plant_form) # 36 species, fixed now
 ### capitalise all the words in the 'common name'
 # https://stackoverflow.com/questions/6364783/capitalize-the-first-letter-of-both-words-in-a-two-word-string
 
-common_name <- all_entities %>%
-  filter(Min_5_traits == "TRUE") %>%
-  filter(Include_in_tool == "Yes") %>%
-  filter(trait_name == "common_name") %>%
-  distinct(species, value, .keep_all = TRUE)
+# common_name <- all_entities %>%
+#  filter(Min_5_traits == "TRUE") %>%
+#  filter(Include_in_tool == "Yes") %>%
+#  filter(trait_name == "common_name") %>%
+#  distinct(species, value, .keep_all = TRUE)
 
-common_name$value <- gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", common_name$value, perl=TRUE)
+# common_name$value <- gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", common_name$value, perl=TRUE)
 
 # but want to change on all_entities not subset!
 
+# solution
+all_entities$value_new <- all_entities$value # create a new column 'value_new' which is a copy of 'value'
+all_entities$try <- ifelse(all_entities$trait_name == "common_name", gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", all_entities$value_new, perl=TRUE),
+                           all_entities$value_new)
+
+
+##### height and width data
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_4Mar2021.csv")
+
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_4Mar2021.csv")
+
+all_entities <- bind_rows(everything, everything_gh)
+
+measurements <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  filter(trait_name == "max_height" | trait_name == "height" | trait_name == "min_height" | 
+           trait_name == "max_width" | trait_name == "width" | trait_name == "min_width") %>%
+  select(species, plantType, trait_name, value)
+
+measurements$trait_name_new <- measurements$trait_name # create a new variable to trait name
+
+measurements <- select(measurements, species, plantType, trait_name, trait_name_new, value)
+
+measurements$trait_name_new <- ifelse(measurements$trait_name == "max_height", "height", 
+                                     measurements$trait_name_new)
+
+measurements$trait_name_new <- ifelse(measurements$trait_name == "min_height", "height", 
+                                      measurements$trait_name_new)
+
+measurements$trait_name_new <- ifelse(measurements$trait_name == "max_width", "width", 
+                                      measurements$trait_name_new)
+
+measurements$trait_name_new <- ifelse(measurements$trait_name == "min_width", "width", 
+                                      measurements$trait_name_new)
+
+
+summary <- measurements %>%
+  group_by(species, plantType, trait_name_new) %>%
+  summarise(max = max(value))
+
+glimpse(summary)
+
+summary$max <- as.numeric(as.character(summary$max))
+
+# summary graphs
+
+library(ggplot2)
+
+max_height <- summary %>%
+  filter(trait_name_new == "height")
+
+max <- ggplot(max_height, aes(x = plantType, y = max)) +
+  geom_boxplot()
+max
+
+# find the mistakes
+filter(max_height, plantType == "Grass" , max >= 5)
+filter(max_height, plantType == "Herb", max >= 2)
+shrub_change <- filter(max_height, plantType == "Shrub", max >= 6)
+
+
+# create mean, median, range values
+
+all_entities <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes")
+
+all_entities$trait_name_new <- all_entities$trait_name # create a new variable to trait name
 
 
