@@ -1723,9 +1723,9 @@ all_entities$value_new <- ifelse(all_entities$trait_name == "common_name", gsub(
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_4Mar2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_5Mar2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_4Mar2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_5Mar2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -1734,11 +1734,11 @@ measurements <- all_entities %>%
   filter(Include_in_tool == "Yes") %>%
   filter(trait_name == "max_height" | trait_name == "height" | trait_name == "min_height" | 
            trait_name == "max_width" | trait_name == "width" | trait_name == "min_width") %>%
-  select(species, plantType, trait_name, value)
+  select(scientificNameStd, species, category, plantType, trait_name, value)
 
 measurements$trait_name_new <- measurements$trait_name # create a new variable to trait name
 
-measurements <- select(measurements, species, plantType, trait_name, trait_name_new, value)
+measurements <- select(measurements, scientificNameStd, species, category, plantType, trait_name, trait_name_new, value)
 
 measurements$trait_name_new <- ifelse(measurements$trait_name == "max_height", "height", 
                                      measurements$trait_name_new)
@@ -1758,10 +1758,19 @@ glimpse(measurements)
 measurements$value <- as.numeric(as.character(measurements$value))
 
 summary <- measurements %>%
-  group_by(species, plantType, trait_name_new) %>%
-  summarise(max = max(value), min = min(value), average = mean(value, trim = 1), range = max - min)
+  group_by(scientificNameStd, species, category, plantType, trait_name_new) %>%
+  summarise(max = max(value), min = min(value), average = mean(value), range = max - min)
+
+summary$average <- format(round(summary$average, 1), nsmall = 2) # make values one decimal place
+
+glimpse(summary)
+summary$average <- as.numeric(as.character(summary$average))
 
 filter(summary, range < 0) # no mistakes
+
+names <- distinct(summary, species) # 2637, am not missing anything!
+
+write.csv(summary, "Master_database_output/final_data/height_width_all_ST_5Mar2021.csv", row.names = FALSE)
 
 # summary graphs
 
@@ -1778,7 +1787,7 @@ max
 # find the mistakes
 filter(height, plantType == "Grass" , max >= 5)
 filter(height, plantType == "Herb", max >= 2)
-shrub_change <- filter(height, plantType == "Shrub", max >= 6) # 81 species, takinging too long, might change later
+shrub_change <- filter(height, plantType == "Shrub", max >= 6) # 71 species, takinging too long, might change later
 tree_change <- filter(height, plantType == "Tree", max >= 35)
 
 min <- ggplot(height, aes(x = plantType, y = min)) +
@@ -1789,6 +1798,14 @@ min
 filter(height, plantType == "Grass" , min >= 5)
 filter(height, plantType == "Shrub", min >= 8)
 min_trees <- filter(height, plantType == "Tree", min >= 20)
+
+range <- ggplot(height, aes(x = plantType, y = range)) +
+  geom_boxplot()
+range
+
+# find the mistakes
+filter(height, plantType == "Fern", range > 9)
+filter(height, plantType == "Tree", range > 30)
 
 # width
 
@@ -1806,5 +1823,146 @@ filter(width, plantType == "Palm", max > 20)
 filter(width, plantType == "Shrub", max > 10)
 filter(width, plantType == "Succulent", max > 5)
 filter(width, plantType == "Tree", max > 30)
+
+min <- ggplot(width, aes(x = plantType, y = min)) +
+  geom_boxplot()
+min
+
+# find the mistakes
+filter(width, plantType == "Shrub", min > 10)
+
+range <- ggplot(width, aes(x = plantType, y = range)) +
+  geom_boxplot()
+range
+
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+###########################                   START BUILDING MASTER TABLE               ##################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+
+library(tidyverse)
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_5Mar2021.csv")
+
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_5Mar2021.csv")
+
+all_entities <- bind_rows(everything, everything_gh)
+
+all_entities_short <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  select(scientificNameStd, species, category, trait_name, value) %>%
+  distinct(scientificNameStd, species, category, trait_name, value)
+
+check <- distinct(all_entities_short, species) # 2637 species, haven't lost anything
+
+# remove the old height and width dimensions
+
+all_entities_short <- all_entities_short %>%
+  filter(trait_name != "max_height", trait_name != "height", trait_name != "min_height", 
+           trait_name != "max_width", trait_name != "width", trait_name != "min_width")
+
+check <- distinct(all_entities_short, species) # 2637 species, haven't lost anything
+
+# load the max, min and average height and width data
+
+height_width <- read.csv("Master_database_output/final_data/height_width_all_ST_5Mar2021.csv")
+
+# create a new column with range
+height_width <- height_width %>%
+  mutate(range_new = paste0(min, " - ", max, "m"),
+         average_new = paste0(average, "m"))
+
+height_width <- select(height_width, scientificNameStd, species, category, trait_name_new, range_new, average_new)
+
+# change to long format
+# http://www.cookbook-r.com/Manipulating_data/Converting_data_between_wide_and_long_format/
+
+height_width_long <- height_width %>%
+  gather(trait_name, value, range_new:average_new)
+
+height_width_long <- height_width_long %>%
+  mutate(trait_name_new_new = paste0(trait_name_new, "_", trait_name))
+
+height_width_long <- select(height_width_long, scientificNameStd, species, category, trait_name_new_new, value)  
+
+height_width_long[] <- lapply(height_width_long, gsub, pattern = "height_range_new", replacement = "height_range")
+height_width_long[] <- lapply(height_width_long, gsub, pattern = "width_range_new", replacement = "width_range")
+height_width_long[] <- lapply(height_width_long, gsub, pattern = "height_average_new", replacement = "height_average")
+height_width_long[] <- lapply(height_width_long, gsub, pattern = "width_average_new", replacement = "width_average")
+
+# change the column name
+names(height_width_long)[names(height_width_long) == 'trait_name_new_new'] <- 'trait_name'
+
+# join to master dataset
+
+all_entities_short <- bind_rows(all_entities_short, height_width_long)
+all_entities_short <- arrange(all_entities_short, scientificNameStd, species, trait_name, value)
+
+check <- distinct(all_entities_short, species) # 2637 species, haven't lost anything
+
+##### add back plant type and origin
+
+plant_type_origin <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  select(species, plantType, origin) %>%
+  distinct(species, plantType, origin) # 2637 plants
+
+# join to main dataset
+all_entities_short <- left_join(all_entities_short, plant_type_origin, by = "species")
+
+all_entities_short <- all_entities_short %>%
+  select(scientificNameStd, species, plantType, origin, category, trait_name, value) %>%
+  filter(trait_name != "form", trait_name != "native_exotic")
+
+###### separate the species and genus names
+# https://stackoverflow.com/questions/4350440/split-data-frame-string-column-into-multiple-columns
+
+# first change species col name
+names(all_entities_short)[names(all_entities_short) == 'species'] <- 'entity'
+
+all_entities_short <- all_entities_short %>%
+  separate(scientificNameStd, c("genus", "species"), " ", remove = FALSE)
+
+# need to fix GC, H and HC
+
+all_entities_short$genus <- ifelse(all_entities_short$category == "H", word(all_entities_short$entity, 1), 
+                                    all_entities_short$genus)
+all_entities_short$genus <- ifelse(all_entities_short$category == "GC", word(all_entities_short$entity, 1), 
+                                   all_entities_short$genus)
+all_entities_short$genus <- ifelse(all_entities_short$category == "HC", word(all_entities_short$entity, 1), 
+                                   all_entities_short$genus)
+
+#### attach the family names
+
+sciname <- all_entities_short %>%
+  select(scientificNameStd) %>%
+  drop_na(scientificNameStd) %>%
+  distinct(scientificNameStd) # 1914, mmatches with Farzin's list!
+
+# run through taxise
+
+# sciname_TLPed <- Taxonstand::TPL(sciname$scientificNameStd, infra = TRUE, corr = TRUE, repeats = 100)
+# sciname_TLPed
+## nevermind, this is taking ages
+
+## use old list I created which should be the same
+
+family <- read.csv("Master_database_output/taxonomy_checks/taxonstandcheck_ST_1.3.2021.csv")
+
+family <- select(family, Taxon, Family)
+
+names(family)[names(family) == 'Taxon'] <- 'scientificNameStd'
+names(family)[names(family) == 'Family'] <- 'family'
+# split genus and species
+family <- family %>%
+  separate(scientificNameStd, c("genus", "species"), " ")
+
+all_entities_short <- left_join(all_entities_short, family, by = "genus")
+
 
 
