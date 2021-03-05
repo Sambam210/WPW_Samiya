@@ -1939,10 +1939,10 @@ all_entities_short$genus <- ifelse(all_entities_short$category == "HC", word(all
 
 #### attach the family names
 
-sciname <- all_entities_short %>%
-  select(scientificNameStd) %>%
-  drop_na(scientificNameStd) %>%
-  distinct(scientificNameStd) # 1914, mmatches with Farzin's list!
+# sciname <- all_entities_short %>%
+#  select(scientificNameStd) %>%
+#  drop_na(scientificNameStd) %>%
+#  distinct(scientificNameStd) # 1914, matches with Farzin's list!
 
 # run through taxise
 
@@ -1958,11 +1958,34 @@ family <- select(family, Taxon, Family)
 
 names(family)[names(family) == 'Taxon'] <- 'scientificNameStd'
 names(family)[names(family) == 'Family'] <- 'family'
-# split genus and species
-family <- family %>%
-  separate(scientificNameStd, c("genus", "species"), " ")
 
-all_entities_short <- left_join(all_entities_short, family, by = "genus")
+# split genus and species
+# family <- family %>%
+#  separate(scientificNameStd, c("genus", "species"), " ")
+
+# all_entities_short <- left_join(all_entities_short, family, by = "genus") # blows up number of rows, need to return back to normal
+
+# names(all_entities_short)[names(all_entities_short) == 'species.x'] <- 'species'
+
+# all_entities_short <- select(all_entities_short, scientificNameStd, family, genus, species, entity, plantType, origin, category, trait_name, value)
+
+# all_entities_short <- distinct(all_entities_short, scientificNameStd, family, genus, species, entity, plantType, origin, category, trait_name, value)
+
+all_entities_short <- left_join(all_entities_short, family, by = "scientificNameStd")
+
+all_entities_short <- select(all_entities_short, scientificNameStd, family, genus, species, entity, plantType, origin, category, trait_name, value)
+# family is blank for H, GC, HC
+
+#### add synonym column
+
+all_entities_short$synonym <- "NA"
+
+all_entities_short$synonym <- ifelse(all_entities_short$category == "SYN", all_entities_short$entity, 
+                                   all_entities_short$synonym)
+
+all_entities_short <- select(all_entities_short, scientificNameStd, family, genus, species, entity, synonym, plantType, origin, category, trait_name, value)
+
+####### extract the ecological services data
 
 
 
