@@ -1987,5 +1987,26 @@ all_entities_short <- select(all_entities_short, scientificNameStd, family, genu
 
 ####### extract the ecological services data
 
+eco <- all_entities_short %>%
+  filter(trait_name == "ecological_services") %>%
+  select(entity, trait_name, value)
 
+eco$score <- "1"
+
+# change from long to wide
+
+eco_wide <- eco %>%
+  spread(value, score, fill = 0) 
+
+glimpse(eco_wide) 
+
+eco_wide$bird <- as.numeric(as.character(eco_wide$bird))
+eco_wide$insect <- as.numeric(as.character(eco_wide$insect))
+eco_wide$lizard <- as.numeric(as.character(eco_wide$lizard))
+eco_wide$native_mammal <- as.numeric(as.character(eco_wide$native_mammal))
+eco_wide$pollinator <- as.numeric(as.character(eco_wide$pollinator))  
+
+eco_wide <- eco_wide %>%
+  mutate(ecological_score = bird + insect + lizard + native_mammal + pollinator) %>%
+  select(-trait_name)
 
