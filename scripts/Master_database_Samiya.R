@@ -2042,3 +2042,26 @@ names(all_entities_short)[names(all_entities_short) == 'ecological_score'] <- 'e
 all_entities_short <- select(all_entities_short, scientificNameStd, family, genus, species, entity, synonym, model_type, plantType, origin, category, trait_name, value,
                              bird, insect, lizard, native_mammal, pollinator, ecological_value, ecological_index, shade_value, shade_index, carbon_value, carbon_index)
 
+
+###### extract the trait names and values for Michelle
+
+traits <- all_entities_short %>%
+  select(trait_name, value) %>%
+  filter(trait_name != "height_average", trait_name != "height_range", trait_name != "width_average", trait_name != "width_range", 
+         trait_name != "common_name", trait_name != "soil_volume", trait_name != "max_height_nature") %>%
+  group_by(trait_name, value) %>%
+  summarise(frequency = n())
+
+write.csv(traits, "Master_database_output/traitfrequency_March2021.csv", row.names = FALSE)
+
+form <- all_entities_short %>%
+  select(entity, plantType) %>%
+  distinct(entity, plantType) %>%
+  group_by(plantType) %>%
+  summarise(frequency = n())
+# all of them added togther is 2637!!!!
+
+
+
+
+
