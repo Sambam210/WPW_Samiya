@@ -2010,3 +2010,35 @@ eco_wide <- eco_wide %>%
   mutate(ecological_score = bird + insect + lizard + native_mammal + pollinator) %>%
   select(-trait_name)
 
+# join to main database
+all_entities_short <- left_join(all_entities_short, eco_wide, by = "entity")
+
+# replace the NAs with 0
+
+all_entities_short$bird[is.na(all_entities_short$bird)] <- 0
+all_entities_short$insect[is.na(all_entities_short$insect)] <- 0
+all_entities_short$lizard[is.na(all_entities_short$lizard)] <- 0
+all_entities_short$native_mammal[is.na(all_entities_short$native_mammal)] <- 0
+all_entities_short$pollinator[is.na(all_entities_short$pollinator)] <- 0
+all_entities_short$ecological_score[is.na(all_entities_short$ecological_score)] <- 0
+
+# remove the ecological services trait
+all_entities_short <- all_entities_short %>%
+  filter(trait_name != "ecological_services")
+
+# add the dummy columns for the biodiversity benefits and model type
+
+all_entities_short$model_type <- ""
+all_entities_short$shade_value <- ""
+all_entities_short$shade_index <- ""
+all_entities_short$carbon_value <- ""
+all_entities_short$carbon_index <-""
+all_entities_short$ecological_index <-""
+
+names(all_entities_short)[names(all_entities_short) == 'ecological_score'] <- 'ecological_value'
+
+
+# rearrange all the columns
+all_entities_short <- select(all_entities_short, scientificNameStd, family, genus, species, entity, synonym, model_type, plantType, origin, category, trait_name, value,
+                             bird, insect, lizard, native_mammal, pollinator, ecological_value, ecological_index, shade_value, shade_index, carbon_value, carbon_index)
+
