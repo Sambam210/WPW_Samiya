@@ -1669,7 +1669,7 @@ form <- all_entities %>%
   distinct(species, value) %>%
   group_by(species) %>%
   summarise(frequency = n()) 
-# 2637 species but remember I removed Betula platyphylla and its two cultivars
+# 2636 species but remember I removed Betula platyphylla and its two cultivars, and also Dianella Silver Streak
 
 # will need to check again once Michelle tells me what to delete/change
 
@@ -1857,7 +1857,7 @@ all_entities_short <- all_entities %>%
   select(scientificNameStd, species, category, trait_name, value) %>%
   distinct(scientificNameStd, species, category, trait_name, value)
 
-check <- distinct(all_entities_short, species) # 2637 species, haven't lost anything
+check <- distinct(all_entities_short, species) # 2636 species, haven't lost anything
 
 # remove the old height and width dimensions
 
@@ -1910,7 +1910,7 @@ plant_type_origin <- all_entities %>%
   filter(Min_5_traits == "TRUE") %>%
   filter(Include_in_tool == "Yes") %>%
   select(species, plantType, origin) %>%
-  distinct(species, plantType, origin) # 2637 plants
+  distinct(species, plantType, origin) # 2636 plants
 
 # join to main dataset
 all_entities_short <- left_join(all_entities_short, plant_type_origin, by = "species")
@@ -2059,7 +2059,7 @@ form <- all_entities_short %>%
   distinct(entity, plantType) %>%
   group_by(plantType) %>%
   summarise(frequency = n())
-# all of them added togther is 2637!!!!
+# all of them added togther is 2636!!!!
 
 #### add the max height and width for shade and carbon values
 
@@ -2152,6 +2152,91 @@ found <- found %>%
 
 ## add parents of Gc, H, HC
 
+parents <- read.csv("Master_database_input/hybrids_genus_cultivars_parents.csv")
+
+parents <- select(parents, -plantType)
+
+names(parents)[names(parents) == 'Species'] <- 'entity'
+
+# join
+found <- left_join(found, parents, by = "entity")
+
+# rearrange the columns
+
+found <- found %>%
+  select(-frequency) %>%
+  select(scientificNameStd, family, genus, species, entity, synonym, Parent_1, Parent_2,Parent_3, Parent_4, model_type, plantType, origin, category, trait_name, value,
+         bird, insect, lizard, native_mammal, pollinator, ecological_value, ecological_index, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
+
+# replace the blank parent cells with NA
+
+found <- found %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(Parent_2 = if_else(Parent_2 == "", "NA", Parent_2))
+
+found <- found %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(Parent_3 = if_else(Parent_3 == "", "NA", Parent_3))
+
+found <- found %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(Parent_4 = if_else(Parent_4 == "", "NA", Parent_4))
+
+# remove H, HC, Gc from database
+
+all_entities_short <- all_entities_short %>%
+  filter(category != "H" & category != "GC" & category != "HC")
+
+# add parent columns to database
+
+all_entities_short$Parent_1 <- "NA"
+all_entities_short$Parent_2 <- "NA"
+all_entities_short$Parent_3 <- "NA"
+all_entities_short$Parent_4 <- "NA"
+
+# rearrange columns
+
+all_entities_short <- all_entities_short %>%
+  select(scientificNameStd, family, genus, species, entity, synonym, Parent_1, Parent_2,Parent_3, Parent_4, model_type, plantType, origin, category, trait_name, value,
+         bird, insect, lizard, native_mammal, pollinator, ecological_value, ecological_index, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
+
+# join back the H, HC, GCs
+
+all_entities_short <- bind_rows(all_entities_short, found)
+
+all_entities_short <- arrange(all_entities_short, entity, trait_name, value)
+
+# some synonyms with missing family
+syn <- all_entities_short %>%
+  filter(family == "") %>%
+  select(entity) %>%
+  distinct(entity) #17
+
+# find and fix
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(family = if_else(entity == "Abutilon megapotamicum", "Malvaceae", family), 
+         family = if_else(entity == "Aloe variegata", "Asphodelaceae", family),
+         family = if_else(entity == "Anemone hupehensis", "Ranunculaceae", family),
+         family = if_else(entity == "Anemone hupehensis japonica", "Ranunculaceae", family),
+         family = if_else(entity == "Anemone tomentosa", "Ranunculaceae", family),
+         family = if_else(entity == "Babingtonia behrii", "Myrtaceae", family),
+         family = if_else(entity == "Baeckea crassifolia", "Myrtaceae", family),
+         family = if_else(entity == "Beaufortia sparsa", "Myrtaceae", family),
+         family = if_else(entity == "Beaufortia squarrosa", "Myrtaceae", family),
+         family = if_else(entity == "Calothamnus quadrifidus", "Myrtaceae", family),
+         family = if_else(entity == "Calothamnus sanguineus", "Myrtaceae", family),
+         family = if_else(entity == "Calothamnus villosus", "Myrtaceae", family),
+         family = if_else(entity == "Eremaea beaufortioides", "Myrtaceae", family),
+         family = if_else(entity == "Jasminum fruticans", "Oleaceae", family),
+         family = if_else(entity == "Leucopogon parviflorus", "Ericaceae", family),
+         family = if_else(entity == "Quisqualis indica", "Myrtaceae", family),
+         family = if_else(entity == "Regelia velutina", "Myrtaceae", family))
+
+# check
+
+syn_check <- filter(all_entities_short, family == "") # all fixed
 
 
 
@@ -2159,3 +2244,8 @@ found <- found %>%
 
 
 
+
+
+  
+  
+  
