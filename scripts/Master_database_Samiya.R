@@ -2061,7 +2061,36 @@ form <- all_entities_short %>%
   summarise(frequency = n())
 # all of them added togther is 2637!!!!
 
+#### add the max height and width for shade and carbon values
 
+height_width <- read.csv("Master_database_output/final_data/height_width_all_ST_5Mar2021.csv")
 
+height_width <- select(height_width, -range, -average)
+
+# change from wide to long
+# http://www.cookbook-r.com/Manipulating_data/Converting_data_between_wide_and_long_format/
+
+height_width_long2 <- height_width %>%
+  gather(trait_name, value, max:min)
+
+height_width_long2 <- height_width_long2 %>%
+  mutate(trait_name_new_new = paste0(trait_name_new, "_", trait_name))
+
+height_width_long2 <- select(height_width_long2, -trait_name, -trait_name_new)
+
+# change from long to wide
+height_width_wide <- height_width_long2 %>%
+  spread(trait_name_new_new, value)
+
+height_width_wide <- select(height_width_wide, -scientificNameStd, -category, -plantType)
+
+names(height_width_wide)[names(height_width_wide) == 'species'] <- 'entity'
+
+# join to main dataset
+all_entities_short <- left_join(all_entities_short, height_width_wide, by = "entity")
+
+# rearrange all the columns
+all_entities_short <- select(all_entities_short, scientificNameStd, family, genus, species, entity, synonym, model_type, plantType, origin, category, trait_name, value,
+                             bird, insect, lizard, native_mammal, pollinator, ecological_value, ecological_index, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
 
 
