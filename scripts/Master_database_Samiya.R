@@ -2252,11 +2252,100 @@ same <- all_entities_short %>%
 all_entities_short[] <-lapply(all_entities_short, gsub, pattern = "Magnolia Iiliiflora", replacement = "Magnolia liliiflora")
 all_entities_short[] <-lapply(all_entities_short, gsub, pattern = "Pittosporum phylliraeoides", replacement = "Pittosporum phillyraeoides")
 
+# remove the category 'synonym'
+
+# these are the problemativ ones
+# Species with multiple synonyms that have 5 min traits: Abelia uniflora, Myoporum tenuifolium
+
+# Species and synonyms that have 5 min traits: Bauhinia variegata, Coronidium scorpioides,
+# Cupressus arizonica, Eucalyptus leucoxylon, Ficinia nodosa, Melaleuca fulgens,
+# Syringa vulgaris, Syzygium tierneyanum, Virgilia oroboides, Pittosporum phillyraeoides
+
+# summary of what we have so far
+
+summary_original <- all_entities_short %>%
+  select(entity, category) %>%
+  distinct(entity, category) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+
+# exclude the problematic ones
+
+syn_good <- all_entities_short %>%
+  filter(scientificNameStd != "Abelia uniflora" & scientificNameStd != "Myoporum tenuifolium" & scientificNameStd != "Pittosporum phillyraeoides" 
+         & scientificNameStd != "Bauhinia variegata" & scientificNameStd != "Coronidium scorpioides" & scientificNameStd != "Cupressus arizonica" 
+         & scientificNameStd != "Eucalyptus leucoxylon" & scientificNameStd != "Ficinia nodosa" & scientificNameStd != "Melaleuca fulgens" 
+         & scientificNameStd != "Syringa vulgaris" & scientificNameStd != "Syzygium tierneyanum" & scientificNameStd != "Virgilia oroboides")
+
+# add back the GC, H, HC
+others <- all_entities_short %>%
+  filter(category == "H" | category == "HC" | category == "GC")
+
+syn_good <- bind_rows(syn_good, others)
+
+# filter out just the synonyms
+syn_good_change <- filter(syn_good, category == "SYN")
+
+# get rid of these from syn good
+syn_good <- filter(syn_good, category == "CULVAR" | category == "GC" | category == "H" | category == "HC" | category == "SP" | category == "SSP")
+
+# make the entity and scinames the same
+syn_good_change$entity <- syn_good_change$scientificNameStd
+
+# change category into species
+syn_good_change$category <- "SP"
+
+# species with multiple synonyms and 5 min traits
+# Abelia uniflora, Myoporum tenuifolium
+multi_syn <- all_entities_short %>%
+  filter(scientificNameStd == "Abelia uniflora" | scientificNameStd == "Myoporum tenuifolium")
+
+multi_syn <- multi_syn %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(synonym = if_else(entity == "Abelia engleriana", "Abelia engleriana, Abelia schumannii", synonym),
+         synonym = if_else(entity == "Myoporum acuminatum", "Myoporum acuminatum, Myoporum montanum", synonym))
+
+multi_syn <- multi_syn %>%
+  filter(entity != "Abelia schumannii" & entity != "Myoporum montanum")
+
+# make sciname and entity name the same
+multi_syn$entity <- multi_syn$scientificNameStd
+# make syn into sp
+multi_syn$category <- "SP"
+
+# species with 5 min traits for species and synonyms
+sp_syn <- all_entities_short %>%
+  filter(scientificNameStd == "Pittosporum phillyraeoides" | scientificNameStd == "Bauhinia variegata" | scientificNameStd == "Coronidium scorpioides" | scientificNameStd == "Cupressus arizonica" 
+         | scientificNameStd == "Eucalyptus leucoxylon" | scientificNameStd == "Ficinia nodosa" | scientificNameStd == "Melaleuca fulgens" 
+         | scientificNameStd == "Syringa vulgaris" | scientificNameStd == "Syzygium tierneyanum" | scientificNameStd == "Virgilia oroboides")
+
+# salvage the cultivars
+sp_syn_cultivars <- filter(sp_syn, category == "CULVAR")
+
+# remove the cultivars and species
+sp_syn <- filter(sp_syn, category != "CULVAR" & category != "SP")
+
+sp_syn$entity <- sp_syn$scientificNameStd
+sp_syn$category <- "SP"
+
+# join everything back together
+all_entities_short_check <- bind_rows(syn_good, syn_good_change, multi_syn, sp_syn, sp_syn_cultivars)
+
+# check everything is still there
+summary_new <- all_entities_short_check %>%
+  select(entity, category) %>%
+  distinct(entity, category) %>%
+  group_by(category) %>%
+  summarise(frequency = n()) # seems to all be there
+
+all_entities_short <- all_entities_short_check
+all_entities_short <- arrange(all_entities_short, entity, trait_name, value)
+
+check_syn <- all_entities_short %>%
+  filter(synonym != "NA") %>%
+  distinct(entity) # 166 synonyms which is 168 from original minus the two species I combined
 
 
 
 
 
-  
-  
-  
