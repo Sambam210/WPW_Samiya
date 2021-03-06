@@ -2238,8 +2238,19 @@ all_entities_short <- all_entities_short %>%
 
 syn_check <- filter(all_entities_short, family == "") # all fixed
 
+# filter out cultivars
+# check if sciename = entity
+# check if they are all synonyms
 
+same <- all_entities_short %>%
+  filter(category != "CULVAR") %>%
+  filter(scientificNameStd != entity) %>%
+  select(entity, category) %>%
+  distinct(entity, category)
 
+# fix the species
+all_entities_short[] <-lapply(all_entities_short, gsub, pattern = "Magnolia Iiliiflora", replacement = "Magnolia liliiflora")
+all_entities_short[] <-lapply(all_entities_short, gsub, pattern = "Pittosporum phylliraeoides", replacement = "Pittosporum phillyraeoides")
 
 
 
