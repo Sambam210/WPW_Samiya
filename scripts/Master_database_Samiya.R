@@ -2094,3 +2094,68 @@ all_entities_short <- select(all_entities_short, scientificNameStd, family, genu
                              bird, insect, lizard, native_mammal, pollinator, ecological_value, ecological_index, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
 
 
+##### fix up family names for H, HC, GC
+
+family_fix <- all_entities_short %>%
+  filter(category == "H"| category == "HC"| category == "GC") %>%
+  select(family, genus, species, entity, category) %>%
+  distinct(family, genus, species, entity, category)
+
+genus_family <- all_entities_short %>%
+  filter(category == "SP") %>%
+  select(family, genus)
+
+# check no genus is in two families
+sum <- genus_family %>%
+  distinct(family, genus) %>%
+  group_by(family, genus) %>%
+  summarise(frequency = n()) # don't think so
+# but there are missing families for Cephalotaxus and Chenopodium
+
+# https://stackoverflow.com/questions/51398814/r-if-else-with-multiple-conditions-for-character-vectors-with-nas
+### THIS WILL BE IMPORTANT WHEN CHANGING TRAIT LEVELS!!!!
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(family = if_else(genus == "Cephalotaxus", "Taxaceae", family))
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(family = if_else(genus == "Chenopodium", "Amaranthaceae", family))
+
+# check if fixed
+genus_family <- all_entities_short %>%
+  filter(category == "SP") %>%
+  select(family, genus)
+
+sum <- genus_family %>%
+  distinct(family, genus) %>%
+  group_by(family, genus) %>%
+  summarise(frequency = n()) # fixed!
+
+# filter out H, HC and GC from database
+missing <- all_entities_short %>%
+  filter(category == "H"| category == "HC"| category == "GC") %>%
+  select(-family)
+
+found <- left_join(missing, sum, by = "genus")
+
+# some missing families, Michelia, Rheum
+
+found <- found %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(family = if_else(genus == "Michelia", "Magnoliaceae", family))
+
+found <- found %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(family = if_else(genus == "Rheum", "Polygonaceae", family))
+
+## add parents of Gc, H, HC
+
+
+
+
+
+
+
+
