@@ -2526,6 +2526,35 @@ all_entities_short$width_max <- as.numeric(as.character(all_entities_short$width
 all_entities_short$shade_value <- ifelse(all_entities_short$plantType == "Tree", pi*all_entities_short$width_max^2,
                                  all_entities_short$shade_value)
 
+# check playground friendly
+harm <- all_entities_short %>%
+  filter(value == "playgroundfriendly")
 
+bad <- harm %>%
+  filter(trait_name == "risk") # no playground friendly plants have a risk!!!!
+
+# check habit canopy
+canopy <- all_entities_short %>%
+  filter(trait_name == "habit_canopy")
+
+canopy_remove <- canopy %>% 
+  filter(plantType != "Tree" & plantType != "Shrub")
+
+# remove from database
+all_entities_short <- anti_join(all_entities_short, canopy_remove)
+
+all_entities_short$height_max <- as.numeric(as.character(all_entities_short$height_max))
+
+check_canopy <- all_entities_short %>%
+  filter(trait_name == "habit_canopy") %>%
+  filter(3 > height_max)
+
+# remove these from the database
+all_entities_short <- anti_join(all_entities_short, check_canopy)
+
+# canopy_summary <- all_entities_short %>%
+#  filter(trait_name == "habit_canopy") %>%
+#  group_by(value) %>%
+#  summarise(frequency = n())
 
 
