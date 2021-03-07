@@ -1931,23 +1931,86 @@ drought_long <- drought_summary %>%
   mutate(number_species = n())
 
 # create proprotions
-
+drought_long <- drought_long %>%
+  mutate(no_proportion = (No/total_records) * 100, 
+         yes_protortion = (Yes/total_records) * 100)
 
 # apply the consensus approach
-hort.class <- hort.class %>%
-  mutate(hort_classification = case_when(No_percentage >= 75 ~ "drought intolerant",
-                                         Moderate_percentage >= 75 ~ "drought tolerant",
-                                         Yes_percentage >= 75 ~ "drought tolerant",
-                                         TRUE ~ "intermediate")) %>%
-  select(Species_Code, hort_classification)
+drought_long <- drought_long %>%
+  mutate(value = case_when(no_proportion >= 75 ~ "putatively low",
+                           yes_protortion >= 75 ~ "putatively high",
+                           TRUE ~ "putatively moderate")) %>%
+  select(scientificNameStd, species, category, trait_name, value)
 
+# remove 'total records'
+drought_long <- drought_long[,2:6]
 
+# remove the old drought data
 
+all_entities_short <- all_entities_short %>%
+  filter(trait_name != "drought_tolerance")
 
+# join to master dataset
+all_entities_short <- bind_rows(all_entities_short, drought_long)
+all_entities_short <- arrange(all_entities_short, scientificNameStd, species, trait_name, value)
 
+# do frost classifications
 
+frost <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  filter(trait_name == "frost_tolerance") %>%
+  select(scientificNameStd, species, category, trait_name, value)
 
+# change light to yes
+frost <- frost %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value = if_else(value == "light", "Yes", value))
 
+# make all the values upper case
+frost$value <- gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", frost$value, perl=TRUE)
+
+frost_summary <- frost %>%
+  group_by(scientificNameStd, species) %>%
+  summarise(number_records = n())
+# 1852 records
+
+frost["number"] <- 1 # add new column populated by '1'
+
+frost_summary <- frost %>%
+  group_by(scientificNameStd, species, category, trait_name, value) %>%
+  summarise(number_records = sum(number))
+
+frost_long <- frost_summary %>%
+  spread(key = value, value = number_records, fill = 0) %>%
+  mutate(total_records = sum(No, Yes)) %>%
+  arrange(desc(total_records)) %>%
+  group_by(total_records) %>%
+  mutate(number_species = n())
+
+# create proprotions
+frost_long <- frost_long %>%
+  mutate(no_proportion = (No/total_records) * 100, 
+         yes_protortion = (Yes/total_records) * 100)
+
+# apply the consensus approach
+frost_long <- frost_long %>%
+  mutate(value = case_when(no_proportion >= 75 ~ "putatively low",
+                           yes_protortion >= 75 ~ "putatively high",
+                           TRUE ~ "putatively moderate")) %>%
+  select(scientificNameStd, species, category, trait_name, value)
+
+# remove 'total records'
+frost_long <- frost_long[,2:6]
+
+# remove the old frost data
+
+all_entities_short <- all_entities_short %>%
+  filter(trait_name != "frost_tolerance")
+
+# join to master dataset
+all_entities_short <- bind_rows(all_entities_short, frost_long)
+all_entities_short <- arrange(all_entities_short, scientificNameStd, species, trait_name, value)
 
 ##### add back plant type and origin
 
@@ -2450,66 +2513,7 @@ check_pollinator <- all_entities_short %>%
 all_entities_short <- all_entities_short %>%
   filter(value != "apiary")
 
-####### redo drought classifications
-
-
-
-drought_summary <- drought %>%
-  group_by(scientificNameStd, plant_name) %>%
-  summarise(number_records = n()) # 1734 records
-
-drought["number"] <- 1 # add new column populated by '1'
-
-drought_summary <- drought %>%
-  group_by(scientificNameStd, plant_name, value) %>%
-  summarise(number_records = sum(number))
-
-drought_long <- drought_summary %>%
-  spread(key = value, value = number_records, fill = 0) %>%
-  mutate(total_records = sum(No, Yes)) %>%
-  arrange(desc(total_records)) %>%
-  group_by(total_records) %>%
-  mutate(number_species = n())
 
 
 
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_1Mar2021.csv")
-
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_1Mar2021.csv")
-
-all_entities <- bind_rows(everything, everything_gh)
-
-drought <- all_entities %>%
-  filter(Min_5_traits == "TRUE") %>%
-  filter(Include_in_tool == "Yes") %>%
-  filter(trait_name == "drought_tolerance") %>%
-  select(scientificNameStd, species, trait_name, value)
-
-drought_summary <- drought %>%
-  group_by(scientificNameStd, species) %>%
-  summarise(number_records = n())
-# 1744 records, same as trait completeness!
-
-drought["number"] <- 1 # add new column populated by '1'
-
-drought_summary <- drought %>%
-  group_by(scientificNameStd, species, value) %>%
-  summarise(number_records = sum(number))
-
-drought_long <- drought_summary %>%
-  spread(key = value, value = number_records, fill = 0) %>%
-  mutate(total_records = sum(No, Yes)) %>%
-  arrange(desc(total_records)) %>%
-  group_by(total_records) %>%
-  mutate(number_species = n())
-
-write.csv(drought_long, "Master_database_output/drought_summary/drought_summary_ST_March2021.csv", row.names = FALSE)
-
-
-
-
-
-
-
-write.csv(drought_long, "Master_database_output/drought_summary/drought_summary_ST_March2021.csv", row.names = FALSE)
