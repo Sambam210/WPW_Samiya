@@ -2153,20 +2153,20 @@ all_entities_short <- select(all_entities_short, scientificNameStd, family, genu
 
 ###### extract the trait names and values for Michelle
 
-traits <- all_entities_short %>%
-  select(trait_name, value) %>%
-  filter(trait_name != "height_average", trait_name != "height_range", trait_name != "width_average", trait_name != "width_range", 
-         trait_name != "common_name", trait_name != "soil_volume", trait_name != "max_height_nature") %>%
-  group_by(trait_name, value) %>%
-  summarise(frequency = n())
+# traits <- all_entities_short %>%
+#  select(trait_name, value) %>%
+#  filter(trait_name != "height_average", trait_name != "height_range", trait_name != "width_average", trait_name != "width_range", 
+#         trait_name != "common_name", trait_name != "soil_volume", trait_name != "max_height_nature") %>%
+#  group_by(trait_name, value) %>%
+#  summarise(frequency = n())
 
-write.csv(traits, "Master_database_output/traitfrequency_March2021.csv", row.names = FALSE)
+# write.csv(traits, "Master_database_output/traitfrequency_March2021.csv", row.names = FALSE)
 
-form <- all_entities_short %>%
-  select(entity, plantType) %>%
-  distinct(entity, plantType) %>%
-  group_by(plantType) %>%
-  summarise(frequency = n())
+# form <- all_entities_short %>%
+#  select(entity, plantType) %>%
+#  distinct(entity, plantType) %>%
+#  group_by(plantType) %>%
+#  summarise(frequency = n())
 # all of them added togther is 2636!!!!
 
 #### add the max height and width for shade and carbon values
@@ -2513,7 +2513,9 @@ check_pollinator <- all_entities_short %>%
 all_entities_short <- all_entities_short %>%
   filter(value != "apiary")
 
-
-
+# rearrange columns to make more sense
+all_entities_short <- all_entities_short %>%
+  select(scientificNameStd, family, genus, species, plant_name, synonym, category, Parent_1, Parent_2,Parent_3, Parent_4, model_type, plantType, origin, trait_name, value,
+         bird, insect, lizard, native_mammal, pollinator, ecological_value, ecological_index, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
 
 
