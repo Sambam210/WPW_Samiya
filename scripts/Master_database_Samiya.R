@@ -2518,6 +2518,10 @@ all_entities_short <- all_entities_short %>%
   select(scientificNameStd, family, genus, species, plant_name, synonym, category, Parent_1, Parent_2,Parent_3, Parent_4, model_type, plantType, origin, trait_name, value,
          bird, insect, lizard, native_mammal, pollinator, ecological_value, ecological_index, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
 
+### FIX GROWTH FORM HERE
+## sTRAP LEAVED, SHRUBS AND TREES
+
+
 # need to calculate a shade value
 all_entities_short$shade_value <- "NA"
 
@@ -2556,5 +2560,22 @@ all_entities_short <- anti_join(all_entities_short, check_canopy)
 #  filter(trait_name == "habit_canopy") %>%
 #  group_by(value) %>%
 #  summarise(frequency = n())
+
+# summarise eco services for michelle
+
+# eco <- all_entities_short %>%
+#  select(plant_name, bird, insect, lizard, native_mammal, pollinator) %>%
+#  distinct(plant_name, bird, insect, lizard, native_mammal, pollinator)
+
+# write.csv(eco,"Master_database_output/taxonomy_checks/eco.csv", row.names = FALSE)
+
+############ Insert Linda's model source data
+
+model_source <- read.csv("Master_database_input/Linda/circul.csv")
+
+model_source <- distinct(model_source, speciesName) # never mind this is dummy data!!!!
+
+############
+
 
 
