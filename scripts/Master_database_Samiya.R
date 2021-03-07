@@ -1865,7 +1865,7 @@ all_entities_short <- all_entities_short %>%
   filter(trait_name != "max_height", trait_name != "height", trait_name != "min_height", 
            trait_name != "max_width", trait_name != "width", trait_name != "min_width")
 
-check <- distinct(all_entities_short, species) # 2637 species, haven't lost anything
+check <- distinct(all_entities_short, species) # 2636 species, haven't lost anything
 
 # load the max, min and average height and width data
 
@@ -1902,7 +1902,52 @@ names(height_width_long)[names(height_width_long) == 'trait_name_new_new'] <- 't
 all_entities_short <- bind_rows(all_entities_short, height_width_long)
 all_entities_short <- arrange(all_entities_short, scientificNameStd, species, trait_name, value)
 
-check <- distinct(all_entities_short, species) # 2637 species, haven't lost anything
+check <- distinct(all_entities_short, species) # 2636 species, haven't lost anything
+
+### do drought classifications
+
+drought <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  filter(trait_name == "drought_tolerance") %>%
+  select(scientificNameStd, species, category, trait_name, value)
+
+drought_summary <- drought %>%
+  group_by(scientificNameStd, species) %>%
+  summarise(number_records = n())
+# 1743 records
+
+drought["number"] <- 1 # add new column populated by '1'
+
+drought_summary <- drought %>%
+  group_by(scientificNameStd, species, category, trait_name, value) %>%
+  summarise(number_records = sum(number))
+
+drought_long <- drought_summary %>%
+  spread(key = value, value = number_records, fill = 0) %>%
+  mutate(total_records = sum(No, Yes)) %>%
+  arrange(desc(total_records)) %>%
+  group_by(total_records) %>%
+  mutate(number_species = n())
+
+# create proprotions
+
+
+# apply the consensus approach
+hort.class <- hort.class %>%
+  mutate(hort_classification = case_when(No_percentage >= 75 ~ "drought intolerant",
+                                         Moderate_percentage >= 75 ~ "drought tolerant",
+                                         Yes_percentage >= 75 ~ "drought tolerant",
+                                         TRUE ~ "intermediate")) %>%
+  select(Species_Code, hort_classification)
+
+
+
+
+
+
+
+
 
 ##### add back plant type and origin
 
@@ -2405,3 +2450,66 @@ check_pollinator <- all_entities_short %>%
 all_entities_short <- all_entities_short %>%
   filter(value != "apiary")
 
+####### redo drought classifications
+
+
+
+drought_summary <- drought %>%
+  group_by(scientificNameStd, plant_name) %>%
+  summarise(number_records = n()) # 1734 records
+
+drought["number"] <- 1 # add new column populated by '1'
+
+drought_summary <- drought %>%
+  group_by(scientificNameStd, plant_name, value) %>%
+  summarise(number_records = sum(number))
+
+drought_long <- drought_summary %>%
+  spread(key = value, value = number_records, fill = 0) %>%
+  mutate(total_records = sum(No, Yes)) %>%
+  arrange(desc(total_records)) %>%
+  group_by(total_records) %>%
+  mutate(number_species = n())
+
+
+
+
+everything <- read.csv("Master_database_input/EVERYTHING_traits_1Mar2021.csv")
+
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_1Mar2021.csv")
+
+all_entities <- bind_rows(everything, everything_gh)
+
+drought <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  filter(trait_name == "drought_tolerance") %>%
+  select(scientificNameStd, species, trait_name, value)
+
+drought_summary <- drought %>%
+  group_by(scientificNameStd, species) %>%
+  summarise(number_records = n())
+# 1744 records, same as trait completeness!
+
+drought["number"] <- 1 # add new column populated by '1'
+
+drought_summary <- drought %>%
+  group_by(scientificNameStd, species, value) %>%
+  summarise(number_records = sum(number))
+
+drought_long <- drought_summary %>%
+  spread(key = value, value = number_records, fill = 0) %>%
+  mutate(total_records = sum(No, Yes)) %>%
+  arrange(desc(total_records)) %>%
+  group_by(total_records) %>%
+  mutate(number_species = n())
+
+write.csv(drought_long, "Master_database_output/drought_summary/drought_summary_ST_March2021.csv", row.names = FALSE)
+
+
+
+
+
+
+
+write.csv(drought_long, "Master_database_output/drought_summary/drought_summary_ST_March2021.csv", row.names = FALSE)
