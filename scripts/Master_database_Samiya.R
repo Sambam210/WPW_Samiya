@@ -2345,7 +2345,63 @@ check_syn <- all_entities_short %>%
   filter(synonym != "NA") %>%
   distinct(entity) # 166 synonyms which is 168 from original minus the two species I combined
 
+# change entity to plant name
+names(all_entities_short)[names(all_entities_short) == 'entity'] <- 'plant_name'
 
+##### remove medicinal and apiary fron usage
 
+# first check coverage of traits
 
+species <- all_entities_short %>%
+  distinct(plant_name)
+# 2624 plant names (2637 - 13 problematic synonyms = 2624!!!)
+
+traits <- all_entities_short %>%
+  distinct(plant_name, trait_name) %>%
+  group_by(trait_name) %>%
+  summarise(frequency = n()) %>%
+  arrange(desc(frequency)) %>%
+  mutate(percent_completeness = (frequency/2624)*100) # all relevant traits still 100%
+
+# remove medicinal from usage
+
+all_entities_short <- all_entities_short %>%
+  filter(value != "medicinal")
+
+# check coverage again
+
+traits <- all_entities_short %>%
+  distinct(plant_name, trait_name) %>%
+  group_by(trait_name) %>%
+  summarise(frequency = n()) %>%
+  arrange(desc(frequency)) %>%
+  mutate(percent_completeness = (frequency/2624)*100) # usage still 100%
+
+# check apiary
+
+no_apiary <- all_entities_short %>%
+  filter(value != "apiary")
+
+# check coverage again
+
+traits <- no_apiary %>%
+  distinct(plant_name, trait_name) %>%
+  group_by(trait_name) %>%
+  summarise(frequency = n()) %>%
+  arrange(desc(frequency)) %>%
+  mutate(percent_completeness = (frequency/2624)*100) # usage still 100%
+
+# if apiary then add '1' to pollinator
+
+all_entities_short$pollinator <- ifelse(all_entities_short$value == "apiary", 1, 
+                                     all_entities_short$pollinator)
+
+# check
+check_pollinator <- all_entities_short %>%
+  filter(value == "apiary") %>%
+  select(plant_name, pollinator, value) # all accounted for
+
+# remove apiary from dataset as a usage
+all_entities_short <- all_entities_short %>%
+  filter(value != "apiary")
 
