@@ -2518,4 +2518,14 @@ all_entities_short <- all_entities_short %>%
   select(scientificNameStd, family, genus, species, plant_name, synonym, category, Parent_1, Parent_2,Parent_3, Parent_4, model_type, plantType, origin, trait_name, value,
          bird, insect, lizard, native_mammal, pollinator, ecological_value, ecological_index, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
 
+# need to calculate a shade value
+all_entities_short$shade_value <- "NA"
+
+all_entities_short$width_max <- as.numeric(as.character(all_entities_short$width_max))
+
+all_entities_short$shade_value <- ifelse(all_entities_short$plantType == "Tree", pi*all_entities_short$width_max^2,
+                                 all_entities_short$shade_value)
+
+
+
 
