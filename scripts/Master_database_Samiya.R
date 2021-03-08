@@ -2646,8 +2646,6 @@ all_entities_short <- all_entities_short %>%
 
 names(all_entities_short)[names(all_entities_short) == 'plantType'] <- 'growth_form'
 
-names(all_entities_short)[names(all_entities_short) == 'origin'] <- '???'
-
 # select the traits that we want
 
 all_entities_short <- all_entities_short %>%
@@ -2698,20 +2696,276 @@ all_entities_short <- all_entities_short %>%
   mutate_if(is.factor, as.character) %>%
   mutate(trait_name_new = if_else(trait_name == "flower_colour", "flower colour", trait_name_new))
 
-
 all_entities_short <- all_entities_short %>%
   mutate_if(is.factor, as.character) %>%
   mutate(value_new = if_else(value == "gold", "yellow", value_new),
          value_new = if_else(value == "golden", "yellow", value_new),
          value_new = if_else(value == "grey", "black", value_new), 
-         )
+         value_new = if_else(value == "insignificant", "inconspicuous", value_new),
+         value_new = if_else(value == "magenta", "pink", value_new),
+         value_new = if_else(value == "mauve", "purple", value_new),
+         value_new = if_else(value == "not_applicable", "does not flower", value_new),
+         value_new = if_else(value == "violet", "purple", value_new))
 
+# FLOWER PERIOD
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(trait_name_new = if_else(trait_name == "flower_period", "flower period", trait_name_new))
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(value == "Any_time", "any time", value_new),
+         value_new = if_else(value == "not_applicable", "does not flower", value_new))
+         
+# make the first letters capital
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(trait_name == "flower_period", gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", all_entities_short$value_new, perl=TRUE), value_new))
+
+# PLACEMENT
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(trait_name_new = if_else(trait_name == "placement", "urban context", trait_name_new))
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(value == "avenue", "street", value_new),
+         value_new = if_else(value == "largegarden", "park", value_new),
+         value_new = if_else(value == "powerlines", "under powerlines", value_new))
+
+# USAGE
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(trait_name_new = if_else(trait_name == "usage", "uses", trait_name_new))
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(value == "cutflower", "cut flowers", value_new),
+         value_new = if_else(value == "cutflowers", "cut flowers", value_new),
+         value_new = if_else(value == "cutflowers", "cut flowers", value_new),
+         value_new = if_else(value == "edible", "putatively edible", value_new),
+         value_new = if_else(value == "erosion", "erosion control", value_new),
+         value_new = if_else(value == "featureshrub", "feature", value_new),
+         value_new = if_else(value == "featuretree", "feature", value_new),
+         value_new = if_else(value == "featuretropical", "feature", value_new),
+         value_new = if_else(value == "fire_retardant", "putatively fire retardant", value_new),
+         value_new = if_else(value == "groundcover", "ground cover", value_new),
+         value_new = if_else(value == "massplanting", "mass planting", value_new),
+         value_new = if_else(value == "playgroundfriendly", "playground friendly", value_new),
+         value_new = if_else(value == "sensorycolour", "playground friendly", value_new),
+         value_new = if_else(value == "sensorytouch", "playground friendly", value_new))
+
+# HEIGHT AND WIDTH
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(trait_name_new = if_else(trait_name == "height_average", "average height", trait_name_new),
+         trait_name_new = if_else(trait_name == "width_average", "average width", trait_name_new),
+         trait_name_new = if_else(trait_name == "height_range", "height range", trait_name_new),
+         trait_name_new = if_else(trait_name == "width_range", "width range", trait_name_new))
+
+
+# SOIL
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(trait_name_new = if_else(trait_name == "soil_type", "soil type", trait_name_new),
+         trait_name_new = if_else(trait_name == "soil_pH", "soil pH", trait_name_new))
+
+
+# PLANTING AND MAINTENANCE
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(trait_name_new = if_else(trait_name == "supp_watering", "planting and maintenance", trait_name_new),
+         trait_name_new = if_else(trait_name == "ideal_conditions", "planting and maintenance", trait_name_new))
+
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(value == "high", "high water needs", value_new),
+         value_new = if_else(value == "low", "low water needs", value_new),
+         value_new = if_else(value == "medium", "medium water needs", value_new),
+         value_new = if_else(value == "none", "low water needs", value_new),
+         value_new = if_else(value == "fertile", "fertile soil", value_new),
+         value_new = if_else(value == "fertile", "fertile soil", value_new),
+         value_new = if_else(value == "lateral_space", "lateral space", value_new),
+         value_new = if_else(value == "moist", "moist soil", value_new),
+         value_new = if_else(value == "poorly_drained", "poorly drained soil", value_new),
+         value_new = if_else(value == "sheltered", "protected", value_new),
+         value_new = if_else(value == "well_drained", "well drained soil", value_new))
+
+
+# change back the growth rate medium values
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(trait_name == "growth_rate" & value == "medium", "medium", value_new))
+
+# filter out the rest
+remove_maintenance <- all_entities_short %>%
+  filter(trait_name == "ideal_conditions" & value == "acidic" | trait_name == "ideal_conditions" & value == "alkaline" | 
+           trait_name == "ideal_conditions" & value == "clay_soil" | trait_name == "ideal_conditions" & value == "clay_soils" | 
+           trait_name == "ideal_conditions" & value == "dry" | trait_name == "ideal_conditions" & value == "flowers_fullsun" | 
+           trait_name == "ideal_conditions" & value == "fullshade" | trait_name == "ideal_conditions" & value == "fullsun" | 
+           trait_name == "ideal_conditions" & value == "gravelly_soil" | trait_name == "ideal_conditions" & value == "high" | 
+           trait_name == "ideal_conditions" & value == "humid" | trait_name == "ideal_conditions" & value == "large_rootspace" | 
+           trait_name == "ideal_conditions" & value == "loam_soil" | trait_name == "ideal_conditions" & value == "loamy_soil" | 
+           trait_name == "ideal_conditions" & value == "loam_soils" | trait_name == "ideal_conditions" & value == "natural_pH" | 
+           trait_name == "ideal_conditions" & value == "neutral_pH" | trait_name == "ideal_conditions" & value == "partshade" | 
+           trait_name == "ideal_conditions" & value == "sandy_soil" | trait_name == "ideal_conditions" & value == "shaded" | 
+           trait_name == "ideal_conditions" & value == "variable")
+
+# remove
+all_entities_short <- anti_join(all_entities_short, remove_maintenance)
+
+# LEAF LOSS
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(trait_name_new = if_else(trait_name == "leaf_loss", "leaf loss", trait_name_new))
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(value == "semi_deciduous", "semi-deciduous", value_new))
+
+# LIGHT LEVEL
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(trait_name_new = if_else(trait_name == "light_level", "shade tolerance", trait_name_new))
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(value == "fullshade", "full shade", value_new),
+         value_new = if_else(value == "fullsun", "full sun", value_new),
+         value_new = if_else(value == "partshade", "part shade", value_new))
+
+
+# TOLERANCES
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(trait_name_new = if_else(trait_name == "frost_tolerance", "frost tolerance", trait_name_new),
+         trait_name_new = if_else(trait_name == "drought_tolerance", "drought tolerance", trait_name_new),
+         trait_name_new = if_else(trait_name == "drought_tolerance", "drought tolerance", trait_name_new),
+         trait_name_new = if_else(trait_name == "coastal_tolerance", "coastal tolerance", trait_name_new))
+
+# GROWTH RATE
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(trait_name_new = if_else(trait_name == "growth_rate", "growth rate", trait_name_new))
+
+# FOLIAGE COLOUR
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(trait_name_new = if_else(trait_name == "foliage_colour", "leaf colour", trait_name_new))
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(value == "bluegreen", "blue-green", value_new),
+         value_new = if_else(value == "darkgreen", "green", value_new),
+         value_new = if_else(value == "dullgreen", "green", value_new),
+         value_new = if_else(value == "glossygreen", "green", value_new),
+         value_new = if_else(value == "greygreen", "grey-green", value_new),
+         value_new = if_else(value == "lightgreen", "green", value_new),
+         value_new = if_else(value == "redpink", "red", value_new),
+         value_new = if_else(value == "silver", "silvery", value_new),
+         value_new = if_else(value == "silver_foliage", "silvery", value_new),
+         value_new = if_else(value == "silvergreen", "silvery", value_new),
+         value_new = if_else(value == "silvergrey", "silvery", value_new),
+         value_new = if_else(value == "yellowgreen", "yellow", value_new))
+
+# filter out rest
+remove_foliage <- all_entities_short %>%
+  filter(trait_name == "foliage_colour" & value == "bluegrey" | trait_name == "foliage_colour" & value == "bronze" | 
+           trait_name == "foliage_colour" & value == "burgundy" | trait_name == "foliage_colour" & value == "copper" | 
+           trait_name == "foliage_colour" & value == "cream" | trait_name == "foliage_colour" & value == "gold" | 
+           trait_name == "foliage_colour" & value == "grey" | trait_name == "foliage_colour" & value == "high" |
+           trait_name == "foliage_colour" & value == "orange" | trait_name == "foliage_colour" & value == "white")
+
+# remove
+all_entities_short <- anti_join(all_entities_short, remove_foliage)
+
+# HABIT CANOPY
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(trait_name_new = if_else(trait_name == "habit_canopy", "canopy shape", trait_name_new))
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(value == "columnar", "upright", value_new),
+         value_new = if_else(value == "domed", "rounded", value_new),
+         value_new = if_else(value == "hedging_possible", "hedging possible", value_new),
+         value_new = if_else(value == "narrow", "upright", value_new),
+         value_new = if_else(value == "oval", "rounded", value_new),
+         value_new = if_else(value == "prostrate", "upright", value_new))
+
+# filter out rest
+remove_habit_canopy <- all_entities_short %>%
+  filter(trait_name == "habit_canopy" & value == "arborescent" | trait_name == "habit_canopy" & value == "branching" | 
+           trait_name == "habit_canopy" & value == "clumping" | trait_name == "habit_canopy" & value == "compact" | 
+           trait_name == "habit_canopy" & value == "conical" | trait_name == "habit_canopy" & value == "vase") 
+
+# remove
+all_entities_short <- anti_join(all_entities_short, remove_habit_canopy)
+
+# RISK
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(value == "mildallergen", "allergen", value_new),
+         value_new = if_else(value == "moderateallergen", "allergen", value_new),
+         value_new = if_else(value == "poison", "poisonous or toxic", value_new),
+         value_new = if_else(value == "severeallergen", "allergen", value_new))
+
+# filter the rest
+remove_risk <- all_entities_short %>%
+  filter(trait_name == "risk" & value == "branchdrop" | trait_name == "risk" & value == "disease_prone" | 
+           trait_name == "risk" & value == "fruitfall" | trait_name == "risk" & value == "highly_flammable" | 
+           trait_name == "risk" & value == "infrastructure_damage" | trait_name == "risk" & value == "litterfall" | 
+           trait_name == "risk" & value == "maloderous" | trait_name == "risk" & value == "malodorous" | 
+           trait_name == "risk" & value == "parasitic" | trait_name == "risk" & value == "possible_weed" | 
+           trait_name == "risk" & value == "sap_fall" | trait_name == "risk" & value == "suckering")
+           
+# remove
+all_entities_short <- anti_join(all_entities_short, remove_risk)
+
+# WEED
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(trait_name_new = if_else(trait_name == "weed_status", "weed status", trait_name_new))
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(value == "act", "Australian Capital Territory", value_new),
+         value_new = if_else(value == "nsw", "New South Wales", value_new),
+         value_new = if_else(value == "nt", "Northern Territory", value_new),
+         value_new = if_else(value == "qld", "Queensland", value_new),
+         value_new = if_else(value == "sa", "South Australia", value_new),
+         value_new = if_else(value == "tas", "Tasmania", value_new),
+         value_new = if_else(value == "wa", "Western Australia", value_new))
+         
+# filter the rest
+remove_weed <- all_entities_short %>%
+  filter(trait_name == "weed_status" & value == "potentially_act" | trait_name == "weed_status" & value == "potentially_nsw" | 
+           trait_name == "weed_status" & value == "potentially_nt" | trait_name == "weed_status" & value == "potentially_qld" | 
+           trait_name == "weed_status" & value == "potentially_sa" | trait_name == "weed_status" & value == "potentially_tas" |
+           trait_name == "weed_status" & value == "potentially_vic" | trait_name == "weed_status" & value == "potentially_wa")
+
+# remove
+all_entities_short <- anti_join(all_entities_short, remove_weed)
+
+
+# new trait and value columns
+all_entities_short <- all_entities_short %>%
+  select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, growth_form, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name_new, value_new,
+           bird, insect, lizard, native_mammal, pollinator, ecological_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
 
 # end need to distinct everything
+all_entities_short <- all_entities_short %>%
+  distinct(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, growth_form, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name_new,
+           value_new, bird, insect, lizard, native_mammal, pollinator, ecological_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
 
 
+names(all_entities_short)[names(all_entities_short) == 'trait_name_new'] <- 'trait_name'
+names(all_entities_short)[names(all_entities_short) == 'value_new'] <- 'value'
 
+write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_8.3.2021.csv",row.names=FALSE)
 
+##################################################################################################################################
 
 
 
