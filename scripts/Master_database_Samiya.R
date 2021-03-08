@@ -1937,7 +1937,7 @@ drought_long <- drought_long %>%
 
 # apply the consensus approach
 drought_long <- drought_long %>%
-  mutate(value = case_when(no_proportion >= 75 ~ "putatively low",
+  mutate(value = case_when(no_proportion >= 75 ~ "putatively no",
                            yes_protortion >= 75 ~ "putatively high",
                            TRUE ~ "putatively moderate")) %>%
   select(scientificNameStd, species, category, exp_tested, trait_name, value)
@@ -1995,7 +1995,7 @@ frost_long <- frost_long %>%
 
 # apply the consensus approach
 frost_long <- frost_long %>%
-  mutate(value = case_when(no_proportion >= 75 ~ "putatively low",
+  mutate(value = case_when(no_proportion >= 75 ~ "putatively no",
                            yes_protortion >= 75 ~ "putatively high",
                            TRUE ~ "putatively moderate")) %>%
   select(scientificNameStd, species, category, exp_tested, trait_name, value)
@@ -2012,6 +2012,59 @@ all_entities_short <- all_entities_short %>%
 all_entities_short <- bind_rows(all_entities_short, frost_long)
 all_entities_short <- arrange(all_entities_short, scientificNameStd, species, trait_name, value)
 
+# do coastal tolerance classifications
+
+coastal <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  filter(trait_name == "coastal_tolerance") %>%
+  select(scientificNameStd, species, category, exp_tested, trait_name, value)
+
+# make all the values upper case
+coastal$value <- gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", coastal$value, perl=TRUE)
+
+coastal_summary <- coastal %>%
+  group_by(scientificNameStd, species) %>%
+  summarise(number_records = n())
+# 874 records
+
+coastal["number"] <- 1 # add new column populated by '1'
+
+coastal_summary <- coastal %>%
+  group_by(scientificNameStd, species, category, exp_tested, trait_name, value) %>%
+  summarise(number_records = sum(number))
+
+coastal_long <- coastal_summary %>%
+  spread(key = value, value = number_records, fill = 0) %>%
+  mutate(total_records = sum(No, Yes)) %>%
+  arrange(desc(total_records)) %>%
+  group_by(total_records) %>%
+  mutate(number_species = n())
+
+# create proprotions
+coastal_long <- coastal_long %>%
+  mutate(no_proportion = (No/total_records) * 100, 
+         yes_protortion = (Yes/total_records) * 100)
+
+# apply the consensus approach
+coastal_long <- coastal_long %>%
+  mutate(value = case_when(no_proportion >= 75 ~ "putatively no",
+                           yes_protortion >= 75 ~ "putatively high",
+                           TRUE ~ "putatively moderate")) %>%
+  select(scientificNameStd, species, category, exp_tested, trait_name, value)
+
+# remove 'total records'
+coastal_long <- coastal_long[,2:7]
+
+# remove the old coastal data
+
+all_entities_short <- all_entities_short %>%
+  filter(trait_name != "coastal_tolerance")
+
+# join to master dataset
+all_entities_short <- bind_rows(all_entities_short, coastal_long)
+all_entities_short <- arrange(all_entities_short, scientificNameStd, species, trait_name, value)
+
 ##### add back plant type and origin
 
 plant_type_origin <- all_entities %>%
@@ -2025,7 +2078,7 @@ all_entities_short <- left_join(all_entities_short, plant_type_origin, by = "spe
 
 all_entities_short <- all_entities_short %>%
   select(scientificNameStd, species, plantType, origin, category, exp_tested, trait_name, value) %>%
-  filter(trait_name != "form", trait_name != "native_exotic")
+  filter(trait_name != "native_exotic") # do not remove 'form' as will need that later
 
 ###### separate the species and genus names
 # https://stackoverflow.com/questions/4350440/split-data-frame-string-column-into-multiple-columns
@@ -2134,6 +2187,40 @@ all_entities_short$ecological_score[is.na(all_entities_short$ecological_score)] 
 all_entities_short <- all_entities_short %>%
   filter(trait_name != "ecological_services")
 
+##### extract the plant form data
+
+form <- all_entities_short %>%
+  filter(trait_name == "form") %>%
+  select(entity, trait_name, value)
+
+# fix up
+form <- form %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value = if_else(value == "aquatic", "herb", value),
+         value = if_else(value == "bromeliad", "herb", value),
+         value = if_else(value == "bulb", "herb", value),
+         value = if_else(value == "vegetable", "herb", value),
+         value = if_else(value == "orchid", "herb", value),
+         value = if_else(value == "strap-leaved", "herb", value))
+
+form <- distinct(form, entity, trait_name, value)
+
+form$score <- "1"
+
+# change from long to wide
+
+form_wide <- form %>%
+  spread(value, score, fill = 0) 
+
+form_wide <- select(form_wide , -trait_name)
+
+# join to main database
+all_entities_short <- left_join(all_entities_short, form_wide, by = "entity")
+
+# remove the form trait
+all_entities_short <- all_entities_short %>%
+  filter(trait_name != "form")
+
 # add the dummy columns for the biodiversity benefits and model type
 
 all_entities_short$model_type <- ""
@@ -2141,14 +2228,15 @@ all_entities_short$shade_value <- ""
 all_entities_short$shade_index <- ""
 all_entities_short$carbon_value <- ""
 all_entities_short$carbon_index <-""
-all_entities_short$ecological_index <-""
+# all_entities_short$ecological_index <-""
 
 names(all_entities_short)[names(all_entities_short) == 'ecological_score'] <- 'ecological_value'
 
 
 # rearrange all the columns
-all_entities_short <- select(all_entities_short, scientificNameStd, family, genus, species, entity, synonym, model_type, plantType, origin, category, exp_tested, trait_name, value,
-                             bird, insect, lizard, native_mammal, pollinator, ecological_value, ecological_index, shade_value, shade_index, carbon_value, carbon_index)
+all_entities_short <- select(all_entities_short, scientificNameStd, family, genus, species, entity, synonym, model_type, plantType, climber, 
+                             cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, category, exp_tested, trait_name, value,
+                             bird, insect, lizard, native_mammal, pollinator, ecological_value, shade_value, shade_index, carbon_value, carbon_index)
 
 
 ###### extract the trait names and values for Michelle
@@ -2198,8 +2286,8 @@ names(height_width_wide)[names(height_width_wide) == 'species'] <- 'entity'
 all_entities_short <- left_join(all_entities_short, height_width_wide, by = "entity")
 
 # rearrange all the columns
-all_entities_short <- select(all_entities_short, scientificNameStd, family, genus, species, entity, synonym, model_type, plantType, origin, category, exp_tested, trait_name, value,
-                             bird, insect, lizard, native_mammal, pollinator, ecological_value, ecological_index, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
+all_entities_short <- select(all_entities_short, scientificNameStd, family, genus, species, entity, synonym, model_type, plantType, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, category, exp_tested, trait_name, value,
+                             bird, insect, lizard, native_mammal, pollinator, ecological_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
 
 
 ##### fix up family names for H, HC, GC
@@ -2273,8 +2361,8 @@ found <- left_join(found, parents, by = "entity")
 
 found <- found %>%
   select(-frequency) %>%
-  select(scientificNameStd, family, genus, species, entity, synonym, Parent_1, Parent_2,Parent_3, Parent_4, model_type, plantType, origin, category, exp_tested, trait_name, value,
-         bird, insect, lizard, native_mammal, pollinator, ecological_value, ecological_index, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
+  select(scientificNameStd, family, genus, species, entity, synonym, Parent_1, Parent_2,Parent_3, Parent_4, model_type, plantType, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, category, exp_tested, trait_name, value,
+         bird, insect, lizard, native_mammal, pollinator, ecological_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
 
 # replace the blank parent cells with NA
 
@@ -2305,8 +2393,8 @@ all_entities_short$Parent_4 <- "NA"
 # rearrange columns
 
 all_entities_short <- all_entities_short %>%
-  select(scientificNameStd, family, genus, species, entity, synonym, Parent_1, Parent_2,Parent_3, Parent_4, model_type, plantType, origin, category, exp_tested, trait_name, value,
-         bird, insect, lizard, native_mammal, pollinator, ecological_value, ecological_index, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
+  select(scientificNameStd, family, genus, species, entity, synonym, Parent_1, Parent_2,Parent_3, Parent_4, model_type, plantType, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, category, exp_tested, trait_name, value,
+         bird, insect, lizard, native_mammal, pollinator, ecological_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
 
 # join back the H, HC, GCs
 
@@ -2515,12 +2603,8 @@ all_entities_short <- all_entities_short %>%
 
 # rearrange columns to make more sense
 all_entities_short <- all_entities_short %>%
-  select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, plantType, origin, trait_name, value,
-         bird, insect, lizard, native_mammal, pollinator, ecological_value, ecological_index, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
-
-### FIX GROWTH FORM HERE
-## sTRAP LEAVED, SHRUBS AND TREES
-
+  select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, plantType, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name, value,
+         bird, insect, lizard, native_mammal, pollinator, ecological_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
 
 # need to calculate a shade value
 all_entities_short$shade_value <- "NA"
@@ -2531,49 +2615,11 @@ all_entities_short$shade_value <- ifelse(all_entities_short$plantType == "Tree",
                                  all_entities_short$shade_value)
 
 # check playground friendly
-harm <- all_entities_short %>%
-  filter(value == "playgroundfriendly")
+# harm <- all_entities_short %>%
+#  filter(value == "playgroundfriendly")
 
-bad <- harm %>%
-  filter(trait_name == "risk") # no playground friendly plants have a risk!!!!
-
-# check habit canopy
-canopy <- all_entities_short %>%
-  filter(trait_name == "habit_canopy")
-
-canopy_remove <- canopy %>% 
-  filter(plantType != "Tree" & plantType != "Shrub")
-
-# remove from database
-all_entities_short <- anti_join(all_entities_short, canopy_remove)
-
-all_entities_short$height_max <- as.numeric(as.character(all_entities_short$height_max))
-
-check_canopy <- all_entities_short %>%
-  filter(trait_name == "habit_canopy") %>%
-  filter(3 > height_max)
-
-# remove these from the database
-all_entities_short <- anti_join(all_entities_short, check_canopy)
-
-# canopy_summary <- all_entities_short %>%
-#  filter(trait_name == "habit_canopy") %>%
-#  group_by(value) %>%
-#  summarise(frequency = n())
-
-# summarise eco services for michelle
-
-# eco <- all_entities_short %>%
-#  select(plant_name, bird, insect, lizard, native_mammal, pollinator) %>%
-#  distinct(plant_name, bird, insect, lizard, native_mammal, pollinator)
-
-# write.csv(eco,"Master_database_output/taxonomy_checks/eco.csv", row.names = FALSE)
-
-############ Insert Linda's model source data
-
-model_source <- read.csv("Master_database_input/Linda/circul.csv")
-
-model_source <- distinct(model_source, speciesName) # never mind this is dummy data!!!!
+# bad <- harm %>%
+#  filter(trait_name == "risk") # no playground friendly plants have a risk!!!!
 
 ############
 
@@ -2588,11 +2634,19 @@ gh <- all_entities_short %>%
 # 111 plants from glasshouse, some may be missing...
 # remove old drought classifications and add new ones....
 
+# add a Koppen zone column
+
+all_entities_short$Koppen_zone <- ""
+
+all_entities_short <- all_entities_short %>%
+  select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, plantType, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name, value,
+         bird, insect, lizard, native_mammal, pollinator, ecological_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
+
 # change the column names
 
 names(all_entities_short)[names(all_entities_short) == 'plantType'] <- 'growth_form'
 
-# names(all_entities_short)[names(all_entities_short) == 'origin'] <- '???'
+names(all_entities_short)[names(all_entities_short) == 'origin'] <- '???'
 
 # select the traits that we want
 
@@ -2600,8 +2654,8 @@ all_entities_short <- all_entities_short %>%
   filter(trait_name == "common_name" | trait_name == "flower_colour" | trait_name == "flower_period" | trait_name == "leaf_loss" 
          | trait_name == "light_level" | trait_name == "placement" | trait_name == "usage" | trait_name == "height_average" 
          | trait_name == "width_average" | trait_name == "height_range" | trait_name == "width_range" 
-         | trait_name == "soil_type" | trait_name == "soil_pH" | trait_name == "frost_tolerance" | trait_name == "drought_tolerance" 
-         | trait_name == "habit_canopy" | trait_name == "growth_rate" | trait_name == "foliage_colour" | trait_name == "risk" 
+         | trait_name == "soil_type" | trait_name == "soil_pH" | trait_name == "supp_watering" | trait_name == "ideal_conditions" | trait_name == "frost_tolerance" | trait_name == "drought_tolerance" 
+         | trait_name == "coastal_tolerance" | trait_name == "habit_canopy" | trait_name == "growth_rate" | trait_name == "foliage_colour" | trait_name == "risk" 
          | trait_name == "weed_status")
 
 # check they are all there
@@ -2616,14 +2670,41 @@ all_entities_short$value_new <- all_entities_short$value
 
 # rearrange columns to make more sense
 all_entities_short <- all_entities_short %>%
-  select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, plantType, origin, trait_name, trait_name_new, value,
-         value_new, bird, insect, lizard, native_mammal, pollinator, ecological_value, ecological_index, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
+  select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, growth_form, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name, trait_name_new, value,
+         value_new, bird, insect, lizard, native_mammal, pollinator, ecological_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
 
 # COMMON NAME
 all_entities_short <- all_entities_short %>%
   mutate_if(is.factor, as.character) %>%
   mutate(trait_name_new = if_else(trait_name == "common_name", "common name", trait_name_new))
 
+# make common names capitalised
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(trait_name == "common_name", gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", all_entities_short$value_new, perl=TRUE),
+                             all_entities_short$value_new))
+
+# GROWTH FORM
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(growth_form = if_else(growth_form == "Bromeliad", "Shrub", growth_form),
+         growth_form = if_else(growth_form == "Bulb", "Herb", growth_form),
+         growth_form = if_else(growth_form == "Orchid", "Herb", growth_form),
+         growth_form = if_else(growth_form == "Vegetable", "Herb", growth_form),
+         growth_form = if_else(growth_form == "Strap-leaved", "Herb", growth_form))
+
+# FLOWER COLOUR
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(trait_name_new = if_else(trait_name == "flower_colour", "flower colour", trait_name_new))
+
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(value == "gold", "yellow", value_new),
+         value_new = if_else(value == "golden", "yellow", value_new),
+         value_new = if_else(value == "grey", "black", value_new), 
+         )
 
 
 # end need to distinct everything
