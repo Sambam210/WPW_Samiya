@@ -2971,7 +2971,7 @@ write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FIN
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_8Mar2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_10Mar2021.csv")
 
 everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_8Mar2021.csv")
 
@@ -2998,30 +2998,28 @@ check <- distinct(all_entities_short, species) # 2636 species, haven't lost anyt
 height_width <- read.csv("Master_database_output/final_data/height_width_all_ST_5Mar2021.csv")
 
 # create a new column with range
-height_width <- height_width %>%
-  mutate(range_new = paste0(min, " - ", max, "m"),
-         average_new = paste0(average, "m"))
+# height_width <- height_width %>%
+#  mutate(range_new = paste0(min, " - ", max, "m"),
+#         average_new = paste0(average, "m"))
 
-height_width <- select(height_width, scientificNameStd, species, category, exp_tested, trait_name_new, range_new, average_new)
+ height_width <- select(height_width, -range)
 
 # change to long format
 # http://www.cookbook-r.com/Manipulating_data/Converting_data_between_wide_and_long_format/
 
 height_width_long <- height_width %>%
-  gather(trait_name, value, range_new:average_new)
+  gather(trait_name, value, max:average)
 
 height_width_long <- height_width_long %>%
   mutate(trait_name_new_new = paste0(trait_name_new, "_", trait_name))
 
 height_width_long <- select(height_width_long, scientificNameStd, species, category, exp_tested, trait_name_new_new, value)  
 
-height_width_long[] <- lapply(height_width_long, gsub, pattern = "height_range_new", replacement = "height_range")
-height_width_long[] <- lapply(height_width_long, gsub, pattern = "width_range_new", replacement = "width_range")
-height_width_long[] <- lapply(height_width_long, gsub, pattern = "height_average_new", replacement = "height_average")
-height_width_long[] <- lapply(height_width_long, gsub, pattern = "width_average_new", replacement = "width_average")
-
 # change the column name
 names(height_width_long)[names(height_width_long) == 'trait_name_new_new'] <- 'trait_name'
+
+glimpse(height_width_long)
+height_width_long$value <- as.character(height_width_long$value)
 
 # join to master dataset
 
