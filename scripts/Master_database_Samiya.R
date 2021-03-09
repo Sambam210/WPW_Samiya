@@ -2807,7 +2807,7 @@ remove_maintenance <- all_entities_short %>%
            trait_name == "ideal_conditions" & value == "gravelly_soil" | trait_name == "ideal_conditions" & value == "high" | 
            trait_name == "ideal_conditions" & value == "humid" | trait_name == "ideal_conditions" & value == "large_rootspace" | 
            trait_name == "ideal_conditions" & value == "loam_soil" | trait_name == "ideal_conditions" & value == "loamy_soil" | 
-           trait_name == "ideal_conditions" & value == "loam_soils" | trait_name == "ideal_conditions" & value == "natural_pH" | 
+           trait_name == "ideal_conditions" & value == "loamy_soils" | trait_name == "ideal_conditions" & value == "natural_pH" | 
            trait_name == "ideal_conditions" & value == "neutral_pH" | trait_name == "ideal_conditions" & value == "partshade" | 
            trait_name == "ideal_conditions" & value == "sandy_soil" | trait_name == "ideal_conditions" & value == "shaded" | 
            trait_name == "ideal_conditions" & value == "variable")
