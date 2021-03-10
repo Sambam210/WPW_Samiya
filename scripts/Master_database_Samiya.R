@@ -4052,4 +4052,11 @@ all_entities_short <- arrange(all_entities_short, plant_name, trait_name, value)
 write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_10.3.2021_vers1.1.csv",row.names=FALSE)
 
 
+# do some checks
 
+summary_new_new <- all_entities_short_check %>%
+  select(entity, category) %>%
+  distinct(entity, category) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+# 2624 entities
