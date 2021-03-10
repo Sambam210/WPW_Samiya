@@ -2969,7 +2969,8 @@ write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FIN
 
 ############### Version 1.1
 ### made height and width into long format
-### fixed some traits and values
+### fixed some traits and values that were errors
+### got rid of 'moist' from 'ideal conditions' as it may clash with 'supp watering'
 
 library(tidyverse)
 
@@ -3868,7 +3869,6 @@ all_entities_short <- all_entities_short %>%
          value_new = if_else(value == "fertile", "fertile soil", value_new),
          value_new = if_else(value == "fertile", "fertile soil", value_new),
          value_new = if_else(value == "lateral_space", "lateral space", value_new),
-         value_new = if_else(value == "moist", "moist soil", value_new),
          value_new = if_else(value == "poorly_drained", "poorly drained soil", value_new),
          value_new = if_else(value == "sheltered", "protected", value_new),
          value_new = if_else(value == "well_drained", "well drained soil", value_new))
@@ -3891,7 +3891,7 @@ remove_maintenance <- all_entities_short %>%
            trait_name == "ideal_conditions" & value == "loamy_soils" | trait_name == "ideal_conditions" & value == "natural_pH" | 
            trait_name == "ideal_conditions" & value == "neutral_pH" | trait_name == "ideal_conditions" & value == "partshade" | 
            trait_name == "ideal_conditions" & value == "sandy_soil" | trait_name == "ideal_conditions" & value == "shaded" | 
-           trait_name == "ideal_conditions" & value == "variable")
+           trait_name == "ideal_conditions" & value == "variable" | trait_name == "ideal_conditions" & value == "moist")
 
 # remove
 all_entities_short <- anti_join(all_entities_short, remove_maintenance)
@@ -4042,7 +4042,6 @@ all_entities_short <- all_entities_short %>%
   distinct(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, growth_form, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name_new,
            value_new, bird, insect, lizard, native_mammal, pollinator, ecological_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
 
-
 names(all_entities_short)[names(all_entities_short) == 'trait_name_new'] <- 'trait_name'
 names(all_entities_short)[names(all_entities_short) == 'value_new'] <- 'value'
 
@@ -4050,7 +4049,6 @@ names(all_entities_short)[names(all_entities_short) == 'value_new'] <- 'value'
 all_entities_short <- arrange(all_entities_short, plant_name, trait_name, value)
 
 write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_10.3.2021_vers1.1.csv",row.names=FALSE)
-
 
 # do some checks
 
