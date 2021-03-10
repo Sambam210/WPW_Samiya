@@ -2968,6 +2968,8 @@ write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FIN
 ##################################################################################################################################
 
 ############### Version 1.1
+### made height and width into long format
+### fixed some traits and values
 
 library(tidyverse)
 
@@ -3054,7 +3056,7 @@ drought_long <- drought_summary %>%
   group_by(total_records) %>%
   mutate(number_species = n())
 
-# create proprotions
+# create proportions
 drought_long <- drought_long %>%
   mutate(no_proportion = (No/total_records) * 100, 
          yes_protortion = (Yes/total_records) * 100)
@@ -3112,7 +3114,7 @@ frost_long <- frost_summary %>%
   group_by(total_records) %>%
   mutate(number_species = n())
 
-# create proprotions
+# create proportions
 frost_long <- frost_long %>%
   mutate(no_proportion = (No/total_records) * 100, 
          yes_protortion = (Yes/total_records) * 100)
@@ -3165,7 +3167,7 @@ coastal_long <- coastal_summary %>%
   group_by(total_records) %>%
   mutate(number_species = n())
 
-# create proprotions
+# create proportions
 coastal_long <- coastal_long %>%
   mutate(no_proportion = (No/total_records) * 100, 
          yes_protortion = (Yes/total_records) * 100)
@@ -3224,17 +3226,6 @@ all_entities_short$genus <- ifelse(all_entities_short$category == "HC", word(all
 
 #### attach the family names
 
-# sciname <- all_entities_short %>%
-#  select(scientificNameStd) %>%
-#  drop_na(scientificNameStd) %>%
-#  distinct(scientificNameStd) # 1914, matches with Farzin's list!
-
-# run through taxise
-
-# sciname_TLPed <- Taxonstand::TPL(sciname$scientificNameStd, infra = TRUE, corr = TRUE, repeats = 100)
-# sciname_TLPed
-## nevermind, this is taking ages
-
 ## use old list I created which should be the same
 
 family <- read.csv("Master_database_output/taxonomy_checks/taxonstandcheck_ST_1.3.2021.csv")
@@ -3243,18 +3234,6 @@ family <- select(family, Taxon, Family)
 
 names(family)[names(family) == 'Taxon'] <- 'scientificNameStd'
 names(family)[names(family) == 'Family'] <- 'family'
-
-# split genus and species
-# family <- family %>%
-#  separate(scientificNameStd, c("genus", "species"), " ")
-
-# all_entities_short <- left_join(all_entities_short, family, by = "genus") # blows up number of rows, need to return back to normal
-
-# names(all_entities_short)[names(all_entities_short) == 'species.x'] <- 'species'
-
-# all_entities_short <- select(all_entities_short, scientificNameStd, family, genus, species, entity, plantType, origin, category, trait_name, value)
-
-# all_entities_short <- distinct(all_entities_short, scientificNameStd, family, genus, species, entity, plantType, origin, category, trait_name, value)
 
 all_entities_short <- left_join(all_entities_short, family, by = "scientificNameStd")
 
@@ -3352,34 +3331,13 @@ all_entities_short$shade_value <- ""
 all_entities_short$shade_index <- ""
 all_entities_short$carbon_value <- ""
 all_entities_short$carbon_index <-""
-# all_entities_short$ecological_index <-""
 
 names(all_entities_short)[names(all_entities_short) == 'ecological_score'] <- 'ecological_value'
-
 
 # rearrange all the columns
 all_entities_short <- select(all_entities_short, scientificNameStd, family, genus, species, entity, synonym, model_type, plantType, climber, 
                              cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, category, exp_tested, trait_name, value,
                              bird, insect, lizard, native_mammal, pollinator, ecological_value, shade_value, shade_index, carbon_value, carbon_index)
-
-
-###### extract the trait names and values for Michelle
-
-# traits <- all_entities_short %>%
-#  select(trait_name, value) %>%
-#  filter(trait_name != "height_average", trait_name != "height_range", trait_name != "width_average", trait_name != "width_range", 
-#         trait_name != "common_name", trait_name != "soil_volume", trait_name != "max_height_nature") %>%
-#  group_by(trait_name, value) %>%
-#  summarise(frequency = n())
-
-# write.csv(traits, "Master_database_output/traitfrequency_March2021.csv", row.names = FALSE)
-
-# form <- all_entities_short %>%
-#  select(entity, plantType) %>%
-#  distinct(entity, plantType) %>%
-#  group_by(plantType) %>%
-#  summarise(frequency = n())
-# all of them added togther is 2636!!!!
 
 #### add the max height and width for shade and carbon values
 
@@ -3668,7 +3626,7 @@ check_syn <- all_entities_short %>%
 # change entity to plant name
 names(all_entities_short)[names(all_entities_short) == 'entity'] <- 'plant_name'
 
-##### remove medicinal and apiary fron usage
+##### remove medicinal and apiary from usage
 
 # first check coverage of traits
 
@@ -3738,12 +3696,6 @@ all_entities_short$width_max <- as.numeric(as.character(all_entities_short$width
 all_entities_short$shade_value <- ifelse(all_entities_short$plantType == "Tree", pi*all_entities_short$width_max^2,
                                          all_entities_short$shade_value)
 
-# check playground friendly
-# harm <- all_entities_short %>%
-#  filter(value == "playgroundfriendly")
-
-# bad <- harm %>%
-#  filter(trait_name == "risk") # no playground friendly plants have a risk!!!!
 
 ############
 
@@ -3774,8 +3726,8 @@ names(all_entities_short)[names(all_entities_short) == 'plantType'] <- 'growth_f
 
 all_entities_short <- all_entities_short %>%
   filter(trait_name == "common_name" | trait_name == "flower_colour" | trait_name == "flower_period" | trait_name == "leaf_loss" 
-         | trait_name == "light_level" | trait_name == "placement" | trait_name == "usage" | trait_name == "height_average" 
-         | trait_name == "width_average" | trait_name == "height_range" | trait_name == "width_range" 
+         | trait_name == "light_level" | trait_name == "placement" | trait_name == "usage" | trait_name == "height_max" 
+         | trait_name == "height_min" | trait_name == "height_average" | trait_name == "width_max" | trait_name == "width_min" | trait_name == "width_average"
          | trait_name == "soil_type" | trait_name == "soil_pH" | trait_name == "supp_watering" | trait_name == "ideal_conditions" | trait_name == "frost_tolerance" | trait_name == "drought_tolerance" 
          | trait_name == "coastal_tolerance" | trait_name == "habit_canopy" | trait_name == "growth_rate" | trait_name == "foliage_colour" | trait_name == "risk" 
          | trait_name == "weed_status")
@@ -3844,7 +3796,10 @@ all_entities_short <- all_entities_short %>%
 # make the first letters capital
 all_entities_short <- all_entities_short %>%
   mutate_if(is.factor, as.character) %>%
-  mutate(value_new = if_else(trait_name == "flower_period", gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", all_entities_short$value_new, perl=TRUE), value_new))
+  mutate(value_new = if_else(value == "summer", gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", all_entities_short$value_new, perl=TRUE), value_new),
+         value_new = if_else(value == "autumn", gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", all_entities_short$value_new, perl=TRUE), value_new),
+         value_new = if_else(value == "winter", gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", all_entities_short$value_new, perl=TRUE), value_new),
+         value_new = if_else(value == "spring", gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", all_entities_short$value_new, perl=TRUE), value_new))
 
 # PLACEMENT
 all_entities_short <- all_entities_short %>%
@@ -3884,8 +3839,10 @@ all_entities_short <- all_entities_short %>%
   mutate_if(is.factor, as.character) %>%
   mutate(trait_name_new = if_else(trait_name == "height_average", "average height", trait_name_new),
          trait_name_new = if_else(trait_name == "width_average", "average width", trait_name_new),
-         trait_name_new = if_else(trait_name == "height_range", "height range", trait_name_new),
-         trait_name_new = if_else(trait_name == "width_range", "width range", trait_name_new))
+         trait_name_new = if_else(trait_name == "height_max", "maximum height", trait_name_new),
+         trait_name_new = if_else(trait_name == "height_min", "minimum height", trait_name_new),
+         trait_name_new = if_else(trait_name == "width_max", "maximum width", trait_name_new),
+         trait_name_new = if_else(trait_name == "width_min", "minimum width", trait_name_new))
 
 
 # SOIL
@@ -3987,11 +3944,13 @@ all_entities_short <- all_entities_short %>%
          value_new = if_else(value == "greygreen", "grey-green", value_new),
          value_new = if_else(value == "lightgreen", "green", value_new),
          value_new = if_else(value == "redpink", "red", value_new),
+         value_new = if_else(value == "pinkred", "red", value_new),
          value_new = if_else(value == "silver", "silvery", value_new),
          value_new = if_else(value == "silver_foliage", "silvery", value_new),
          value_new = if_else(value == "silvergreen", "silvery", value_new),
          value_new = if_else(value == "silvergrey", "silvery", value_new),
-         value_new = if_else(value == "yellowgreen", "yellow", value_new))
+         value_new = if_else(value == "yellowgreen", "yellow", value_new),
+         value_new = if_else(value == "variagations", "variagated", value_new))
 
 # filter out rest
 remove_foliage <- all_entities_short %>%
@@ -4060,7 +4019,8 @@ all_entities_short <- all_entities_short %>%
          value_new = if_else(value == "qld", "Queensland", value_new),
          value_new = if_else(value == "sa", "South Australia", value_new),
          value_new = if_else(value == "tas", "Tasmania", value_new),
-         value_new = if_else(value == "wa", "Western Australia", value_new))
+         value_new = if_else(value == "wa", "Western Australia", value_new),
+         value_new = if_else(value == "vic", "Victoria", value_new))
 
 # filter the rest
 remove_weed <- all_entities_short %>%
@@ -4071,7 +4031,6 @@ remove_weed <- all_entities_short %>%
 
 # remove
 all_entities_short <- anti_join(all_entities_short, remove_weed)
-
 
 # new trait and value columns
 all_entities_short <- all_entities_short %>%
@@ -4087,7 +4046,10 @@ all_entities_short <- all_entities_short %>%
 names(all_entities_short)[names(all_entities_short) == 'trait_name_new'] <- 'trait_name'
 names(all_entities_short)[names(all_entities_short) == 'value_new'] <- 'value'
 
-write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_8.3.2021.csv",row.names=FALSE)
+# arrange in alphabetical order
+all_entities_short <- arrange(all_entities_short, plant_name, trait_name, value)
+
+write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_10.3.2021_vers1.1.csv",row.names=FALSE)
 
 
 
