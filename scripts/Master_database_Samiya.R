@@ -4701,7 +4701,11 @@ syn_good <- all_entities_short %>%
 others <- all_entities_short %>%
   filter(category == "H" | category == "HC" | category == "GC")
 
-syn_good <- bind_rows(syn_good, others)
+# and also Myoporum montanum Arid form
+myo <- all_entities_short %>%
+  filter(entity == "Myoporum montanum Arid Form")
+
+syn_good <- bind_rows(syn_good, others, myo)
 
 # filter out just the synonyms
 syn_good_change <- filter(syn_good, category == "SYN")
@@ -4718,7 +4722,7 @@ syn_good_change$category <- "SP"
 # species with multiple synonyms and 5 min traits
 # Abelia uniflora, Myoporum tenuifolium
 multi_syn <- all_entities_short %>%
-  filter(scientificNameStd == "Abelia uniflora" | scientificNameStd == "Myoporum tenuifolium")
+  filter(scientificNameStd == "Abelia uniflora" | category == "SYN" & scientificNameStd == "Myoporum tenuifolium")
 
 multi_syn <- multi_syn %>%
   mutate_if(is.factor, as.character) %>%
@@ -5198,7 +5202,7 @@ summary_new_new <- all_entities_short_check %>%
   distinct(entity, category) %>%
   group_by(category) %>%
   summarise(frequency = n())
-# 2624 entities
+# 2630 entities (added 6 new gh cultivars)
 
 # check gh species
 
