@@ -4071,7 +4071,7 @@ gh_species <- all_entities_short %>%
 ############### Version 1.2
 ### removed Calodendrum capense as a species we checked in the gh
 ### added height and width data to versioning
-
+### created papges for the cultivars we tested in the glasshouse (if they were missing)
 
 library(tidyverse)
 
@@ -4154,6 +4154,10 @@ height_width_long <- height_width_long %>%
 
 height_width_long <- select(height_width_long, scientificNameStd, species, category, exp_tested, trait_name_new_new, value)  
 
+# remove plant type
+
+height_width_long <- height_width_long[,2:7]
+  
 # change the column name
 names(height_width_long)[names(height_width_long) == 'trait_name_new_new'] <- 'trait_name'
 
@@ -4478,14 +4482,12 @@ all_entities_short <- select(all_entities_short, scientificNameStd, family, genu
 
 #### add the max height and width for shade and carbon values
 
-height_width <- read.csv("Master_database_output/final_data/height_width_all_ST_5Mar2021.csv")
-
-height_width <- select(height_width, -range, -average)
+height_width2 <- select(height_width, -average)
 
 # change from wide to long
 # http://www.cookbook-r.com/Manipulating_data/Converting_data_between_wide_and_long_format/
 
-height_width_long2 <- height_width %>%
+height_width_long2 <- height_width2 %>%
   gather(trait_name, value, max:min)
 
 height_width_long2 <- height_width_long2 %>%
@@ -4498,6 +4500,9 @@ height_width_wide <- height_width_long2 %>%
   spread(trait_name_new_new, value)
 
 height_width_wide <- select(height_width_wide, -scientificNameStd, -category, -plantType, -exp_tested)
+
+# remove these columns
+height_width_wide <- height_width_wide[, 5:9]
 
 names(height_width_wide)[names(height_width_wide) == 'species'] <- 'entity'
 
@@ -4669,7 +4674,7 @@ all_entities_short[] <-lapply(all_entities_short, gsub, pattern = "Pittosporum p
 
 # remove the category 'synonym'
 
-# these are the problemativ ones
+# these are the problematic ones
 # Species with multiple synonyms that have 5 min traits: Abelia uniflora, Myoporum tenuifolium
 
 # Species and synonyms that have 5 min traits: Bauhinia variegata, Coronidium scorpioides,
