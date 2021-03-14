@@ -4074,6 +4074,8 @@ gh_species <- all_entities_short %>%
 ### created pages for the cultivars we tested in the glasshouse (if they were missing)
 ### changed ecological_value to biodiversity_value
 ### added dehydration and heat tolerance variables for gh species
+### populated the model_type column with sdm, niche and NA
+
 
 library(tidyverse)
 
@@ -5267,6 +5269,64 @@ all_entities_short$heat_tolerance <- "NA"
 all_entities_short <- bind_rows(all_entities_short, gh_all)
 
 all_entities_short <- arrange(all_entities_short, plant_name, trait_name, value)
+
+## populate the model type column
+
+sdm <- read.csv("Master_database_input/LindaFarzin/diff_ST_march_and_min5traits_good_10_03_2021_Clean.csv", strip.white = TRUE)
+# get rid of empty cells with white space
+# https://stackoverflow.com/questions/2261079/how-can-i-trim-leading-and-trailing-white-space
+
+sdm_possible <- sdm %>%
+  select(SDM.is.possible) %>%
+  filter(SDM.is.possible != "")
+# out of 1914 species, 1469 have data to do sdm, which means 445 are missing
+
+colnames(sdm_possible) <- "speciesName"
+
+# species with missing sdm
+sdm_missing <- sdm %>%
+  filter(SDM.is.possible == "") %>%
+  select(species_list_ST_1Mar2021.csv)
+
+colnames(sdm_missing) <- "speciesName"
+  
+# load ale's niche data
+
+niche <- read.csv("Master_database_input/Ale/niche_summaries_5414_species.csv")
+
+niche <- niche %>%
+  distinct(speciesName)
+
+# diff between missing sdm and niche list
+diff_missing_sdm_niche <- setdiff(sdm_missing, niche)
+# 77 species do not have a sdm or niche
+
+# diff between models that do not have sdm or niche data and models that do not have sdm data
+diff_niches <- setdiff(sdm_missing, diff_missing_sdm_niche)
+# 368 species have niche data but not sdm
+
+# populate model type
+diff_niches$model_type <- "niche"
+diff_missing_sdm_niche$model_type <- "NA"
+sdm_possible$model_type <- "sdm"
+
+# join together
+model_type <- bind_rows(diff_niches, diff_missing_sdm_niche, sdm_possible)
+
+# join to database
+all_entities_short <- select(all_entities_short, -model_type)
+names(model_type)[names(model_type) == 'speciesName'] <- 'plant_name'
+
+all_entities_short <- left_join(all_entities_short, model_type, by = "plant_name")
+all_entities_short$model_type[is.na(all_entities_short$model_type)] <- "NA"
+all_entities_short$scientificNameStd[is.na(all_entities_short$scientificNameStd)] <- "NA"
+all_entities_short$species[is.na(all_entities_short$species)] <- "NA"
+
+# rearrange columns
+
+all_entities_short <- all_entities_short %>%
+  select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, growth_form, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name, value,
+         bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index, dehydration_tolerance, heat_tolerance)
 
 write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_10.3.2021_vers1.2.csv",row.names=FALSE)
 
