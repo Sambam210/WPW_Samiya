@@ -4075,13 +4075,14 @@ gh_species <- all_entities_short %>%
 ### changed ecological_value to biodiversity_value
 ### added dehydration and heat tolerance variables for gh species
 ### populated the model_type column with sdm, niche and NA
+### fixed species with high and low water usage
 
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_10Mar2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_14Mar2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_11Mar2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_14Mar2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
