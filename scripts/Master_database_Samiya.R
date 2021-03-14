@@ -4075,7 +4075,7 @@ gh_species <- all_entities_short %>%
 ### changed ecological_value to biodiversity_value
 ### added dehydration and heat tolerance variables for gh species
 ### populated the model_type column with sdm, niche and NA
-### fixed species with high and low water usage
+### fixed species with high and low water usage and species with high water needs and drought tolerant
 
 
 library(tidyverse)
