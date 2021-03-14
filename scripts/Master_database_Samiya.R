@@ -4073,6 +4073,7 @@ gh_species <- all_entities_short %>%
 ### added height and width data to versioning
 ### created pages for the cultivars we tested in the glasshouse (if they were missing)
 ### changed ecological_value to biodiversity_value
+### added dehydration and heat tolerance variables for gh species
 
 library(tidyverse)
 
@@ -5198,6 +5199,74 @@ all_entities_short <- arrange(all_entities_short, plant_name, trait_name, value)
 all_entities_short <- all_entities_short %>%
   mutate_if(is.factor, as.character) %>%
   mutate(synonym = if_else(plant_name == "Syzygium smithii", "Acmena smithii", synonym))
+
+# for gh species, remove the drought tolerance trait
+
+gh_drought <- all_entities_short %>%
+  filter(exp_tested == "Y") %>%
+  filter(trait_name != "drought tolerance")
+
+# load the drought and heat tolerance data
+
+drought_heat <- read.csv("Master_database_input/name_comparisons.csv")
+
+drought_heat <- select(drought_heat, plant_name, drought_tolerance, dehydration_tolerance, heat_tolerance)
+
+# select the drought tolerance (hort) data
+
+drought_hort <- drought_heat %>%
+  select(plant_name, drought_tolerance) %>%
+  drop_na(drought_tolerance)
+  
+drought_hort[] <- lapply(drought_hort, gsub, pattern = "drought tolerant", replacement = "putatively high")
+drought_hort[] <- lapply(drought_hort, gsub, pattern = "drought intolerant", replacement = "putatively no")
+drought_hort[] <- lapply(drought_hort, gsub, pattern = "intermediate", replacement = "putatively moderate")
+
+drought_hort$trait_name <- "drought tolerance"
+
+names(drought_hort)[names(drought_hort) == 'drought_tolerance'] <- 'value'
+
+# select the species with hort info
+hort_drought_species <- select(drought_hort, plant_name)
+
+# extract the other info for jusy these species
+other_info <- left_join(hort_drought_species, gh_drought, by = "plant_name")
+other_info <- other_info %>%
+  select(-trait_name , -value) %>%
+  distinct(plant_name, .keep_all = TRUE)
+
+# add drought data
+gh_all_traits <- left_join(other_info, drought_hort, by = "plant_name")
+
+# rearrange columns
+
+gh_all_traits <- gh_all_traits %>%
+  select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, growth_form, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name, value,
+         bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
+
+# join to other data
+gh_all <- bind_rows(gh_drought, gh_all_traits)
+gh_all <- arrange(gh_all, plant_name, trait_name, value)
+
+# add the dehydration and heat tolerance data
+dehydration_heat <- select(drought_heat, -drought_tolerance)
+dehydration_heat[] <- lapply(dehydration_heat, gsub, pattern = "Intermed/Tol", replacement = "intermediate - tolerant")
+dehydration_heat[[76,3]] <- "NA"
+
+gh_all <- left_join(gh_all, dehydration_heat, by = "plant_name")
+
+# remove gh species from master database
+all_entities_short <- all_entities_short %>%
+  filter(exp_tested == "N")
+
+# add the new columns
+all_entities_short$dehydration_tolerance <- "NA"
+all_entities_short$heat_tolerance <- "NA"
+
+# join datasets
+all_entities_short <- bind_rows(all_entities_short, gh_all)
+
+all_entities_short <- arrange(all_entities_short, plant_name, trait_name, value)
 
 write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_10.3.2021_vers1.2.csv",row.names=FALSE)
 
