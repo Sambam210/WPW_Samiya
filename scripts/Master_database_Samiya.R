@@ -5329,6 +5329,16 @@ all_entities_short <- all_entities_short %>%
   select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, growth_form, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name, value,
          bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index, dehydration_tolerance, heat_tolerance)
 
+# check that cultivar synonyms are all accounted for
+syn_check <- all_entities_short %>%
+  filter(scientificNameStd != plant_name)
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(synonym = if_else(plant_name == "Magnolia champaca", "Michelia champaca", synonym),
+         synonym = if_else(plant_name == "Chenopodium candolleanum", "Rhagodia candolleana", synonym),
+         synonym = if_else(plant_name == "Cassia artemisioides", "Senna artemisioides", synonym))
+
 write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_10.3.2021_vers1.2.csv",row.names=FALSE)
 
 # do some checks
