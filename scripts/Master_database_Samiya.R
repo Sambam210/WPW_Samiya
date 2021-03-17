@@ -6137,9 +6137,26 @@ all_entities_short$shrub <- as.numeric(as.character(all_entities_short$shrub))
 # canopy cover
 all_entities_short$canopy_cover <- "NA"
 
-all_entities_short$canopy_cover <- ifelse(all_entities_short$tree == 1, pi*all_entities_short$width_max^2,
+all_entities_short$canopy_cover <- ifelse(all_entities_short$tree == 1, pi*(all_entities_short$width_max/2)^2,
                                          all_entities_short$canopy_cover)
 
+# shade value
+all_entities_short$shade_value <- "NA"
+
+all_entities_short$canopy_cover <- as.numeric(as.character(all_entities_short$canopy_cover))
+
+all_entities_short$shade_value <- ifelse(all_entities_short$tree == 1, ((all_entities_short$canopy_cover + (all_entities_short$width_max*all_entities_short$height_max))/2),
+                                         all_entities_short$shade_value)
+
+all_entities_short$shade_value <- as.numeric(as.character(all_entities_short$shade_value))
+
+# carbon value
+all_entities_short$carbon_value <- "NA"
+
+all_entities_short$carbon_value <- ifelse(all_entities_short$tree == 1, all_entities_short$height_max, 
+                                          all_entities_short$carbon_value)
+
+all_entities_short$carbon_value <- as.numeric(as.character(all_entities_short$carbon_value))
 
 ############
 
@@ -6160,7 +6177,7 @@ all_entities_short$Koppen_zone <- ""
 
 all_entities_short <- all_entities_short %>%
   select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, plantType, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name, value,
-         bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
+         bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
 
 # change the column names
 
@@ -6189,7 +6206,7 @@ all_entities_short$value_new <- all_entities_short$value
 # rearrange columns to make more sense
 all_entities_short <- all_entities_short %>%
   select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, growth_form, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name, trait_name_new, value,
-         value_new, bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
+         value_new, bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
 
 # COMMON NAME
 all_entities_short <- all_entities_short %>%
@@ -6478,12 +6495,12 @@ all_entities_short <- anti_join(all_entities_short, remove_weed)
 # new trait and value columns
 all_entities_short <- all_entities_short %>%
   select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, growth_form, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name_new, value_new,
-         bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
+         bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
 
 # end need to distinct everything
 all_entities_short <- all_entities_short %>%
   distinct(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, growth_form, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name_new,
-           value_new, bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
+           value_new, bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
 
 names(all_entities_short)[names(all_entities_short) == 'trait_name_new'] <- 'trait_name'
 names(all_entities_short)[names(all_entities_short) == 'value_new'] <- 'value'
@@ -6525,7 +6542,7 @@ names(drought_hort)[names(drought_hort) == 'drought_tolerance'] <- 'value'
 # select the species with hort info
 hort_drought_species <- select(drought_hort, plant_name)
 
-# extract the other info for jusy these species
+# extract the other info for just these species
 other_info <- left_join(hort_drought_species, gh_drought, by = "plant_name")
 other_info <- other_info %>%
   select(-trait_name , -value) %>%
@@ -6535,10 +6552,9 @@ other_info <- other_info %>%
 gh_all_traits <- left_join(other_info, drought_hort, by = "plant_name")
 
 # rearrange columns
-
 gh_all_traits <- gh_all_traits %>%
   select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, growth_form, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name, value,
-         bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index)
+         bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
 
 # join to other data
 gh_all <- bind_rows(gh_drought, gh_all_traits)
@@ -6615,12 +6631,15 @@ all_entities_short <- left_join(all_entities_short, model_type, by = "plant_name
 all_entities_short$model_type[is.na(all_entities_short$model_type)] <- "NA"
 all_entities_short$scientificNameStd[is.na(all_entities_short$scientificNameStd)] <- "NA"
 all_entities_short$species[is.na(all_entities_short$species)] <- "NA"
+all_entities_short$canopy_cover[is.na(all_entities_short$canopy_cover)] <- "NA"
+all_entities_short$shade_value[is.na(all_entities_short$shade_value)] <- "NA"
+all_entities_short$carbon_value[is.na(all_entities_short$carbon_value)] <- "NA"
 
 # rearrange columns
 
 all_entities_short <- all_entities_short %>%
   select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, growth_form, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name, value,
-         bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, shade_value, shade_index, carbon_value, carbon_index, dehydration_tolerance, heat_tolerance)
+         bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index, dehydration_tolerance, heat_tolerance)
 
 # check that cultivar synonyms are all accounted for
 syn_check <- all_entities_short %>%
@@ -6650,4 +6669,10 @@ gh_species <- all_entities_short %>%
   select(plant_name) %>%
   distinct(plant_name)
 
+# extract trees for ale
+ale <- all_entities_short %>%
+  select(scientificNameStd, plant_name, shrub, tree, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, 
+         carbon_value, carbon_index) %>%
+  distinct(plant_name, .keep_all = TRUE)
 
+write.csv(ale,"Master_database_output/Ale/co_benefit_analysis_ST_17.3.2021.csv",row.names=FALSE)
