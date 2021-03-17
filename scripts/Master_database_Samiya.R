@@ -6680,6 +6680,19 @@ all_entities_short <- all_entities_short %>%
 
 write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_17.3.2021_vers1.3.csv",row.names=FALSE)
 
+# extract species with 0 for eco services
+glimpse(all_entities_short)
+all_entities_short$biodiversity_value <- as.numeric(as.character(all_entities_short$biodiversity_value))
+
+nothing <- all_entities_short %>%
+  filter(biodiversity_value == 0) %>%
+  distinct(family, genus, plant_name) %>%
+  group_by(family, genus) %>%
+  summarise(frequency = n()) %>%
+  arrange(family)
+
+write.csv(nothing,"Master_database_output/missing_biodiversity_value.csv",row.names=FALSE)
+
 # do some checks
 
 summary_new_new <- all_entities_short_check %>%
