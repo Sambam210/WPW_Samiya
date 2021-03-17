@@ -6127,11 +6127,15 @@ all_entities_short <- all_entities_short %>%
          bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
 
 # need to calculate co-benefits
+all_entities_short$width_max <- as.numeric(as.character(all_entities_short$width_max))
+all_entities_short$width_min <- as.numeric(as.character(all_entities_short$width_min))
+all_entities_short$height_max <- as.numeric(as.character(all_entities_short$height_max))
+all_entities_short$height_min <- as.numeric(as.character(all_entities_short$height_min))
+all_entities_short$tree <- as.numeric(as.character(all_entities_short$tree))
+all_entities_short$shrub <- as.numeric(as.character(all_entities_short$shrub))
+
 # canopy cover
 all_entities_short$canopy_cover <- "NA"
-
-all_entities_short$width_max <- as.numeric(as.character(all_entities_short$width_max))
-all_entities_short$tree <- as.numeric(as.character(all_entities_short$tree))
 
 all_entities_short$canopy_cover <- ifelse(all_entities_short$tree == 1, pi*all_entities_short$width_max^2,
                                          all_entities_short$canopy_cover)
