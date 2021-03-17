@@ -5360,9 +5360,11 @@ gh_species <- all_entities_short %>%
 #################################################################################################################################################################
 
 ######################################## Version 1.3
-####### 'canopy cover' = pi x r^2
-####### 'shade value', 'shade index'
-####### 'carbon value', 'carbon index'
+####### 'canopy cover' = pi x r^2, internal use only
+####### 'shade value' = average of canopy cover and (max width x max height), internal use only 
+####### 'shade index' = category for shade index
+####### 'carbon value' = max height, internal use only
+####### 'carbon index' = category for carbon index
 
 library(tidyverse)
 
@@ -6651,6 +6653,31 @@ all_entities_short <- all_entities_short %>%
          synonym = if_else(plant_name == "Chenopodium candolleanum", "Rhagodia candolleana", synonym),
          synonym = if_else(plant_name == "Cassia artemisioides", "Senna artemisioides", synonym))
 
+# add Ale's shade and carbon index categories
+categories <- read.csv("Master_database_input/Ale/co_benefit_analysis_ST_17.3.2021_AO.csv")
+
+categories <- select(categories, plant_name, shade_index, carbon_index)
+
+categories[] <- lapply(categories, gsub, pattern = "1_very low", replacement = "very low")
+categories[] <- lapply(categories, gsub, pattern = "1_low", replacement = "low")
+categories[] <- lapply(categories, gsub, pattern = "2_low", replacement = "low")
+categories[] <- lapply(categories, gsub, pattern = "2_medium", replacement = "medium")
+categories[] <- lapply(categories, gsub, pattern = "3_medium", replacement = "medium")
+categories[] <- lapply(categories, gsub, pattern = "3_high", replacement = "high")
+categories[] <- lapply(categories, gsub, pattern = "4_high", replacement = "high")
+
+# join to main database
+all_entities_short <- select(all_entities_short, -shade_index, -carbon_index)
+
+all_entities_short <- left_join(all_entities_short, categories, by = "plant_name")
+all_entities_short$shade_index[is.na(all_entities_short$shade_index)] <- "NA"
+all_entities_short$carbon_index[is.na(all_entities_short$carbon_index)] <- "NA"
+
+# rearrange columns
+all_entities_short <- all_entities_short %>%
+  select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, growth_form, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name, value,
+         bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index, dehydration_tolerance, heat_tolerance)
+
 write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_17.3.2021_vers1.3.csv",row.names=FALSE)
 
 # do some checks
@@ -6670,9 +6697,9 @@ gh_species <- all_entities_short %>%
   distinct(plant_name)
 
 # extract trees for ale
-ale <- all_entities_short %>%
-  select(scientificNameStd, plant_name, shrub, tree, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, 
-         carbon_value, carbon_index) %>%
-  distinct(plant_name, .keep_all = TRUE)
+# ale <- all_entities_short %>%
+#  select(scientificNameStd, plant_name, shrub, tree, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, 
+#         carbon_value, carbon_index) %>%
+#  distinct(plant_name, .keep_all = TRUE)
 
-write.csv(ale,"Master_database_output/Ale/co_benefit_analysis_ST_17.3.2021.csv",row.names=FALSE)
+# write.csv(ale,"Master_database_output/Ale/co_benefit_analysis_ST_17.3.2021.csv",row.names=FALSE)
