@@ -6716,3 +6716,13 @@ gh_species <- all_entities_short %>%
 #  distinct(plant_name, .keep_all = TRUE)
 
 # write.csv(ale,"Master_database_output/Ale/co_benefit_analysis_ST_17.3.2021.csv",row.names=FALSE)
+
+# fail safe the database
+# species with both slow and fast growth rates (group by plant name, filter)
+# cross check urban context with height
+
+
+
+
+
+
