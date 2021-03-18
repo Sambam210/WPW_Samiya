@@ -5368,9 +5368,9 @@ gh_species <- all_entities_short %>%
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_14Mar2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_18Mar2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_14Mar2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_18Mar2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -6681,17 +6681,17 @@ all_entities_short <- all_entities_short %>%
 write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_17.3.2021_vers1.3.csv",row.names=FALSE)
 
 # extract species with 0 for eco services
-glimpse(all_entities_short)
-all_entities_short$biodiversity_value <- as.numeric(as.character(all_entities_short$biodiversity_value))
+# glimpse(all_entities_short)
+# all_entities_short$biodiversity_value <- as.numeric(as.character(all_entities_short$biodiversity_value))
 
-nothing <- all_entities_short %>%
-  filter(biodiversity_value == 0) %>%
-  distinct(family, genus, plant_name) %>%
-  group_by(family, genus) %>%
-  summarise(frequency = n()) %>%
-  arrange(family)
+# nothing <- all_entities_short %>%
+#  filter(biodiversity_value == 0) %>%
+#  distinct(family, genus, plant_name) %>%
+#  group_by(family, genus) %>%
+#  summarise(frequency = n()) %>%
+#  arrange(family)
 
-write.csv(nothing,"Master_database_output/missing_biodiversity_value.csv",row.names=FALSE)
+# write.csv(nothing,"Master_database_output/missing_biodiversity_value.csv",row.names=FALSE)
 
 # do some checks
 
@@ -6709,20 +6709,52 @@ gh_species <- all_entities_short %>%
   select(plant_name) %>%
   distinct(plant_name)
 
-# extract trees for ale
-# ale <- all_entities_short %>%
-#  select(scientificNameStd, plant_name, shrub, tree, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, 
-#         carbon_value, carbon_index) %>%
-#  distinct(plant_name, .keep_all = TRUE)
-
-# write.csv(ale,"Master_database_output/Ale/co_benefit_analysis_ST_17.3.2021.csv",row.names=FALSE)
-
 # fail safe the database
-# species with both slow and fast growth rates (group by plant name, filter)
+
+# species with risk and playground friendly
+risk_failsafe <- all_entities_short %>%
+  group_by(plant_name) %>%
+  filter(trait_name == "risk" & value == "playground friendly") %>%
+  distinct(plant_name)
+# no plants with risks are playground friendly
+
+# species as both herbs and trees
+herb_tree <- all_entities_short %>%
+  group_by(plant_name) %>%
+  filter(herb == 1 & tree == 1) %>%
+  distinct(plant_name)
+# no plants are herbs and trees
+
+# species as both herb and shrub
+herb_shrub <- all_entities_short %>%
+  group_by(plant_name) %>%
+  filter(herb == 1 & shrub == 1) %>%
+  distinct(plant_name)
+# 0 species
+
+# species with high drought tolerance and high water needs
+drought_failsafe <- all_entities_short %>%
+  filter(trait_name == "drought_tolerance" | trait_name == "planting and maintenance") %>%
+  group_by(plant_name) %>%
+  filter(value == "puatively high" & value == "high water needs") %>%
+  distinct(plant_name)
+# 0 plants
+
+# species with high and low water needs
+waterneeds_failsafe <- all_entities_short %>%
+  group_by(plant_name) %>%
+  filter(value == "high water needs" & value == "low water needs") %>%
+  distinct(plant_name)
+# 0 plants
+
+# species with slow and fast growth rate
+growthrate_failsafe <- all_entities_short %>%
+  group_by(plant_name) %>%
+  filter(value == "slow" & value == "fast") %>%
+  distinct(plant_name)
+# 0 plants
+
 # cross check urban context with height
-#
-
-
 
 
 
