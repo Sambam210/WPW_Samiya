@@ -6756,6 +6756,13 @@ growthrate_failsafe <- all_entities_short %>%
 
 # cross check urban context with height
 
+urbancontext_height <- all_entities_short %>%
+  filter(value == "street") %>%
+  distinct(plant_name, .keep_all = TRUE) %>%
+  select(plant_name, height_max, width_max)
+# anything with max height >=30m and/or max width >20m I have changed to 'park'
+# check with Michelle before changing
+
 ############ Rony's species list
 
 # rony <- read.csv("Master_database_input/Rony/spp_list_rony.csv")
