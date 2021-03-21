@@ -6756,6 +6756,26 @@ growthrate_failsafe <- all_entities_short %>%
 
 # cross check urban context with height
 
+############ Rony's species list
+
+# rony <- read.csv("Master_database_input/Rony/spp_list_rony.csv")
+
+# rony <- distinct(rony)
+# 356 species
+
+# colnames(rony) <- "plant_name"
+
+# rony_traits <- left_join(rony, all_entities_short, by = "plant_name")
+
+# rony_traits <- select(rony_traits, family, plant_name, origin, trait_name, value)
+
+# rony_traits <- drop_na(rony_traits)
+
+# plants <- distinct(rony_traits, plant_name)
+# 261 species
+
+# write.csv(rony_traits,"Master_database_output/Rony/rony_traits.csv",row.names=FALSE)
+
 
 
 
