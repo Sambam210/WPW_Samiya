@@ -6240,7 +6240,8 @@ all_entities_short <- all_entities_short %>%
   mutate(value_new = if_else(value == "gold", "yellow", value_new),
          value_new = if_else(value == "golden", "yellow", value_new),
          value_new = if_else(value == "grey", "black", value_new), 
-         value_new = if_else(value == "insignificant", "inconspicuous", value_new),
+         value_new = if_else(value == "insignificant", "inconspicuous flower", value_new),
+         value_new = if_else(value == "inconspicuous", "inconspicuous flower", value_new),
          value_new = if_else(value == "magenta", "pink", value_new),
          value_new = if_else(value == "mauve", "purple", value_new),
          value_new = if_else(value == "not_applicable", "does not flower", value_new),
@@ -6311,9 +6312,12 @@ all_entities_short <- all_entities_short %>%
 # SOIL
 all_entities_short <- all_entities_short %>%
   mutate_if(is.factor, as.character) %>%
-  mutate(trait_name_new = if_else(trait_name == "soil_type", "soil type", trait_name_new),
+  mutate(trait_name_new = if_else(trait_name == "soil_type", "soil texture", trait_name_new),
          trait_name_new = if_else(trait_name == "soil_pH", "soil pH", trait_name_new))
 
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(value == "acid", "acidic", value_new))
 
 # PLANTING AND MAINTENANCE
 all_entities_short <- all_entities_short %>%
@@ -6454,7 +6458,8 @@ all_entities_short <- all_entities_short %>%
   mutate(value_new = if_else(value == "mildallergen", "allergen", value_new),
          value_new = if_else(value == "moderateallergen", "allergen", value_new),
          value_new = if_else(value == "poison", "poisonous or toxic", value_new),
-         value_new = if_else(value == "severeallergen", "allergen", value_new))
+         value_new = if_else(value == "severeallergen", "allergen", value_new),
+         value_new = if_else(value == "spikey", "spikey or spiny", value_new))
 
 # filter the rest
 remove_risk <- all_entities_short %>%
@@ -6471,7 +6476,7 @@ all_entities_short <- anti_join(all_entities_short, remove_risk)
 # WEED
 all_entities_short <- all_entities_short %>%
   mutate_if(is.factor, as.character) %>%
-  mutate(trait_name_new = if_else(trait_name == "weed_status", "weed status", trait_name_new))
+  mutate(trait_name_new = if_else(trait_name == "weed_status", "weed status in Australia", trait_name_new))
 
 all_entities_short <- all_entities_short %>%
   mutate_if(is.factor, as.character) %>%
