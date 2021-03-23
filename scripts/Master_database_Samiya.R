@@ -5365,6 +5365,7 @@ gh_species <- all_entities_short %>%
 ####### 'shade index' = category for shade index
 ####### 'carbon value' = max height, internal use only
 ####### 'carbon index' = category for carbon index
+####### removed 'under powerlines' from the 'uses' trait and instead added a new column 'suitability_under_powerlines'
 
 library(tidyverse)
 
@@ -6833,6 +6834,23 @@ urbancontext_height <- all_entities_short %>%
 # 261 species
 
 # write.csv(rony_traits,"Master_database_output/Rony/rony_traits.csv",row.names=FALSE)
+
+############ Jaco traits
+
+# jaco <- all_entities_short %>%
+#  filter(category == "CULVAR") %>%
+#  distinct(scientificNameStd)
+
+# pull out traits for these species from the database
+# jaco <- left_join(jaco, all_entities_short, by = "scientificNameStd")
+
+# jaco <- select(jaco, scientificNameStd, plant_name, synonym, category, trait_name, value)
+
+# jaco <- jaco %>%
+#  filter(trait_name == "average height" | trait_name == "average width" | trait_name == "maximum height" | 
+#           trait_name == "maximum width" | trait_name == "minimum height" | trait_name == "weed status in Australia")
+
+# write.csv(jaco,"Master_database_output/Jaco/cultivar_traits.csv",row.names=FALSE)
 
 
 
