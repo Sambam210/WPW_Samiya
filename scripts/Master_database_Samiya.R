@@ -6683,6 +6683,52 @@ all_entities_short <- all_entities_short %>%
   select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, growth_form, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name, value,
          bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index, dehydration_tolerance, heat_tolerance)
 
+## powerlines
+# remove 'under powerlines' as a value from the database
+all_entities_short <- all_entities_short %>%
+  filter(value != "under powerlines")
+
+# filter out all the shrubs and trees <= 3m max height
+shrubsandtrees_3 <- all_entities_short %>%
+  filter(shrub == 1 | tree == 1) %>%
+  filter(height_max <= 3)
+
+shrubsandtrees_3$suitability_under_powerlines <- "suitable"
+
+# filter out all the shrubs and trees with max height between 3 and 6m
+shrubsandtrees_3_6 <- all_entities_short %>%
+  filter(shrub == 1 | tree == 1) %>%
+  filter(3 < height_max & height_max <= 6)
+
+shrubsandtrees_3_6$suitability_under_powerlines <- "suitable with pruning"
+
+# filter out all the shrubs and trees with max height greater than 6m
+
+shrubsandtrees_6 <- all_entities_short %>%
+  filter(shrub == 1 | tree == 1) %>%
+  filter(height_max > 6)
+
+shrubsandtrees_6$suitability_under_powerlines <- "not suitable"
+
+# join everything together
+shrubsandtrees <- bind_rows(shrubsandtrees_3, shrubsandtrees_3_6, shrubsandtrees_6)
+
+# filter out the shrubs and trees from the database
+all_entities_short <- all_entities_short %>%
+  filter(shrub == 0 & tree == 0)
+
+all_entities_short$suitability_under_powerlines <- "NA"
+
+# join everything together
+all_entities_short <- bind_rows(all_entities_short, shrubsandtrees)
+
+# rearrange columns
+all_entities_short <- all_entities_short %>%
+  select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, growth_form, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name, value,
+         bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, suitability_under_powerlines, canopy_cover, shade_value, shade_index, carbon_value, carbon_index, dehydration_tolerance, heat_tolerance)
+
+all_entities_short <- arrange(all_entities_short, scientificNameStd, plant_name, trait_name, value)
+
 write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_17.3.2021_vers1.3.csv",row.names=FALSE)
 
 # extract species with 0 for eco services
