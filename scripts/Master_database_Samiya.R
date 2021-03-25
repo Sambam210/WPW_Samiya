@@ -6765,6 +6765,21 @@ trait_name_check <- all_entities_short %>%
 
 # write.csv(trait_name_check,"Master_database_output/trait_frequency.csv",row.names=FALSE)
 
+value_name_check <- all_entities_short %>%
+  distinct(plant_name, trait_name, value) %>%
+  group_by(trait_name, value) %>%
+  summarise(frequency = n()) %>%
+  arrange(desc(frequency))
+
+value_remove <- value_name_check %>%
+  filter(trait_name == "common name" | trait_name == "minimum width" | trait_name == "minimum height" 
+         | trait_name == "average height" | trait_name == "average width" | trait_name == "maximum height" 
+         | trait_name == "maximum width")
+
+value_name_check <- anti_join(value_name_check, value_remove)
+
+# write.csv(value_name_check,"Master_database_output/value_frequency.csv",row.names=FALSE)
+
 # check gh species
 
 gh_species <- all_entities_short %>%
@@ -6862,6 +6877,27 @@ urbancontext_height <- all_entities_short %>%
 #           trait_name == "maximum width" | trait_name == "minimum height" | trait_name == "weed status in Australia")
 
 # write.csv(jaco,"Master_database_output/Jaco/cultivar_traits.csv",row.names=FALSE)
+
+# extract the traits for hybrids and parents
+
+# first get list of parents
+
+Parent_1 <- select(parents, Parent_1)
+colnames(Parent_1) <- "parent"
+
+Parent_2 <- select(parents, Parent_2)
+Parent_2 <- filter(Parent_2, Parent_2 != "")
+colnames(Parent_2) <- "parent"
+
+Parent_3 <- select(parents, Parent_3)
+Parent_3 <- filter(Parent_3, Parent_3 != "")
+colnames(Parent_3) <- "parent"
+
+Parent_4 <- select(parents, Parent_4)
+Parent_4 <- filter(Parent_4, Parent_4 != "")
+colnames(Parent_4) <- "parent"
+
+parent_names <- bind_rows(Parent_1, Parent_2, Parent_3, Parent_4)
 
 
 
