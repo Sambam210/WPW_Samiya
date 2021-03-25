@@ -2660,7 +2660,8 @@ all_entities_short <- all_entities_short %>%
 trait_name_check <- all_entities_short %>%
   distinct(plant_name, trait_name) %>%
   group_by(trait_name) %>%
-  summarise(frequency = n())
+  summarise(frequency = n()) %>%
+  arrange(desc(frequency))
 
 # create new columns to change the trait_name and value
 all_entities_short$trait_name_new <- all_entities_short$trait_name
@@ -5369,7 +5370,7 @@ gh_species <- all_entities_short %>%
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_18Mar2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_25Mar2021.csv")
 
 everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_18Mar2021.csv")
 
@@ -6200,7 +6201,8 @@ all_entities_short <- all_entities_short %>%
 trait_name_check <- all_entities_short %>%
   distinct(plant_name, trait_name) %>%
   group_by(trait_name) %>%
-  summarise(frequency = n())
+  summarise(frequency = n()) %>%
+  arrange(desc(frequency))
 
 # create new columns to change the trait_name and value
 all_entities_short$trait_name_new <- all_entities_short$trait_name
@@ -6753,6 +6755,15 @@ summary_new_new <- all_entities_short_check %>%
   group_by(category) %>%
   summarise(frequency = n())
 # 2630 entities (added 6 new gh cultivars)
+
+# check all the traits are there
+trait_name_check <- all_entities_short %>%
+  distinct(plant_name, trait_name) %>%
+  group_by(trait_name) %>%
+  summarise(frequency = n()) %>%
+  arrange(desc(frequency))
+
+# write.csv(trait_name_check,"Master_database_output/trait_frequency.csv",row.names=FALSE)
 
 # check gh species
 
