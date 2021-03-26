@@ -5370,7 +5370,7 @@ gh_species <- all_entities_short %>%
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_25Mar2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_26Mar2021.csv")
 
 everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_18Mar2021.csv")
 
@@ -5926,7 +5926,7 @@ all_entities_short <- arrange(all_entities_short, entity, trait_name, value)
 syn <- all_entities_short %>%
   filter(family == "") %>%
   select(entity) %>%
-  distinct(entity) #17
+  distinct(entity) #18
 
 # find and fix
 
@@ -5948,7 +5948,8 @@ all_entities_short <- all_entities_short %>%
          family = if_else(entity == "Jasminum fruticans", "Oleaceae", family),
          family = if_else(entity == "Leucopogon parviflorus", "Ericaceae", family),
          family = if_else(entity == "Quisqualis indica", "Myrtaceae", family),
-         family = if_else(entity == "Regelia velutina", "Myrtaceae", family))
+         family = if_else(entity == "Regelia velutina", "Myrtaceae", family),
+         family = if_else(entity == "Citrus maxima", "Rutaceae", family))
 
 # check
 
@@ -6243,8 +6244,8 @@ all_entities_short <- all_entities_short %>%
   mutate(value_new = if_else(value == "gold", "yellow", value_new),
          value_new = if_else(value == "golden", "yellow", value_new),
          value_new = if_else(value == "grey", "black", value_new), 
-         value_new = if_else(value == "insignificant", "inconspicuous flower", value_new),
-         value_new = if_else(value == "inconspicuous", "inconspicuous flower", value_new),
+         value_new = if_else(value == "insignificant", "inconspicuous flowers", value_new),
+         value_new = if_else(value == "inconspicuous", "inconspicuous flowers", value_new),
          value_new = if_else(value == "magenta", "pink", value_new),
          value_new = if_else(value == "mauve", "purple", value_new),
          value_new = if_else(value == "not_applicable", "does not flower", value_new),
@@ -6882,23 +6883,46 @@ urbancontext_height <- all_entities_short %>%
 
 # first get list of parents
 
-Parent_1 <- select(parents, Parent_1)
+hybrid_parents <- all_entities_short %>%
+  filter(category == "H" | category == "HC") %>%
+  distinct(plant_name, .keep_all = TRUE) %>%
+  select(Parent_1, Parent_2, Parent_3, Parent_4)
+
+Parent_1 <- select(hybrid_parents, Parent_1)
 colnames(Parent_1) <- "parent"
 
-Parent_2 <- select(parents, Parent_2)
-Parent_2 <- filter(Parent_2, Parent_2 != "")
+Parent_2 <- select(hybrid_parents, Parent_2)
+Parent_2 <- filter(Parent_2, Parent_2 != "NA")
 colnames(Parent_2) <- "parent"
 
-Parent_3 <- select(parents, Parent_3)
-Parent_3 <- filter(Parent_3, Parent_3 != "")
+Parent_3 <- select(hybrid_parents, Parent_3)
+Parent_3 <- filter(Parent_3, Parent_3 != "NA")
 colnames(Parent_3) <- "parent"
 
-Parent_4 <- select(parents, Parent_4)
-Parent_4 <- filter(Parent_4, Parent_4 != "")
+Parent_4 <- select(hybrid_parents, Parent_4)
+Parent_4 <- filter(Parent_4, Parent_4 != "NA")
 colnames(Parent_4) <- "parent"
 
 parent_names <- bind_rows(Parent_1, Parent_2, Parent_3, Parent_4)
 
+parent_names <- distinct(parent_names)
+colnames(parent_names) <- "plant_name"
 
+# extract traits for these parents from the database
 
+parent_traits <- left_join(parent_names, all_entities_short, by = "plant_name")
 
+# extract the hybrids
+hybrids <- all_entities_short %>%
+  filter(category == "H" | category == "HC")
+
+# join together
+jaco_hybrids <- bind_rows(parent_traits, hybrids)
+
+jaco_hybrids <- select(jaco_hybrids, scientificNameStd, plant_name, synonym, category, Parent_1, Parent_2, Parent_3, Parent_4, trait_name, value)
+
+jaco_hybrids <- jaco_hybrids %>%
+   filter(trait_name == "average height" | trait_name == "average width" | trait_name == "maximum height" | 
+          trait_name == "maximum width" | trait_name == "minimum height" | trait_name == "weed status in Australia")
+  
+write.csv(jaco_hybrids,"Master_database_output/Jaco/hybrid_traits.csv",row.names=FALSE)
