@@ -6883,46 +6883,76 @@ urbancontext_height <- all_entities_short %>%
 
 # first get list of parents
 
-hybrid_parents <- all_entities_short %>%
-  filter(category == "H" | category == "HC") %>%
-  distinct(plant_name, .keep_all = TRUE) %>%
-  select(Parent_1, Parent_2, Parent_3, Parent_4)
+# hybrid_parents <- all_entities_short %>%
+#   filter(category == "H" | category == "HC") %>%
+#   distinct(plant_name, .keep_all = TRUE) %>%
+#   select(Parent_1, Parent_2, Parent_3, Parent_4)
 
-Parent_1 <- select(hybrid_parents, Parent_1)
-colnames(Parent_1) <- "parent"
-
-Parent_2 <- select(hybrid_parents, Parent_2)
-Parent_2 <- filter(Parent_2, Parent_2 != "NA")
-colnames(Parent_2) <- "parent"
-
-Parent_3 <- select(hybrid_parents, Parent_3)
-Parent_3 <- filter(Parent_3, Parent_3 != "NA")
-colnames(Parent_3) <- "parent"
-
-Parent_4 <- select(hybrid_parents, Parent_4)
-Parent_4 <- filter(Parent_4, Parent_4 != "NA")
-colnames(Parent_4) <- "parent"
-
-parent_names <- bind_rows(Parent_1, Parent_2, Parent_3, Parent_4)
-
-parent_names <- distinct(parent_names)
-colnames(parent_names) <- "plant_name"
+# Parent_1 <- select(hybrid_parents, Parent_1)
+# colnames(Parent_1) <- "parent"
+# 
+# Parent_2 <- select(hybrid_parents, Parent_2)
+# Parent_2 <- filter(Parent_2, Parent_2 != "NA")
+# colnames(Parent_2) <- "parent"
+# 
+# Parent_3 <- select(hybrid_parents, Parent_3)
+# Parent_3 <- filter(Parent_3, Parent_3 != "NA")
+# colnames(Parent_3) <- "parent"
+# 
+# Parent_4 <- select(hybrid_parents, Parent_4)
+# Parent_4 <- filter(Parent_4, Parent_4 != "NA")
+# colnames(Parent_4) <- "parent"
+# 
+# parent_names <- bind_rows(Parent_1, Parent_2, Parent_3, Parent_4)
+# 
+# parent_names <- distinct(parent_names)
+# colnames(parent_names) <- "plant_name"
 
 # extract traits for these parents from the database
 
-parent_traits <- left_join(parent_names, all_entities_short, by = "plant_name")
+# parent_traits <- left_join(parent_names, all_entities_short, by = "plant_name")
 
 # extract the hybrids
-hybrids <- all_entities_short %>%
-  filter(category == "H" | category == "HC")
+# hybrids <- all_entities_short %>%
+#   filter(category == "H" | category == "HC")
 
 # join together
-jaco_hybrids <- bind_rows(parent_traits, hybrids)
+# jaco_hybrids <- bind_rows(parent_traits, hybrids)
+# 
+# jaco_hybrids <- select(jaco_hybrids, scientificNameStd, plant_name, synonym, category, Parent_1, Parent_2, Parent_3, Parent_4, trait_name, value)
+# 
+# jaco_hybrids <- jaco_hybrids %>%
+#    filter(trait_name == "average height" | trait_name == "average width" | trait_name == "maximum height" | 
+#           trait_name == "maximum width" | trait_name == "minimum height" | trait_name == "weed status in Australia")
+#   
+# write.csv(jaco_hybrids,"Master_database_output/Jaco/hybrid_traits.csv",row.names=FALSE)
 
-jaco_hybrids <- select(jaco_hybrids, scientificNameStd, plant_name, synonym, category, Parent_1, Parent_2, Parent_3, Parent_4, trait_name, value)
+#########
+# Check overlap with wpw images
 
-jaco_hybrids <- jaco_hybrids %>%
-   filter(trait_name == "average height" | trait_name == "average width" | trait_name == "maximum height" | 
-          trait_name == "maximum width" | trait_name == "minimum height" | trait_name == "weed status in Australia")
+plant_name_database <- all_entities_short %>%
+  distinct(plant_name)
+
+# load image names from Norwood
+norwood <- read.csv("Master_database_input/photos/images.csv")
+
+norwood <- norwood %>%
+  distinct(Image.Name)
   
-write.csv(jaco_hybrids,"Master_database_output/Jaco/hybrid_traits.csv",row.names=FALSE)
+colnames(norwood) <- "plant_name"
+
+# check similarity without case sensitivity
+# https://stackoverflow.com/questions/57502990/compare-two-columns-without-case-sensitivity
+
+plant_name_database <- tolower(plant_name_database$plant_name)
+
+plant_name_database <- as.data.frame(plant_name_database, stringsAsFactors = FALSE)
+
+norwood <- tolower(norwood$plant_name)
+
+norwood <- as.data.frame(norwood, stringsAsFactors = FALSE)
+
+same <- inner_join(plant_name_database, norwood, by = c("plant_name_database" = "norwood"))
+# have photos for 1645 species
+# (1645/2630)*100 = 62% coverage
+
