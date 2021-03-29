@@ -6842,6 +6842,15 @@ urbancontext_height <- all_entities_short %>%
 # anything with max height >=30m and/or max width >20m I have changed to 'park'
 # check with Michelle before changing
 
+##### trying to extract synonyms from gbif
+# https://data-blog.gbif.org/post/2019-07-11-downloading-long-species-lists-on-gbif_files/global_tree_search_trees_1_3.csv
+
+test_names <- read.csv("Master_database_input/test_names.csv")
+
+gbif_taxon_keys <- read.csv("Master_database_input/test_names.csv") %>%
+  pull("Taxon.name") %>%
+  taxize::get_gbifid_(method="backbone")
+  
 ############ Rony's species list
 
 # rony <- read.csv("Master_database_input/Rony/spp_list_rony.csv")
