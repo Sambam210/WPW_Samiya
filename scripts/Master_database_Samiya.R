@@ -6847,10 +6847,29 @@ urbancontext_height <- all_entities_short %>%
 
 test_names <- read.csv("Master_database_input/test_names.csv")
 
-gbif_taxon_keys <- read.csv("Master_database_input/test_names.csv") %>%
-  pull("Taxon.name") %>%
-  taxize::get_gbifid_(method="backbone")
+# gbif_taxon_keys <- read.csv("Master_database_input/test_names.csv") %>%
+#   pull("Taxon.name") %>%
+#   taxize::get_gbifid_(method="backbone")
   
+test_names$Taxon.name <- as.character(test_names$Taxon.name)
+
+avector <- pull(test_names, Taxon.name)
+glimpse(avector)
+
+x <- synonyms(avector, db = "itis")
+y <- synonyms_df(x)
+
+# try on the real database
+glimpse(all_entities_short)
+plant_names <- all_entities_short %>%
+  filter(category == "SP") %>%
+  distinct(plant_name)
+
+bvector <- pull(plant_names, plant_name)
+
+z <- synonyms(bvector, db = "itis")
+
+
 ############ Rony's species list
 
 # rony <- read.csv("Master_database_input/Rony/spp_list_rony.csv")
