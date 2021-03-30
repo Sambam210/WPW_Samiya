@@ -6733,6 +6733,58 @@ all_entities_short <- all_entities_short %>%
 
 all_entities_short <- arrange(all_entities_short, scientificNameStd, plant_name, trait_name, value)
 
+# attach the synonyms found through Taxonstand
+
+taxonomy <- read.csv("Master_database_output/taxonomy_checks/taxonstandcheck_ST_1.3.2021.csv")
+
+taxonomy <- taxonomy %>% 
+  select(Taxon, Taxonomic.status, New.Genus, New.Species) %>%
+  filter(Taxonomic.status == "Synonym") %>%
+  mutate(synonym = paste0(New.Genus, " ", New.Species)) %>%
+  select(Taxon, synonym)
+
+taxonomy <- taxonomy %>% 
+  select(Taxon, Taxonomic.status, New.Genus, New.Species, New.Infraspecific.rank, New.Infraspecific) %>%
+  filter(Taxonomic.status == "Synonym") %>%
+  mutate(synonym = if_else(New.Infraspecific.rank != "", paste0(New.Genus, " ", New.Species, " ", New.Infraspecific.rank, " ",
+                                                                New.Infraspecific), paste0(New.Genus, " ", New.Species))) %>%
+  select(Taxon, synonym)
+
+# remove the dots
+taxonomy[] <- lapply(taxonomy, gsub, pattern = "var.", replacement = "var")
+taxonomy[] <- lapply(taxonomy, gsub, pattern = "subsp.", replacement = "subsp")
+
+# make sure the synonyms are not actually species
+  
+plant_name_database <- all_entities_short %>%
+  filter(category == "SP") %>%
+  distinct(plant_name)
+
+synonym_names <- select(taxonomy, synonym)
+
+same <- inner_join(plant_name_database, synonym_names, by = c("plant_name" = "synonym"))
+
+# add the synonyms (if plants already don't have them)
+no_syn <- all_entities_short %>%
+  filter(synonym == "NA")
+
+# extract the species from 'taxonomy'
+names(taxonomy)[names(taxonomy) == 'Taxon'] <- 'plant_name'
+
+no_syn_taxonomy <- inner_join(taxonomy, no_syn, by = "plant_name")
+
+no_syn_taxonomy$synonym.y <- no_syn_taxonomy$synonym.x
+
+no_syn_taxonomy <- select(no_syn_taxonomy, -synonym.x)
+names(no_syn_taxonomy)[names(no_syn_taxonomy) == 'synonym.y'] <- 'synonym'
+
+# remove these species from the database
+all_entities_short <- anti_join(all_entities_short, no_syn_taxonomy, by = "plant_name")
+
+# add back together
+all_entities_short <- bind_rows(all_entities_short, no_syn_taxonomy)
+all_entities_short <- arrange(all_entities_short, scientificNameStd, plant_name, trait_name, value)
+
 write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_17.3.2021_vers1.3.csv",row.names=FALSE)
 
 # extract species with 0 for eco services
