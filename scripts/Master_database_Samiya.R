@@ -6897,19 +6897,19 @@ urbancontext_height <- all_entities_short %>%
 ##### trying to extract synonyms from gbif
 # https://data-blog.gbif.org/post/2019-07-11-downloading-long-species-lists-on-gbif_files/global_tree_search_trees_1_3.csv
 
-test_names <- read.csv("Master_database_input/test_names.csv")
-
+# test_names <- read.csv("Master_database_input/test_names.csv")
+# 
 # gbif_taxon_keys <- read.csv("Master_database_input/test_names.csv") %>%
 #   pull("Taxon.name") %>%
 #   taxize::get_gbifid_(method="backbone")
-  
-test_names$Taxon.name <- as.character(test_names$Taxon.name)
-
-avector <- pull(test_names, Taxon.name)
-glimpse(avector)
-
-x <- synonyms(avector, db = "itis")
-y <- synonyms_df(x)
+#   
+# test_names$Taxon.name <- as.character(test_names$Taxon.name)
+# 
+# avector <- pull(test_names, Taxon.name)
+# glimpse(avector)
+# 
+# x <- synonyms(avector, db = "itis")
+# y <- synonyms_df(x)
 
 # try on the real database
 glimpse(all_entities_short)
@@ -6917,10 +6917,67 @@ plant_names <- all_entities_short %>%
   filter(category == "SP") %>%
   distinct(plant_name)
 
-bvector <- pull(plant_names, plant_name)
+# pull out 200 plants
+one_200 <- plant_names[1:200, ]
 
-z <- synonyms(bvector, db = "itis")
+library(taxize)
+z <- synonyms(one_200, db = "itis")
+one_200 <- synonyms_df(z)
 
+# pull out 201 - 400
+two01_400 <- plant_names[201:400, ]
+
+z <- synonyms(two01_400, db = "itis")
+two01_400 <- synonyms_df(z)
+
+# pull out 401 - 600
+four01_600 <- plant_names[401:600, ]
+
+z <- synonyms(four01_600, db = "itis")
+four01_600 <- synonyms_df(z)
+
+# pull out 601 - 800
+six01_800 <- plant_names[601:800, ]
+
+z <- synonyms(six01_800, db = "itis")
+six01_800 <- synonyms_df(z)
+
+# pull out 801 - 1000
+eight01_1000 <- plant_names[801:1000, ]
+
+z <- synonyms(eight01_1000, db = "itis")
+eight01_1000 <- synonyms_df(z)
+
+# pull out 1001 - 1200
+ten01_1200 <- plant_names[1001:1200, ]
+
+z <- synonyms(ten01_1200, db = "itis")
+ten01_1000 <- synonyms_df(z)
+
+# pull out 1201 - 1400
+twelve01_1400 <- plant_names[1201:1400, ]
+
+z <- synonyms(twelve01_1400, db = "itis")
+twelve01_1400 <- synonyms_df(z)
+
+# pull out 1401 - 1600
+fourteen01_1600 <- plant_names[1401:1600, ]
+
+z <- synonyms(fourteen01_1600, db = "itis")
+fourteen01_1600 <- synonyms_df(z)
+
+# pull out 1601 - 1914
+sixteen01_1914 <- plant_names[1601:1914, ]
+
+z <- synonyms(sixteen01_1914, db = "itis")
+sixteen01_1914 <- synonyms_df(z)
+
+# combine all together
+synonyms_itis <- bind_rows(one_200, two01_400, four01_600, six01_800, eight01_1000, ten01_1000, twelve01_1400,
+                           fourteen01_1600, sixteen01_1914)
+
+
+write.csv(synonyms_itis,"Master_database_output/taxonomy_checks/synonyms_itis.csv",row.names=FALSE)
 
 ############ Rony's species list
 
