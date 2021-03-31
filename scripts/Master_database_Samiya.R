@@ -6976,8 +6976,21 @@ sixteen01_1914 <- synonyms_df(z)
 synonyms_itis <- bind_rows(one_200, two01_400, four01_600, six01_800, eight01_1000, ten01_1000, twelve01_1400,
                            fourteen01_1600, sixteen01_1914)
 
-
 write.csv(synonyms_itis,"Master_database_output/taxonomy_checks/synonyms_itis.csv",row.names=FALSE)
+
+# try a different database (only other database I think is relevant to plants is tropicos)
+
+plant_names <- all_entities_short %>%
+  filter(category == "SP") %>%
+  distinct(plant_name)
+
+# pull out 200 plants
+one_200 <- plant_names[1:200, ]
+
+library(taxize)
+z <- synonyms(one_200, db = "tropicos")
+one_200 <- synonyms_df(z)
+
 
 ############ Rony's species list
 
