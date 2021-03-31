@@ -6991,6 +6991,8 @@ library(taxize)
 z <- synonyms(one_200, db = "tropicos")
 one_200 <- synonyms_df(z)
 
+# try this
+# https://gist.github.com/sckott/4507348
 
 ############ Rony's species list
 
