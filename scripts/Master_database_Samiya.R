@@ -7129,8 +7129,26 @@ Ale_ai <- Ale_ai %>%
 
 names(Ale_ai)[names(Ale_ai) == 'speciesName'] <- 'plant_name'
 
+Ale_ai <- Ale_ai %>%
+  mutate(AI_min = p0/1000,
+         AI_mean = mean/1000,
+         AI_max = p100/1000) %>%
+  select(plant_name, AI_min, AI_mean, AI_max)
+
+# make into long format
+# http://www.cookbook-r.com/Manipulating_data/Converting_data_between_wide_and_long_format/
+Ale_ai_long <- gather(Ale_ai, AI_type, AI, AI_min:AI_max)
+
 # join together
 
-ai_drought_class <- inner_join(drought_class, Ale_ai, by = "plant_name")
+ai_drought_class <- inner_join(drought_class, Ale_ai_long, by = "plant_name")
 
+# graph
+
+library(ggplot2)
+
+plot <- ggplot(ai_drought_class, aes(x = drought_tolerance, y = AI, fill = AI_type)) +
+  geom_boxplot()
+plot
+######### have to ask Ale if I did the transformations correctly
 
