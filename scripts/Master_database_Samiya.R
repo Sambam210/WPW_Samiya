@@ -7108,3 +7108,29 @@ same <- inner_join(plant_name_database, norwood, by = c("plant_name_database" = 
 # have photos for 1645 species
 # (1645/2630)*100 = 62% coverage
 
+####################################
+
+# check AI with hort classifications of drought
+
+drought_class <- all_entities_short %>%
+  filter(exp_tested == "N") %>%
+  filter(trait_name == "drought tolerance") %>%
+  select(plant_name, value)
+
+names(drought_class)[names(drought_class) == 'value'] <- 'drought_tolerance'
+
+# load Ale data
+
+Ale_ai <- read.csv("Master_database_input/Ale/niche_summaries_5414_species.csv")
+
+Ale_ai <- Ale_ai %>%
+  filter(var == "ai") %>%
+  select(speciesName, p0, mean, p100)
+
+names(Ale_ai)[names(Ale_ai) == 'speciesName'] <- 'plant_name'
+
+# join together
+
+ai_drought_class <- inner_join(drought_class, Ale_ai, by = "plant_name")
+
+
