@@ -7160,7 +7160,12 @@ plot
 
 # removed 'suitability under powerlines'
 # removed the 'growth_form' column
-
+# changed wet to WSUD
+# changed dehydration tolerance
+# removed gravel
+# removed container and indoors
+# changed herb to herbaceous
+# simplified canopy shape
 
 
 library(tidyverse)
