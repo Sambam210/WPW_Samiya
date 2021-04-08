@@ -8580,4 +8580,27 @@ names(all_entities_short)[names(all_entities_short) == 'dehydration_tolerance'] 
 
 write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_07.4.2021_vers1.4.csv",row.names=FALSE)
 
+# try synonyms again
+# https://github.com/ropensci/rgbif/issues/289
+
+library(rgbif)
+
+plant_names <- all_entities_short %>%
+  filter(category == "SP") %>%
+  distinct(plant_name)
+
+colnames(plant_names) <- "scientificName"
+
+write.csv(plant_names,"Master_database_output/plant_names.csv",row.names = FALSE)
+
+# run through this to get key
+# https://www.gbif.org/tools/species-lookup
+# save output
+
+# load output
+gbif_keys <- read.csv("Master_database_input/synonyms/gbif_species.csv")
+
+y <- name_usage(key = gbif_keys$key, data = "synonyms")
+
+
 
