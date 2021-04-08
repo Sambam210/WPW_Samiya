@@ -8634,9 +8634,33 @@ names(gbif_species)[names(gbif_species) == 'verbatimScientificName'] <- 'species
 # join
 gbif_synonyms <- bind_rows(gbif_synonyms, gbif_species)
 
-# filter and fix
+# check the synonyms I already have in the database
+
+syn_already_have <- all_entities_short %>%
+  filter(synonym != "NA") %>%
+  distinct(plant_name, synonym)
+
+# fix up Myoporum tenuifolium (Myoporum acuminatum, Myoporum montanum) and Abelia uniflora (Abelia engleriana, Abelia schumannii)
+syn_already_have <- syn_already_have %>%
+  filter(plant_name != "Abelia uniflora" & plant_name != "Myoporum tenuifolium")
+
+syn_already_have <- syn_already_have %>%
+  add_row(plant_name = "Abelia uniflora", synonym = "Abelia engleriana")
+syn_already_have <- syn_already_have %>%
+  add_row(plant_name = "Abelia uniflora", synonym = "Abelia schumannii")
+syn_already_have <- syn_already_have %>%
+  add_row(plant_name = "Myoporum tenuifolium", synonym = "Myoporum acuminatum")
+syn_already_have <- syn_already_have %>%
+  add_row(plant_name = "Myoporum tenuifolium", synonym = "Myoporum montanum")
+
+names(syn_already_have)[names(syn_already_have) == 'plant_name'] <- 'species'
+names(syn_already_have)[names(syn_already_have) == 'synonym'] <- 'canonicalName'
+
+# add to what I have
+gbif_synonyms <- bind_rows(gbif_synonyms, syn_already_have)
 gbif_synonyms <- distinct(gbif_synonyms, species, canonicalName)
 
+# filter and fix
 gbif_synonyms$species <- as.character(gbif_synonyms$species)
 gbif_synonyms$canonicalName <- as.character(gbif_synonyms$canonicalName)
 
@@ -8652,18 +8676,13 @@ synonym_names <- select(gbif_synonyms, canonicalName)
 synonym_names <- distinct(synonym_names) # two different species can have the same synonym, why are they not syns of each other?
 
 same <- inner_join(plant_name_database, synonym_names, by = c("plant_name" = "canonicalName"))  
-# 13 differ
+# 16 differ
 
 # filter these out
-gbif_synonyms_remove <- gbif_synonyms %>%
-  filter(canonicalName == "Acacia anceps" | canonicalName == "Acacia verticillata" | canonicalName == "Acer rubrum" 
-         | canonicalName == "Acer saccharinum" | canonicalName == "Amelanchier canadensis" | 
-           canonicalName == "Amelanchier ovalis" | canonicalName == "Atriplex halimus" | canonicalName == "Brugmansia aurea" | 
-           canonicalName == "Grevillea thelemanniana" | canonicalName == "Lysiphyllum hookeri" | 
-           canonicalName == "Populus nigra" | canonicalName == "Prunus japonica" | canonicalName == "Quercus palustris")
+names(same)[names(same) == 'plant_name'] <- 'canonicalName'
 
 # remove
-gbif_synonyms <- anti_join(gbif_synonyms, gbif_synonyms_remove)  
+gbif_synonyms <- anti_join(gbif_synonyms, same)
 
 # check
 synonym_names <- select(gbif_synonyms, canonicalName)
@@ -8676,14 +8695,14 @@ same <- inner_join(plant_name_database, synonym_names, by = c("plant_name" = "ca
 gbif_synonyms_check <- gbif_synonyms %>%
   group_by(canonicalName) %>%
   summarise(frequency = n())
-# I would remove these, there are 38
+# I would remove these, there are 39
 
-gbif_synonyms_remove_2 <- gbif_synonyms_check %>%
-  filter(frequency == 2) %>%
+gbif_synonyms_remove <- gbif_synonyms_check %>%
+  filter(frequency > 1) %>%
   select(canonicalName)
 
 # remove
-gbif_synonyms <- anti_join(gbif_synonyms, gbif_synonyms_remove_2)
+gbif_synonyms <- anti_join(gbif_synonyms, gbif_synonyms_remove)
 
 # there are weird canonicalNames with 'publ' at the end, filter those out
 # https://stackoverflow.com/questions/22850026/filter-rows-which-contain-a-certain-string
@@ -8691,8 +8710,16 @@ gbif_synonyms <- anti_join(gbif_synonyms, gbif_synonyms_remove_2)
 gbif_synonyms <- filter(gbif_synonyms, !grepl("publ", canonicalName))
 
 # IT IS ALL CLEANED, NOW TO JOIN TOGETHER
+# https://stackoverflow.com/questions/38514988/concatenate-strings-by-group-with-dplyr
 
 gbif_synonyms_join <- gbif_synonyms %>%
   group_by(species) %>%
-  mutate(canonicalName = paste0(canonicalName, ", "))
+  mutate(synonyms = paste0(canonicalName, collapse = ", ")) %>%
+  distinct(species, synonyms)
+# we have synonyms for 1294/1914 species!!!!
+
+# ver 1.5 add to syn column
+
+
+
 
