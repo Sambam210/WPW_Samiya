@@ -8580,144 +8580,6 @@ names(all_entities_short)[names(all_entities_short) == 'dehydration_tolerance'] 
 
 write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_07.4.2021_vers1.4.csv",row.names=FALSE)
 
-# try synonyms again
-# https://github.com/ropensci/rgbif/issues/289
-
-# library(rgbif)
-# 
-# plant_names <- all_entities_short %>%
-#   filter(category == "SP") %>%
-#   distinct(plant_name)
-# 
-# colnames(plant_names) <- "scientificName"
-# 
-# write.csv(plant_names,"Master_database_output/plant_names.csv",row.names = FALSE)
-
-# run through this to get key
-# https://www.gbif.org/tools/species-lookup
-# save output
-
-# load output
-# gbif_species <- read.csv("Master_database_input/synonyms/gbif_species.csv")
-# 
-# syns <- lapply(gbif_species$key[1:1914], name_usage, data = "synonyms")
-# 
-# x_unlist <- unlist(syns, recursive = FALSE) # https://stackoverflow.com/questions/43591029/convert-nested-list-elements-into-data-frame-and-bind-the-result-into-one-data-f/43592335
-# 
-# # only want he 'data' elements
-# y <- x_unlist[grep("data", names(x_unlist))] # https://stackoverflow.com/questions/39983986/filter-or-subset-list-by-partial-object-name-in-r  
-# 
-# z <- rbindlist(y, fill = TRUE) # bind the lists and fill in the missing columns
-# 
-# synonyms <- z %>%
-#   select(species, canonicalName, rank, taxonomicStatus) %>%
-#   filter(taxonomicStatus == "SYNONYM") %>%
-#   filter(rank == "SPECIES") %>%
-#   select(species, canonicalName)
-# 
-# write.csv(synonyms,"Master_database_input/synonyms/gbif_synonyms.csv",row.names = FALSE)
-
-# synonyms
-
-gbif_synonyms <- read.csv("Master_database_input/synonyms/gbif_synonyms.csv")
-
-# add the species names from gbif that are already apparently synonyms
-gbif_species <- read.csv("Master_database_input/synonyms/gbif_species.csv")
-
-gbif_species <- gbif_species %>%
-  filter(status == "SYNONYM") %>%
-  select(verbatimScientificName, species)
-
-names(gbif_species)[names(gbif_species) == 'species'] <- 'canonicalName'
-names(gbif_species)[names(gbif_species) == 'verbatimScientificName'] <- 'species'
-
-# join
-gbif_synonyms <- bind_rows(gbif_synonyms, gbif_species)
-
-# check the synonyms I already have in the database
-
-syn_already_have <- all_entities_short %>%
-  filter(synonym != "NA") %>%
-  distinct(plant_name, synonym)
-
-# fix up Myoporum tenuifolium (Myoporum acuminatum, Myoporum montanum) and Abelia uniflora (Abelia engleriana, Abelia schumannii)
-syn_already_have <- syn_already_have %>%
-  filter(plant_name != "Abelia uniflora" & plant_name != "Myoporum tenuifolium")
-
-syn_already_have <- syn_already_have %>%
-  add_row(plant_name = "Abelia uniflora", synonym = "Abelia engleriana")
-syn_already_have <- syn_already_have %>%
-  add_row(plant_name = "Abelia uniflora", synonym = "Abelia schumannii")
-syn_already_have <- syn_already_have %>%
-  add_row(plant_name = "Myoporum tenuifolium", synonym = "Myoporum acuminatum")
-syn_already_have <- syn_already_have %>%
-  add_row(plant_name = "Myoporum tenuifolium", synonym = "Myoporum montanum")
-
-names(syn_already_have)[names(syn_already_have) == 'plant_name'] <- 'species'
-names(syn_already_have)[names(syn_already_have) == 'synonym'] <- 'canonicalName'
-
-# add to what I have
-gbif_synonyms <- bind_rows(gbif_synonyms, syn_already_have)
-gbif_synonyms <- distinct(gbif_synonyms, species, canonicalName)
-
-# filter and fix
-gbif_synonyms$species <- as.character(gbif_synonyms$species)
-gbif_synonyms$canonicalName <- as.character(gbif_synonyms$canonicalName)
-
-gbif_synonyms <- filter(gbif_synonyms, species != canonicalName)
-
-# make sure the synonyms are not actually species
-
-plant_name_database <- all_entities_short %>%
-  filter(category == "SP") %>%
-  distinct(plant_name)
-
-synonym_names <- select(gbif_synonyms, canonicalName)
-synonym_names <- distinct(synonym_names) # two different species can have the same synonym, why are they not syns of each other?
-
-same <- inner_join(plant_name_database, synonym_names, by = c("plant_name" = "canonicalName"))  
-# 16 differ
-
-# filter these out
-names(same)[names(same) == 'plant_name'] <- 'canonicalName'
-
-# remove
-gbif_synonyms <- anti_join(gbif_synonyms, same)
-
-# check
-synonym_names <- select(gbif_synonyms, canonicalName)
-synonym_names <- distinct(synonym_names) # two different species can have the same synonym, why are they not syns of each other?
-
-same <- inner_join(plant_name_database, synonym_names, by = c("plant_name" = "canonicalName"))
-# all removed
-
-# two species with the same synonym
-gbif_synonyms_check <- gbif_synonyms %>%
-  group_by(canonicalName) %>%
-  summarise(frequency = n())
-# I would remove these, there are 39
-
-gbif_synonyms_remove <- gbif_synonyms_check %>%
-  filter(frequency > 1) %>%
-  select(canonicalName)
-
-# remove
-gbif_synonyms <- anti_join(gbif_synonyms, gbif_synonyms_remove)
-
-# there are weird canonicalNames with 'publ' at the end, filter those out
-# https://stackoverflow.com/questions/22850026/filter-rows-which-contain-a-certain-string
-
-gbif_synonyms <- filter(gbif_synonyms, !grepl("publ", canonicalName))
-
-# IT IS ALL CLEANED, NOW TO JOIN TOGETHER
-# https://stackoverflow.com/questions/38514988/concatenate-strings-by-group-with-dplyr
-
-gbif_synonyms_join <- gbif_synonyms %>%
-  group_by(species) %>%
-  mutate(synonyms = paste0(canonicalName, collapse = ", ")) %>%
-  distinct(species, synonyms)
-# we have synonyms for 1294/1914 species!!!!
-
 ###########################################################################################################
 
 ##################### version 1.5
@@ -10137,8 +9999,6 @@ all_entities_short[] <- lapply(all_entities_short, gsub, pattern = "intermediate
 
 names(all_entities_short)[names(all_entities_short) == 'dehydration_tolerance'] <- 'drought_strategy'
 
-write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_07.4.2021_vers1.4.csv",row.names=FALSE)
-
 # try synonyms again
 # https://github.com/ropensci/rgbif/issues/289
 
@@ -10291,3 +10151,5 @@ all_entities_short$synonym[is.na(all_entities_short$synonym)] <- "NA"
 all_entities_short <- all_entities_short %>%
   select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, climber, cycad, fern, grass, herbaceous, palm, shrub, succulent, tree, origin, trait_name, value,
          bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index, drought_strategy, heat_tolerance)
+
+write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_12.4.2021_vers1.5.csv",row.names=FALSE)
