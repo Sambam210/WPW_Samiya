@@ -8586,7 +8586,7 @@ write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FIN
 
 ## added more synonyms
 ## added more biodiversity
-## fixed up trees
+## fixed up trees - new shade and carbon index
 ## AI and drought tolerance
 
 library(tidyverse)
@@ -9360,6 +9360,11 @@ all_entities_short$height_min <- as.numeric(as.character(all_entities_short$heig
 all_entities_short$tree <- as.numeric(as.character(all_entities_short$tree))
 all_entities_short$shrub <- as.numeric(as.character(all_entities_short$shrub))
 
+# shrubs with min height > 5m should be trees (Michelle decided)
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(tree = if_else(shrub == 1 & height_min >= 5, 1, tree))
+
 # canopy cover
 all_entities_short$canopy_cover <- "NA"
 
@@ -9886,7 +9891,16 @@ all_entities_short <- all_entities_short %>%
          synonym = if_else(plant_name == "Chenopodium candolleanum", "Rhagodia candolleana", synonym),
          synonym = if_else(plant_name == "Cassia artemisioides", "Senna artemisioides", synonym))
 
-# add Ale's shade and carbon index categories
+# add Ale's shade and carbon index categories (NEED TO REDO)
+
+# extract info for Ale to recalculate
+# co_benefit <- all_entities_short %>%
+#   filter(tree == 1) %>%
+#   distinct(scientificNameStd, plant_name, .keep_all = TRUE) %>%
+#   select(scientificNameStd, plant_name, tree, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
+# 
+# write.csv(co_benefit,"Master_database_output/Ale/co_benefit_analysis_ST_12.4.2021.csv",row.names = FALSE)
+
 categories <- read.csv("Master_database_input/Ale/co_benefit_analysis_ST_17.3.2021_AO.csv")
 
 categories <- select(categories, plant_name, shade_index, carbon_index)
@@ -9979,12 +9993,6 @@ names(all_entities_short)[names(all_entities_short) == 'herb'] <- 'herbaceous'
 # remove 'gravel' as a 'soil texture'
 all_entities_short <- all_entities_short %>%
   filter(value != "gravel")
-
-# shrubs with min height > 5m should be trees
-# all_entities_short <- all_entities_short %>%
-#   mutate_if(is.factor, as.character) %>%
-#   mutate(tree = if_else(shrub == 1 & height_min >= 5, 1, tree))
-### CAN'T CHANGE YET, NEED ALE TO RECALCULATE VALUES
 
 # fix shade and carbon for Citrus grandis
 all_entities_short <- all_entities_short %>%
@@ -10153,3 +10161,45 @@ all_entities_short <- all_entities_short %>%
          bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index, drought_strategy, heat_tolerance)
 
 write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_12.4.2021_vers1.5.csv",row.names=FALSE)
+
+# check AI with hort classifications of drought
+
+drought_class <- all_entities_short %>%
+  filter(exp_tested == "N") %>%
+  filter(trait_name == "drought tolerance") %>%
+  select(plant_name, value)
+
+names(drought_class)[names(drought_class) == 'value'] <- 'drought_tolerance'
+
+# load Ale data
+
+Ale_ai <- read.csv("Master_database_input/Ale/niche_summaries_5414_species.csv")
+
+Ale_ai <- Ale_ai %>%
+  filter(var == "ai") %>%
+  select(speciesName, p0, mean, p100)
+
+names(Ale_ai)[names(Ale_ai) == 'speciesName'] <- 'plant_name'
+
+Ale_ai <- Ale_ai %>%
+  mutate(AI_min = p0/1000,
+         AI_mean = mean/1000,
+         AI_max = p100/1000) %>%
+  select(plant_name, AI_min, AI_mean, AI_max)
+
+# make into long format
+# http://www.cookbook-r.com/Manipulating_data/Converting_data_between_wide_and_long_format/
+Ale_ai_long <- gather(Ale_ai, AI_type, AI, AI_min:AI_max)
+
+# join together
+
+ai_drought_class <- inner_join(drought_class, Ale_ai_long, by = "plant_name")
+
+# graph
+
+library(ggplot2)
+
+plot <- ggplot(ai_drought_class, aes(x = drought_tolerance, y = AI, fill = AI_type)) +
+  geom_boxplot()
+plot
+######### have to ask Ale if I did the transformations correctly
