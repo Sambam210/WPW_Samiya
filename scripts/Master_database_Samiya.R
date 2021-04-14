@@ -8591,9 +8591,9 @@ write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FIN
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_7Apr2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_14Apr2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_7Apr2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_14Apr2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -9901,7 +9901,7 @@ all_entities_short <- all_entities_short %>%
 # 
 # write.csv(co_benefit,"Master_database_output/Ale/co_benefit_analysis_ST_12.4.2021.csv",row.names = FALSE)
 
-categories <- read.csv("Master_database_input/Ale/co_benefit_analysis_ST_17.3.2021_AO.csv")
+categories <- read.csv("Master_database_input/Ale/co_benefit_analysis_ST_12.4.2021_AO.csv")
 
 categories <- select(categories, plant_name, shade_index, carbon_index)
 
@@ -10160,7 +10160,7 @@ all_entities_short <- all_entities_short %>%
   select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, Koppen_zone, climber, cycad, fern, grass, herbaceous, palm, shrub, succulent, tree, origin, trait_name, value,
          bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index, drought_strategy, heat_tolerance)
 
-write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_12.4.2021_vers1.5.csv",row.names=FALSE)
+write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_14.4.2021_vers1.5.csv",row.names=FALSE)
 
 # check AI with hort classifications of drought
 
