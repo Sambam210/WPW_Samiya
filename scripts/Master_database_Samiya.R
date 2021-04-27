@@ -11808,6 +11808,10 @@ all_entities_short <- all_entities_short %>%
 # Michelle: change 'grass' to 'grass-like'
 names(all_entities_short)[names(all_entities_short) == 'grass'] <- 'grass-like'
 
+
+write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_26.4.2021_vers1.6.csv",row.names=FALSE)
+
+
 # more fail safes
 
 # species with no drought tolerance and low water needs
@@ -11838,16 +11842,87 @@ high_water_needs <- all_entities_short %>%
 same <- inner_join(high_water_needs, high_drought_tolerance, by = "plant_name")
 # 0 plants, phew!!!
 
-# species with high and low water needs
-waterneeds_failsafe <- all_entities_short %>%
-  group_by(plant_name) %>%
-  filter(value == "high water needs" & value == "low water needs") %>%
+# species that are full sun and full shade
+full_shade <- all_entities_short %>%
+  filter(value == "full shade") %>%
   distinct(plant_name)
-# 0 plants
 
+full_sun <- all_entities_short %>%
+  filter(value == "full sun") %>%
+  distinct(plant_name)
 
+same <- inner_join(full_sun, full_shade, by = "plant_name") # 147 plants
 
-write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_26.4.2021_vers1.6.csv",row.names=FALSE)
+shade_check <- left_join(same, all_entities_short, by = "plant_name")
+
+shade_check <- shade_check %>%
+  filter(trait_name == "shade tolerance") %>%
+  group_by(plant_name) %>%
+  summarise(frequency = n()) # 8/147 plants are full sun and full shade
+
+# species with risk and playground friendly
+risk <- all_entities_short %>%
+  filter(trait_name == "risk") %>%
+  distinct(plant_name)
+
+playground <- all_entities_short %>%
+  filter(value == "playground friendly") %>%
+  distinct(plant_name)
+
+same <- inner_join(risk, playground, by = "plant_name") # 12 plants
+
+# species as both herbs and trees
+# checked manually, no plants are herbs and trees
+
+# species as both herb and shrub
+# checked manually, no plants are herbs and shrubs
+
+# species with high and low water needs
+high_water <- all_entities_short %>%
+  filter(value == "high water needs") %>%
+  distinct(plant_name)
+
+low_water <- all_entities_short %>%
+  filter(value == "low water needs") %>%
+  distinct(plant_name)
+
+same <- inner_join(low_water, high_water, by = "plant_name") # 0 plants
+
+# species with slow and fast growth rate
+slow_growth <- all_entities_short %>%
+  filter(value == "slow") %>%
+  distinct(plant_name)
+
+fast_growth <- all_entities_short %>%
+  filter(value == "fast") %>%
+  distinct(plant_name)
+
+same <- inner_join(fast_growth, slow_growth, by = "plant_name") # 60 plants
+
+growth_check <- left_join(same, all_entities_short, by = "plant_name")
+
+growth_check <- growth_check %>%
+  filter(trait_name == "growth rate") %>%
+  group_by(plant_name) %>%
+  summarise(frequency = n()) # 30/60 plants
+
+# species that are deciduous and evergreen
+deciduous <- all_entities_short %>%
+  filter(value == "deciduous") %>%
+  distinct(plant_name)
+
+evergreen <- all_entities_short %>%
+  filter(value == "evergreen") %>%
+  distinct(plant_name)
+
+same <- inner_join(evergreen, deciduous, by = "plant_name") # 32 plants
+
+leaf_check <- left_join(same, all_entities_short, by = "plant_name")
+
+leaf_check <- leaf_check %>%
+  filter(trait_name == "leaf loss") %>%
+  group_by(plant_name) %>%
+  summarise(frequency = n()) # 19/32 plants
 
 # check AI with hort classifications of drought
 
