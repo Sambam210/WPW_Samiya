@@ -10212,7 +10212,6 @@ plot
 # 'grass' changed to 'grass-like'
 # 'planting and maintenance' - 'protected' should be 'sheltered' (correct on the metadata)
 
-
 library(tidyverse)
 
 everything <- read.csv("Master_database_input/EVERYTHING_traits_26Apr2021.csv")
@@ -11858,7 +11857,7 @@ shade_check <- left_join(same, all_entities_short, by = "plant_name")
 shade_check <- shade_check %>%
   filter(trait_name == "shade tolerance") %>%
   group_by(plant_name) %>%
-  summarise(frequency = n()) # 8/147 plants are full sun and full shade
+  summarise(frequency = n()) # 8/147 plants are full sun and full shade, fixed them up
 
 # species with risk and playground friendly
 risk <- all_entities_short %>%
@@ -11869,7 +11868,7 @@ playground <- all_entities_short %>%
   filter(value == "playground friendly") %>%
   distinct(plant_name)
 
-same <- inner_join(risk, playground, by = "plant_name") # 12 plants
+same <- inner_join(risk, playground, by = "plant_name") # 12 plants, fixed them up
 
 # species as both herbs and trees
 # checked manually, no plants are herbs and trees
@@ -11904,7 +11903,7 @@ growth_check <- left_join(same, all_entities_short, by = "plant_name")
 growth_check <- growth_check %>%
   filter(trait_name == "growth rate") %>%
   group_by(plant_name) %>%
-  summarise(frequency = n()) # 30/60 plants
+  summarise(frequency = n()) # 30/60 plants, fixed them up
 
 # species that are deciduous and evergreen
 deciduous <- all_entities_short %>%
@@ -11922,7 +11921,118 @@ leaf_check <- left_join(same, all_entities_short, by = "plant_name")
 leaf_check <- leaf_check %>%
   filter(trait_name == "leaf loss") %>%
   group_by(plant_name) %>%
-  summarise(frequency = n()) # 19/32 plants
+  summarise(frequency = n()) # 19/32 plants, fixed them up
+
+## do box plots of min, max and average heights and widths of all the growth forms
+
+library(ggplot2)
+
+boxplot_data <- all_entities_short %>%
+  select(plant_name, climber:tree, trait_name, value) %>%
+  filter(trait_name == "average height" | trait_name == "average width" | trait_name == "maximum height" | 
+           trait_name == "maximum width" | trait_name == "minimum height" | trait_name == "minimum width")
+
+
+glimpse(boxplot_data)
+boxplot_data$value <- as.numeric(as.character(boxplot_data$value))
+boxplot_data$trait_name <- as.factor(boxplot_data$trait_name)
+boxplot_data[,'trait_name'] <- factor(boxplot_data[,'trait_name'], levels = c("minimum height", "average height", "maximum height", 
+                                                                              "minimum width", "average width", "maximum width"))
+# climber
+climber <- boxplot_data %>%
+  filter(climber == 1)
+
+climber_plot <- ggplot(climber, aes(x = trait_name, y = value)) +
+  geom_boxplot() +
+  labs(title = "climber")
+
+climber_plot
+
+# cycad
+cycad <- boxplot_data %>%
+  filter(cycad == 1)
+
+cycad_plot <- ggplot(cycad, aes(x = trait_name, y = value)) +
+  geom_boxplot() +
+  labs(title = "cycad")
+
+cycad_plot
+
+# fern
+fern <- boxplot_data %>%
+  filter(fern == 1)
+
+fern_plot <- ggplot(fern, aes(x = trait_name, y = value)) +
+  geom_boxplot() +
+  labs(title = "fern")
+
+fern_plot
+
+# grass-like
+names(boxplot_data)[names(boxplot_data) == 'grass-like'] <- 'grass'
+
+grass <- boxplot_data %>%
+  filter(grass == 1)
+
+grass_plot <- ggplot(grass, aes(x = trait_name, y = value)) +
+  geom_boxplot() +
+  labs(title = "grass-like")
+
+grass_plot # might need some fixing
+
+# herbaceous
+herb <- boxplot_data %>%
+  filter(herbaceous == 1)
+
+herb_plot <- ggplot(herb, aes(x = trait_name, y = value)) +
+  geom_boxplot() +
+  labs(title = "herbaceous")
+
+herb_plot # might need some fixing
+
+# palm
+palm <- boxplot_data %>%
+  filter(palm == 1)
+
+palm_plot <- ggplot(palm, aes(x = trait_name, y = value)) +
+  geom_boxplot() +
+  labs(title = "palm")
+
+palm_plot # need to look at
+
+# shrub
+shrub <- boxplot_data %>%
+  filter(shrub == 1)
+
+shrub_plot <- ggplot(shrub, aes(x = trait_name, y = value)) +
+  geom_boxplot() +
+  labs(title = "shrub")
+
+shrub_plot
+
+# succulent
+succulent <- boxplot_data %>%
+  filter(succulent == 1)
+
+succulent_plot <- ggplot(succulent, aes(x = trait_name, y = value)) +
+  geom_boxplot() +
+  labs(title = "succulent")
+
+succulent_plot # check
+
+# tree
+tree <- boxplot_data %>%
+  filter(tree == 1)
+
+tree_plot <- ggplot(tree, aes(x = trait_name, y = value)) +
+  geom_boxplot() +
+  labs(title = "tree")
+
+tree_plot
+
+
+
+
 
 # check AI with hort classifications of drought
 
