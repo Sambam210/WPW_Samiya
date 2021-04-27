@@ -11069,6 +11069,26 @@ all_entities_short <- all_entities_short %>%
   mutate_if(is.factor, as.character) %>%
   mutate(trait_name_new = if_else(trait_name == "common_name", "common name", trait_name_new))
 
+# replace the '-' with a space
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(trait_name == "common_name", gsub("-", " ", all_entities_short$value_new, perl=TRUE),
+                             all_entities_short$value_new))
+
+# some other subs
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(trait_name == "common_name", gsub("Sheoak", "She Oak", all_entities_short$value_new, perl=TRUE, ignore.case = TRUE),
+                             all_entities_short$value_new))
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(trait_name == "common_name", gsub("Teatree", "Tea Tree", all_entities_short$value_new, perl=TRUE, ignore.case = TRUE),
+                             all_entities_short$value_new))
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(trait_name == "common_name", gsub("Lillypilly", "Lilly Pilly", all_entities_short$value_new, perl=TRUE, ignore.case = TRUE),
+                             all_entities_short$value_new))
+
 # make common names capitalised
 all_entities_short <- all_entities_short %>%
   mutate_if(is.factor, as.character) %>%
@@ -11787,6 +11807,43 @@ all_entities_short <- all_entities_short %>%
 # internal beta testing feedback
 # Michelle: change 'grass' to 'grass-like'
 names(all_entities_short)[names(all_entities_short) == 'grass'] <- 'grass-like'
+
+# more fail safes
+
+# species with no drought tolerance and low water needs
+no_drought_tolerance <- all_entities_short %>%
+  filter(trait_name == "drought tolerance") %>%
+  filter(value == "putatively no") %>%
+  distinct(plant_name)
+
+low_water_needs <- all_entities_short %>%
+  filter(trait_name == "planting and maintenance") %>%
+  filter(value == "low water needs") %>%
+  distinct(plant_name)
+
+same <- inner_join(low_water_needs, no_drought_tolerance, by = "plant_name")
+# 28 species, fixed them up
+
+# check what I did previously....
+high_drought_tolerance <- all_entities_short %>%
+  filter(trait_name == "drought tolerance") %>%
+  filter(value == "putatively high") %>%
+  distinct(plant_name)
+
+high_water_needs <- all_entities_short %>%
+  filter(trait_name == "planting and maintenance") %>%
+  filter(value == "high water needs") %>%
+  distinct(plant_name)
+
+same <- inner_join(high_water_needs, high_drought_tolerance, by = "plant_name")
+# 0 plants, phew!!!
+
+# species with high and low water needs
+waterneeds_failsafe <- all_entities_short %>%
+  group_by(plant_name) %>%
+  filter(value == "high water needs" & value == "low water needs") %>%
+  distinct(plant_name)
+# 0 plants
 
 
 
