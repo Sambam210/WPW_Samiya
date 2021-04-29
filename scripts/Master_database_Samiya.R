@@ -10211,6 +10211,7 @@ plot
 ## fixed errors in traits based on internal beta version feedback
 # 'grass' changed to 'grass-like'
 # 'planting and maintenance' - 'protected' should be 'sheltered' (correct on the metadata)
+# canopy cover now only whole numbers
 
 library(tidyverse)
 
@@ -10989,10 +10990,15 @@ all_entities_short <- all_entities_short %>%
   mutate(tree = if_else(shrub == 1 & height_min >= 5, 1, tree))
 
 # canopy cover
-all_entities_short$canopy_cover <- "NA"
+# all_entities_short$canopy_cover <- "NA"
 
 all_entities_short$canopy_cover <- ifelse(all_entities_short$tree == 1, pi*(all_entities_short$width_max/2)^2,
                                           all_entities_short$canopy_cover)
+
+# round to the nearest whole number
+glimpse(all_entities_short)
+all_entities_short$canopy_cover <- as.numeric(as.character(all_entities_short$canopy_cover))
+all_entities_short$canopy_cover <- ceiling(all_entities_short$canopy_cover)
 
 # shade value
 all_entities_short$shade_value <- "NA"
