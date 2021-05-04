@@ -12036,9 +12036,17 @@ tree_plot <- ggplot(tree, aes(x = trait_name, y = value)) +
 
 tree_plot
 
+####### extract updated species list for Ale
+names(all_entities_short)[names(all_entities_short) == 'grass-like'] <- 'grass'
 
+updated_list <- all_entities_short %>%
+  filter(category == "SP") %>%
+  select(scientificNameStd, climber, cycad, fern, grass, herbaceous, palm, shrub, succulent, tree) %>%
+  distinct(scientificNameStd, .keep_all = TRUE)
 
+write.csv(updated_list,"Master_database_output/Farzin/species_list_ST_5May2021.csv",row.names=FALSE)
 
+#########
 
 # check AI with hort classifications of drought
 
