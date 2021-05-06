@@ -12046,7 +12046,16 @@ updated_list <- all_entities_short %>%
 
 write.csv(updated_list,"Master_database_output/Farzin/species_list_ST_5May2021.csv",row.names=FALSE)
 
-#########
+######### extract the biodiversity values for Paul
+
+biodiversity <- all_entities_short %>%
+  select(plant_name, climber, cycad, fern, grass, herbaceous, palm, shrub, succulent, tree, bird, insect, lizard, native_mammal, pollinator, trait_name, value) %>%
+  filter(trait_name == "flower colour") %>%
+  distinct(plant_name, trait_name, value, .keep_all = TRUE)
+
+write.csv(biodiversity,"Master_database_output/Paul/growth_form_biodiversity_flower_colour.csv", row.names = FALSE)
+
+##########
 
 # check AI with hort classifications of drought
 
