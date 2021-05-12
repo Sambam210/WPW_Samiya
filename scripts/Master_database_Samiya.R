@@ -12063,6 +12063,22 @@ gwilym_species <- all_entities_short %>%
 write.csv(gwilym_species,"Master_database_output/Gwilym/WPW_plant_list.csv", row.names = FALSE)
 
 ##########
+##########
+
+########## check the arboretum list with our photo list to see which photos we are missing
+
+library(tidyverse)
+
+arboretum <- read.csv("Master_database_input/photos/mq_arboretum.csv")
+
+photo_list <- read.csv("Master_database_input/photos/species_list_photos_12May2021.csv")
+
+# check all the species are there
+photo_list_species <- photo_list %>%
+  distinct(plant_name) # extra species
+
+# what's different
+diff <- anti_join(photo_list_species, gwilym_species, by = "plant_name")
 
 # check AI with hort classifications of drought
 
