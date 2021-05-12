@@ -12055,6 +12055,13 @@ biodiversity <- all_entities_short %>%
 
 write.csv(biodiversity,"Master_database_output/Paul/growth_form_biodiversity_flower_colour.csv", row.names = FALSE)
 
+######### extract plant names for Gwilym Griffiths
+
+gwilym_species <- all_entities_short %>%
+  distinct(plant_name)
+
+write.csv(gwilym_species,"Master_database_output/Gwilym/WPW_plant_list.csv", row.names = FALSE)
+
 ##########
 
 # check AI with hort classifications of drought
