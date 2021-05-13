@@ -12110,6 +12110,23 @@ diff_species <- anti_join(arboretum_species, photo_list_species, by = "plant_nam
 
 ### I have added these in manually
 
+#### match list of photo names with the metadata
+
+metadata <- read.csv("Master_database_input/photos/species_list_photos_13May2021.csv")
+
+list_names <- read.csv("Master_database_input/photos/disused_file_photo_list_13May2021.csv") # 1474 entries
+
+metadata <- metadata %>%
+  filter(uploaded_to_sharedrive == "yes" | uploaded_to_sharedrive == "Yes") %>%
+  select(New.file.name) #1463 entries
+
+# find differences
+
+diff <- setdiff(list_names, metadata)
+diff2 <- setdiff(metadata, list_names) # all sorted.
+
+#########
+
 # check AI with hort classifications of drought
 
 drought_class <- all_entities_short %>%
