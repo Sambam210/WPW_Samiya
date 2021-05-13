@@ -12071,14 +12071,44 @@ library(tidyverse)
 
 arboretum <- read.csv("Master_database_input/photos/mq_arboretum.csv")
 
-photo_list <- read.csv("Master_database_input/photos/species_list_photos_12May2021.csv")
+photo_list <- read.csv("Master_database_input/photos/species_list_photos_13May2021.csv")
 
 # check all the species are there
 photo_list_species <- photo_list %>%
   distinct(plant_name) # extra species
 
 # what's different
-diff <- anti_join(photo_list_species, gwilym_species, by = "plant_name")
+diff <- anti_join(gwilym_species, photo_list_species, by = "plant_name") # all plants accounted for!
+diff <- anti_join(photo_list_species, gwilym_species, by = "plant_name") # all plants accounted for!
+
+# match the arboretum species with the db species
+names(arboretum)[names(arboretum) == 'Species'] <- 'plant_name'
+
+arboretum_species <- arboretum %>%
+  select(plant_name)
+
+same_species <- inner_join(photo_list_species, arboretum_species, by = "plant_name")
+
+# join the location info
+same_species <- left_join(same_species, arboretum, by = "plant_name")
+
+# join the photo notes info
+photo_notes <- photo_list %>%
+  select(plant_name, Notes)
+
+same_species <- left_join(same_species, photo_notes, by = "plant_name")
+
+same_species <- distinct(same_species, plant_name, Location.on.campus, Notes)
+
+same_species <- arrange(same_species, Location.on.campus)
+
+write.csv(same_species,"Master_database_output/photos/arboretum_species.csv", row.names = FALSE)
+
+# species that don't match up (try and rescue the cultivars)
+
+diff_species <- anti_join(arboretum_species, photo_list_species, by = "plant_name")
+
+### I have added these in manually
 
 # check AI with hort classifications of drought
 
