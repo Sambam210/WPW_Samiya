@@ -12134,7 +12134,7 @@ images <- metadata %>%
 
 #########
 
-# check AI with hort classifications of drought
+# check AI with hort classifications of drought (according to Ale, ai is actually PET (potential evapotranspiration))
 
 drought_class <- all_entities_short %>%
   filter(exp_tested == "N") %>%
@@ -12149,19 +12149,22 @@ Ale_ai <- read.csv("Master_database_input/Ale/niche_summaries_5414_species.csv")
 
 Ale_ai <- Ale_ai %>%
   filter(var == "ai") %>%
-  select(speciesName, p0, mean, p100)
+  select(speciesName, p5, mean, p95)
 
 names(Ale_ai)[names(Ale_ai) == 'speciesName'] <- 'plant_name'
+names(Ale_ai)[names(Ale_ai) == 'p5'] <- 'PET_min'
+names(Ale_ai)[names(Ale_ai) == 'mean'] <- 'PET_mean'
+names(Ale_ai)[names(Ale_ai) == 'p95'] <- 'PET_max'
 
-Ale_ai <- Ale_ai %>%
-  mutate(AI_min = p0/1000,
-         AI_mean = mean/1000,
-         AI_max = p100/1000) %>%
-  select(plant_name, AI_min, AI_mean, AI_max)
+# Ale_ai <- Ale_ai %>%
+#   mutate(AI_min = p0/1000,
+#          AI_mean = mean/1000,
+#          AI_max = p100/1000) %>%
+#   select(plant_name, AI_min, AI_mean, AI_max)
 
 # make into long format
 # http://www.cookbook-r.com/Manipulating_data/Converting_data_between_wide_and_long_format/
-Ale_ai_long <- gather(Ale_ai, AI_type, AI, AI_min:AI_max)
+Ale_ai_long <- gather(Ale_ai, PET_type, PET, PET_min:PET_max)
 
 # join together
 
@@ -12171,9 +12174,28 @@ ai_drought_class <- inner_join(drought_class, Ale_ai_long, by = "plant_name")
 
 library(ggplot2)
 
-plot <- ggplot(ai_drought_class, aes(x = drought_tolerance, y = AI, fill = AI_type)) +
+plot <- ggplot(ai_drought_class, aes(x = drought_tolerance, y = PET, fill = PET_type)) +
   geom_boxplot()
 plot
-######### have to ask Ale if I did the transformations correctly
+
+# anova to see if things are statistically different
+# http://www.sthda.com/english/wiki/one-way-anova-test-in-r
+# extract just the PET_max data
+PET_max <- ai_drought_class %>%
+  filter(PET_type == "PET_max") %>%
+  select(-PET_type, -plant_name)
+names(PET_max)[names(PET_max) == 'PET'] <- 'PET_max'
+
+glimpse(PET_max)
+PET_max$drought_tolerance <- as.factor(PET_max$drought_tolerance)
+levels(PET_max$drought_tolerance)
+PET_max$drought_tolerance <- ordered(PET_max$drought_tolerance, levels = c("putatively no", "putatively moderate", "putatively high"))
+
+res.aov <- aov(PET_max ~ drought_tolerance, data = PET_max)
+summary(res.aov) # there is a significant difference
+
+TukeyHSD(res.aov) # all are significantly different
+
+
 
 
