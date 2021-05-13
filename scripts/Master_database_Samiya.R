@@ -12125,6 +12125,13 @@ metadata <- metadata %>%
 diff <- setdiff(list_names, metadata)
 diff2 <- setdiff(metadata, list_names) # all sorted.
 
+# check how many plants we have images for
+metadata <- read.csv("Master_database_input/photos/species_list_photos_13May2021.csv")
+
+images <- metadata %>%
+  filter(uploaded_to_sharedrive == "yes" | uploaded_to_sharedrive == "Yes") %>%
+  distinct(plant_name) # 784 plants!
+
 #########
 
 # check AI with hort classifications of drought
