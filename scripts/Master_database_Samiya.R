@@ -12196,6 +12196,10 @@ summary(res.aov) # there is a significant difference
 
 TukeyHSD(res.aov) # all are significantly different
 
+# check assumptions
+plot(res.aov, 1)
+library(car)
+leveneTest(PET_max ~ drought_tolerance, data = PET_max) # no evidence that variance across groups is significantly different
 
 
 
