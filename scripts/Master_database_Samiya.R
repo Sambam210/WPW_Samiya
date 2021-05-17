@@ -12133,6 +12133,42 @@ images <- metadata %>%
   distinct(plant_name) # 784 plants!
 
 #########
+#########
+
+##### biodiversity calculations
+
+# load Ale's tree hollow species
+
+WPW_plant_list <- read.csv("Master_database_output/Gwilym/WPW_plant_list.csv")
+
+hollows <- read.csv("Master_database_input/Ale/tree_hollow_species.csv")
+
+hollows <- select(hollows, Species)
+
+names(hollows)[names(hollows) == 'Species'] <- 'plant_name'
+
+# compare with WPW species list
+
+same <- inner_join(WPW_plant_list, hollows, by = "plant_name")
+
+same <- distinct(same, plant_name)
+
+write.csv(same,"Master_database_output/ecological_value/hollow_bearing_species.csv", row.names = FALSE)
+
+# have a look at data on fruit
+
+fruit <- bind_rows(everything, everything_gh)
+
+fruit <- fruit %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  select(species, trait_name, value) %>%
+  filter(trait_name == "fruit_colour") %>%
+  distinct(species, trait_name, value)
+
+names(fruit)[names(fruit) == 'species'] <- 'plant_name'
+
+write.csv(fruit,"Master_database_output/ecological_value/fruit_colour.csv", row.names = FALSE)
 
 # check AI with hort classifications of drought (according to Ale, ai is actually PET (potential evapotranspiration))
 
