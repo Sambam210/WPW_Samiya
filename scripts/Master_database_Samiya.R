@@ -13849,5 +13849,45 @@ names(all_entities_short)[names(all_entities_short) == 'grass'] <- 'grass-like'
 
 # write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_17.5.2021_vers1.7.csv",row.names=FALSE)
 
+#####################
+#### add more weeds
+
+weeds_QL <- read.csv("Master_database_input/weeds/weeds_Ql.csv")
+
+# check species in database
+species <- all_entities_short %>%
+  distinct(plant_name) #2604 plants now
+
+# compare lists
+same <- inner_join(species, weeds_QL, by = "plant_name")
+
+# extract the weeds for Michelle
+
+weed_list <- all_entities_short %>%
+  filter(trait_name == "weed status in Australia") %>%
+  distinct(plant_name, trait_name, value) %>%
+  group_by(plant_name, trait_name) %>%
+  summarise(frequency = n()) %>%
+  select(-trait_name) %>%
+  arrange(desc(frequency))
+  
+# add the list of states
+states <- all_entities_short %>%
+  filter(trait_name == "weed status in Australia") %>%
+  select(plant_name, value) %>%
+  group_by(plant_name) %>%
+  mutate(states = paste0(value, collapse = ", ")) %>%
+  distinct(plant_name, states)
+  
+# join together
+weed_list_states <- left_join(weed_list, states, by = "plant_name")
+
+write.csv(weed_list_states,"Master_database_output/weeds/weed_list_WPW.csv", row.names=FALSE)
+
+  
+
+
+
+
 
 
