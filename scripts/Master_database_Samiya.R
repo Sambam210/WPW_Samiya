@@ -13856,7 +13856,7 @@ weeds_QL <- read.csv("Master_database_input/weeds/weeds_Ql.csv")
 
 # check species in database
 species <- all_entities_short %>%
-  distinct(plant_name) #2604 plants now
+  distinct(plant_name) #2603 plants now
 
 # compare lists
 same <- inner_join(species, weeds_QL, by = "plant_name")
@@ -13884,10 +13884,51 @@ weed_list_states <- left_join(weed_list, states, by = "plant_name")
 
 write.csv(weed_list_states,"Master_database_output/weeds/weed_list_WPW.csv", row.names=FALSE)
 
-  
+##############################################################
+##### check the species names in the shared spreadsheet match with db
 
+species <- all_entities_short %>%
+  distinct(plant_name) # 2603 plants
 
+species_sharedrive <- read.csv("Master_database_input/photos/species_list_photos_20May2021.csv")
 
+species_sharedrive <- species_sharedrive %>%
+  distinct(plant_name) # 2603 plants
 
+diff <- setdiff(species, species_sharedrive)
+diff2 <- setdiff(species_sharedrive, species)
+# no differences
 
+#### check that the file names match with the metadata
+
+disuses_filenames <- read.csv("Master_database_input/photos/disused_file_photo_list_20May2021.csv")
+
+metadata <- read.csv("Master_database_input/photos/photo_check_20May2021.csv")
+
+metadata <- select(metadata, New.file.name)
+
+diff <- setdiff(disuses_filenames, metadata)
+diff2 <- setdiff(metadata, disuses_filenames)
+# no differences
+
+write.csv(diff,"Master_database_output/photos/extensions_to_change.csv", row.names=FALSE)
+
+#################################################
+##### For Gwilym
+
+# load species list (generated in vers 1.6)
+
+gwilym <- read.csv("Master_database_output/Gwilym/WPW_plant_list.csv")
+
+# plants with photos to check
+
+metadata <- read.csv("Master_database_input/photos/photo_check_20May2021.csv")
+
+metadata <- distinct(metadata, plant_name)
+metadata$photos_to_check <- "yes"
+
+# join together
+gwilym <- left_join(gwilym, metadata, by = "plant_name")
+
+write.csv(gwilym,"Master_database_output/Gwilym/WPW_plant_list_20May2021.csv", row.names=FALSE)
 
