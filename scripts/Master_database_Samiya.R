@@ -13884,6 +13884,37 @@ weed_list_states <- left_join(weed_list, states, by = "plant_name")
 
 write.csv(weed_list_states,"Master_database_output/weeds/weed_list_WPW.csv", row.names=FALSE)
 
+#### nsw weeds
+
+weedwise <- read.csv("Master_database_input/weeds/NSWWeedWise.csv")
+
+weedwise$plant_name <- as.character(weedwise$plant_name)
+weedwise <- arrange(weedwise, plant_name)
+
+# extract species list from db
+species <- all_entities_short %>%
+  distinct(plant_name)
+
+# compare this list with the weedwise list
+
+same <- inner_join(weedwise, species, by = "plant_name") # NOT WORKING!!!!!
+
+#### brisbane weeds
+
+brisbane <- read.csv("Master_database_input/weeds/brisbane_weeds.csv")
+
+# extract the non qld weeds from db
+qld <- all_entities_short %>%
+  filter(trait_name == "weed status in Australia") %>%
+  filter(value != "Queensland") %>%
+  distinct(plant_name)
+
+# compare the list
+
+same <- inner_join(qld, brisbane, by = "plant_name") # 32 plants
+
+
+
 ##############################################################
 ##### check the species names in the shared spreadsheet match with db
 
