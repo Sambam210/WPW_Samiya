@@ -13858,6 +13858,13 @@ all_entities_short <- anti_join(all_entities_short, mistake)
 
 # write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_17.5.2021_vers1.7.csv",row.names=FALSE)
 
+#### generate species list for Linda and FArzin
+
+species_list <- all_entities_short %>%
+  distinct(scientificNameStd)
+
+write.csv(species_list,"Master_database_output/Farzin/species_list_ST_21May2021.csv", row.names=FALSE)
+
 #####################
 #### add more weeds
 
