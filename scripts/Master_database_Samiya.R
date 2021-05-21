@@ -13858,12 +13858,24 @@ all_entities_short <- anti_join(all_entities_short, mistake)
 
 # write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_17.5.2021_vers1.7.csv",row.names=FALSE)
 
-#### generate species list for Linda and FArzin
+#### generate species list for Linda and Farzin
 
 species_list <- all_entities_short %>%
+  filter(category == "SP") %>%
   distinct(scientificNameStd)
 
 write.csv(species_list,"Master_database_output/Farzin/species_list_ST_21May2021.csv", row.names=FALSE)
+
+# check for Farzin which specie shave been removed
+
+old_list <- read.csv("Master_database_output/Farzin/species_list_ST_5May2021.csv")
+
+old_list <- select(old_list, scientificNameStd)
+
+diff <- setdiff(old_list, species_list)
+diff2 <- setdiff(species_list, old_list)
+
+write.csv(diff,"Master_database_output/Farzin/removed_species_21May2021.csv", row.names=FALSE)
 
 #####################
 #### add more weeds
