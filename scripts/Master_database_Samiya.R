@@ -12833,7 +12833,8 @@ all_entities_short <- all_entities_short %>%
          family = if_else(entity == "Leucopogon parviflorus", "Ericaceae", family),
          family = if_else(entity == "Quisqualis indica", "Myrtaceae", family),
          family = if_else(entity == "Regelia velutina", "Myrtaceae", family),
-         family = if_else(entity == "Citrus maxima", "Rutaceae", family))
+         family = if_else(entity == "Citrus maxima", "Rutaceae", family),
+         family = if_else(genus == "Syzygium", "Myrtaceae", family))
 
 # check
 
@@ -13846,6 +13847,14 @@ all_entities_short <- all_entities_short %>%
 # internal beta testing feedback
 # Michelle: change 'grass' to 'grass-like'
 names(all_entities_short)[names(all_entities_short) == 'grass'] <- 'grass-like'
+
+# fix a random mistake I found
+mistake <- all_entities_short %>%
+  filter(plant_name == "Syzygium spp. Cascade") %>%
+  filter(is.na(family))
+  
+# remove
+all_entities_short <- anti_join(all_entities_short, mistake)
 
 # write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_17.5.2021_vers1.7.csv",row.names=FALSE)
 
