@@ -13687,9 +13687,12 @@ all_entities_short <- all_entities_short %>%
 # fix the gh species drought tolerance
 all_entities_short[] <- lapply(all_entities_short, gsub, pattern = "dehydration tolerator", replacement = "tolerator")
 all_entities_short[] <- lapply(all_entities_short, gsub, pattern = "dehydration avoider", replacement = "avoider")
-all_entities_short[] <- lapply(all_entities_short, gsub, pattern = "intermediate", replacement = "tolerator/avoider")
 
 names(all_entities_short)[names(all_entities_short) == 'dehydration_tolerance'] <- 'drought_strategy'
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(drought_strategy = if_else(drought_strategy == "intermediate", "tolerator/avoider", drought_strategy))
 
 # try synonyms again
 # https://github.com/ropensci/rgbif/issues/289
@@ -13855,6 +13858,19 @@ mistake <- all_entities_short %>%
   
 # remove
 all_entities_short <- anti_join(all_entities_short, mistake)
+
+# for gh species, remove the horticultural drought tolerance trait
+
+gh_drought <- all_entities_short %>%
+  filter(exp_tested == "Y") %>%
+  filter(trait_name == "drought tolerance")
+
+# remove
+all_entities_short <- anti_join(all_entities_short, gh_drought)
+
+
+
+
 
 # write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_17.5.2021_vers1.7.csv",row.names=FALSE)
 
