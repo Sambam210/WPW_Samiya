@@ -13893,10 +13893,16 @@ Ale_ai <- Ale %>%
   filter(var == "ai") %>%
   select(speciesName, p5, mean, p95)
 
+Ale_ai <- Ale_ai %>%
+  mutate(p5_adj = p5*365,
+         mean_adj = mean*365,
+         p95_adj = p95*365) %>%
+  select(speciesName, p5_adj, mean_adj, p95_adj)
+
 names(Ale_ai)[names(Ale_ai) == 'speciesName'] <- 'plant_name'
-names(Ale_ai)[names(Ale_ai) == 'p5'] <- 'PET_min'
-names(Ale_ai)[names(Ale_ai) == 'mean'] <- 'PET_mean'
-names(Ale_ai)[names(Ale_ai) == 'p95'] <- 'PET_max'
+names(Ale_ai)[names(Ale_ai) == 'p5_adj'] <- 'PET_min'
+names(Ale_ai)[names(Ale_ai) == 'mean_adj'] <- 'PET_mean'
+names(Ale_ai)[names(Ale_ai) == 'p95_adj'] <- 'PET_max'
 
 # extract precip values
 Ale_precip <- Ale %>%
@@ -13934,28 +13940,86 @@ plot <- ggplot(ai_drought_class, aes(x = drought_tolerance, y = diff, fill = dif
   geom_boxplot()
 plot
 
+# calculate AI
+
+# load Ale data
+
+Ale <- read.csv("Master_database_input/Ale/niche_summaries_5414_species.csv")
+
+# extract PET values
+Ale_PET <- Ale %>%
+  filter(var == "ai") %>%
+  select(speciesName, p5, mean, p95)
+
+Ale_PET <- Ale_PET %>%
+  mutate(p5_adj = p5*365,
+         mean_adj = mean*365,
+         p95_adj = p95*365) %>%
+  select(speciesName, p5_adj, mean_adj, p95_adj)
+
+names(Ale_PET)[names(Ale_PET) == 'speciesName'] <- 'plant_name'
+names(Ale_PET)[names(Ale_PET) == 'p5_adj'] <- 'PET_min'
+names(Ale_PET)[names(Ale_PET) == 'mean_adj'] <- 'PET_mean'
+names(Ale_PET)[names(Ale_PET) == 'p95_adj'] <- 'PET_max'
+
+# extract precip values
+Ale_precip <- Ale %>%
+  filter(var == "Annual_precip") %>%
+  select(speciesName, p5, mean, p95)
+
+names(Ale_precip)[names(Ale_precip) == 'speciesName'] <- 'plant_name'
+names(Ale_precip)[names(Ale_precip) == 'p5'] <- 'precip_min'
+names(Ale_precip)[names(Ale_precip) == 'mean'] <- 'precip_mean'
+names(Ale_precip)[names(Ale_precip) == 'p95'] <- 'precip_max'
+
+# join together
+Ale_PET_precip <- left_join(Ale_PET, Ale_precip, by = "plant_name")
+
+# calculate AI
+Ale_PET_precip <- Ale_PET_precip %>%
+  mutate(AI_min = precip_min/PET_min,
+         AI_mean = precip_mean/PET_mean,
+         AI_max = precip_max/PET_max) %>%
+  select(plant_name, AI_min, AI_mean, AI_max)
+
+# make into long format
+# http://www.cookbook-r.com/Manipulating_data/Converting_data_between_wide_and_long_format/
+Ale_PET_precip_long <- gather(Ale_PET_precip, AI_type, AI, AI_min:AI_max)
+
+# join together
+
+ai_drought_class <- inner_join(drought_class, Ale_PET_precip_long, by = "plant_name")
+
+# graph
+
+library(ggplot2)
+
+plot <- ggplot(ai_drought_class, aes(x = drought_tolerance, y = AI, fill = AI_type)) +
+  geom_boxplot()
+plot
+
 # anova to see if things are statistically different
 # http://www.sthda.com/english/wiki/one-way-anova-test-in-r
 # extract just the PET_max data
-PET_max <- ai_drought_class %>%
-  filter(PET_type == "PET_max") %>%
-  select(-PET_type, -plant_name)
-names(PET_max)[names(PET_max) == 'PET'] <- 'PET_max'
+# PET_max <- ai_drought_class %>%
+#   filter(PET_type == "PET_max") %>%
+#   select(-PET_type, -plant_name)
+# names(PET_max)[names(PET_max) == 'PET'] <- 'PET_max'
+# 
+# glimpse(PET_max)
+# PET_max$drought_tolerance <- as.factor(PET_max$drought_tolerance)
+# levels(PET_max$drought_tolerance)
+# PET_max$drought_tolerance <- ordered(PET_max$drought_tolerance, levels = c("putatively no", "putatively moderate", "putatively high"))
+# 
+# res.aov <- aov(PET_max ~ drought_tolerance, data = PET_max)
+# summary(res.aov) # there is a significant difference
 
-glimpse(PET_max)
-PET_max$drought_tolerance <- as.factor(PET_max$drought_tolerance)
-levels(PET_max$drought_tolerance)
-PET_max$drought_tolerance <- ordered(PET_max$drought_tolerance, levels = c("putatively no", "putatively moderate", "putatively high"))
-
-res.aov <- aov(PET_max ~ drought_tolerance, data = PET_max)
-summary(res.aov) # there is a significant difference
-
-TukeyHSD(res.aov) # all are significantly different
+# TukeyHSD(res.aov) # all are significantly different
 
 # check assumptions
-plot(res.aov, 1)
-library(car)
-leveneTest(PET_max ~ drought_tolerance, data = PET_max) # no evidence that variance across groups is significantly different
+# plot(res.aov, 1)
+# library(car)
+# leveneTest(PET_max ~ drought_tolerance, data = PET_max) # no evidence that variance across groups is significantly different
 
 
 
