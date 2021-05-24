@@ -12244,10 +12244,10 @@ leveneTest(PET_max ~ drought_tolerance, data = PET_max) # no evidence that varia
 #### Things that have changed
 # removed several inappropriate species
 # removed water requirements from 'planting and maintenance'
+# Remove drought tolerance for glasshouse species
 
 #### Things to do
 # AI and drought
-# Remove drought tolerance for glasshouse species
 # check weeds with Michelle
 # Add new biodiversity co-benefits
 # send Ale heights and widths again to do calculations
@@ -13873,6 +13873,93 @@ all_entities_short <- anti_join(all_entities_short, gh_drought)
 
 
 # write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_17.5.2021_vers1.7.csv",row.names=FALSE)
+
+
+# check AI with hort classifications of drought (according to Ale, ai is actually PET (potential evapotranspiration))
+
+drought_class <- all_entities_short %>%
+  filter(exp_tested == "N") %>%
+  filter(trait_name == "drought tolerance") %>%
+  select(plant_name, value)
+
+names(drought_class)[names(drought_class) == 'value'] <- 'drought_tolerance'
+
+# load Ale data
+
+Ale <- read.csv("Master_database_input/Ale/niche_summaries_5414_species.csv")
+
+# extract PET values
+Ale_ai <- Ale %>%
+  filter(var == "ai") %>%
+  select(speciesName, p5, mean, p95)
+
+names(Ale_ai)[names(Ale_ai) == 'speciesName'] <- 'plant_name'
+names(Ale_ai)[names(Ale_ai) == 'p5'] <- 'PET_min'
+names(Ale_ai)[names(Ale_ai) == 'mean'] <- 'PET_mean'
+names(Ale_ai)[names(Ale_ai) == 'p95'] <- 'PET_max'
+
+# extract precip values
+Ale_precip <- Ale %>%
+  filter(var == "Annual_precip") %>%
+  select(speciesName, p5, mean, p95)
+
+names(Ale_precip)[names(Ale_precip) == 'speciesName'] <- 'plant_name'
+names(Ale_precip)[names(Ale_precip) == 'p5'] <- 'precip_min'
+names(Ale_precip)[names(Ale_precip) == 'mean'] <- 'precip_mean'
+names(Ale_precip)[names(Ale_precip) == 'p95'] <- 'precip_max'
+
+# join together
+Ale_ai_precip <- left_join(Ale_ai, Ale_precip, by = "plant_name")
+
+# calculate precip-PET
+Ale_ai_precip <- Ale_ai_precip %>%
+  mutate(diff_min = precip_min - PET_min,
+         diff_mean = precip_mean - PET_mean,
+         diff_max = precip_max - PET_max) %>%
+  select(plant_name, diff_min, diff_mean, diff_max)
+
+# make into long format
+# http://www.cookbook-r.com/Manipulating_data/Converting_data_between_wide_and_long_format/
+Ale_ai_precip_long <- gather(Ale_ai_precip, diff_type, diff, diff_min:diff_max)
+
+# join together
+
+ai_drought_class <- inner_join(drought_class, Ale_ai_precip_long, by = "plant_name")
+
+# graph
+
+library(ggplot2)
+
+plot <- ggplot(ai_drought_class, aes(x = drought_tolerance, y = diff, fill = diff_type)) +
+  geom_boxplot()
+plot
+
+# anova to see if things are statistically different
+# http://www.sthda.com/english/wiki/one-way-anova-test-in-r
+# extract just the PET_max data
+PET_max <- ai_drought_class %>%
+  filter(PET_type == "PET_max") %>%
+  select(-PET_type, -plant_name)
+names(PET_max)[names(PET_max) == 'PET'] <- 'PET_max'
+
+glimpse(PET_max)
+PET_max$drought_tolerance <- as.factor(PET_max$drought_tolerance)
+levels(PET_max$drought_tolerance)
+PET_max$drought_tolerance <- ordered(PET_max$drought_tolerance, levels = c("putatively no", "putatively moderate", "putatively high"))
+
+res.aov <- aov(PET_max ~ drought_tolerance, data = PET_max)
+summary(res.aov) # there is a significant difference
+
+TukeyHSD(res.aov) # all are significantly different
+
+# check assumptions
+plot(res.aov, 1)
+library(car)
+leveneTest(PET_max ~ drought_tolerance, data = PET_max) # no evidence that variance across groups is significantly different
+
+
+
+
 
 #### generate species list for Linda and Farzin
 
