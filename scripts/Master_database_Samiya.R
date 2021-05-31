@@ -13827,6 +13827,13 @@ gbif_synonyms <- filter(gbif_synonyms, !grepl("publ", canonicalName))
 gbif_synonyms[[7480,1]] <- "Acacia buxifolia"
 gbif_synonyms[[7480,2]] <- "Racosperma buxifolium"
 
+# remove the synonyms for malus that are confusing
+syn_remove <- gbif_synonyms %>%
+  filter(species == "Malus pumila" & canonicalName == "Malus domestica" | 
+         species == "Malus sieboldii" & canonicalName == "Malus floribunda")
+
+gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
+
 # IT IS ALL CLEANED, NOW TO JOIN TOGETHER
 # https://stackoverflow.com/questions/38514988/concatenate-strings-by-group-with-dplyr
 
