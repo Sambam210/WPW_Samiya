@@ -13868,11 +13868,24 @@ gh_drought <- all_entities_short %>%
 # remove
 all_entities_short <- anti_join(all_entities_short, gh_drought)
 
+# Gwilym changes
+# change Leguminosae into Fabaceae
+all_entities_short[] <- lapply(all_entities_short, gsub, pattern = "Leguminosae", replacement = "Fabaceae")
 
+# adding tolerances to species
 
 
 
 # write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_17.5.2021_vers1.7.csv",row.names=FALSE)
+
+
+
+
+
+
+
+
+
 
 
 # check AI with hort classifications of drought (according to Ale, ai is actually PET (potential evapotranspiration))
