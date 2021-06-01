@@ -13824,8 +13824,19 @@ gbif_synonyms <- anti_join(gbif_synonyms, gbif_synonyms_remove)
 gbif_synonyms <- filter(gbif_synonyms, !grepl("publ", canonicalName))
 
 # Add synonyms that Gwilym says
-gbif_synonyms[[7480,1]] <- "Acacia buxifolia"
-gbif_synonyms[[7480,2]] <- "Racosperma buxifolium"
+
+gbif_synonyms_add <- data.frame("Acacia buxifolia", "Racosperma buxifolium")
+names(gbif_synonyms_add) <- c("species", "canonicalName")
+
+gbif_synonyms_add <- gbif_synonyms_add %>%
+  add_row(species = "Abelia grandiflora", canonicalName = "Linnaea × grandiflora") %>%
+  add_row(species = "Abelia grandiflora", canonicalName = "Abelia × grandiflora")
+
+gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
+
+# fix some spelling mistakes
+gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xpiperita", replacement = "Mentha x piperita")
+gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xrotundifolia", replacement = "Mentha x rotundifolia")
 
 # remove the synonyms for malus that are confusing
 syn_remove <- gbif_synonyms %>%
