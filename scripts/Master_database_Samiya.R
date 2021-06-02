@@ -13830,7 +13830,12 @@ names(gbif_synonyms_add) <- c("species", "canonicalName")
 
 gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Abelia grandiflora", canonicalName = "Linnaea × grandiflora") %>%
-  add_row(species = "Abelia grandiflora", canonicalName = "Abelia × grandiflora")
+  add_row(species = "Abelia grandiflora", canonicalName = "Abelia × grandiflora") %>%
+  add_row(species = "Acacia dangarensis", canonicalName = "Racosperma dangarense") %>%
+  add_row(species = "Acacia excelsa", canonicalName = "Racosperma excelsum") %>%
+  add_row(species = "Acacia gunnii", canonicalName = "Racosperma gunnii") %>%
+  add_row(species = "Acacia hakeoides", canonicalName = "Racosperma hakeoides")
+  
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
 
@@ -13838,10 +13843,11 @@ gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xpiperita", replacement = "Mentha x piperita")
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xrotundifolia", replacement = "Mentha x rotundifolia")
 
-# remove the synonyms for malus that are confusing
+# remove the synonyms for malus that are confusing, and wrong synonyms
 syn_remove <- gbif_synonyms %>%
   filter(species == "Malus pumila" & canonicalName == "Malus domestica" | 
-         species == "Malus sieboldii" & canonicalName == "Malus floribunda")
+         species == "Malus sieboldii" & canonicalName == "Malus floribunda" | 
+         species == "Acacia harpophylla" & canonicalName == "Acacia harpopylla")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
