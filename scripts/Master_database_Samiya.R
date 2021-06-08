@@ -13817,10 +13817,11 @@ gbif_synonyms_remove <- gbif_synonyms_check %>%
 # remove
 gbif_synonyms <- anti_join(gbif_synonyms, gbif_synonyms_remove)
 
-# there are weird canonicalNames with 'publ' at the end, filter those out
+# there are weird canonicalNames with 'publ' and 'oppr' at the end, filter those out
 # https://stackoverflow.com/questions/22850026/filter-rows-which-contain-a-certain-string
 
 gbif_synonyms <- filter(gbif_synonyms, !grepl("publ", canonicalName))
+gbif_synonyms <- filter(gbif_synonyms, !grepl("oppr", canonicalName))
 
 # Add synonyms that Gwilym says
 
