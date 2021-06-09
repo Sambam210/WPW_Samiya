@@ -13849,7 +13849,12 @@ syn_remove <- gbif_synonyms %>%
   filter(species == "Malus pumila" & canonicalName == "Malus domestica" | 
          species == "Malus sieboldii" & canonicalName == "Malus floribunda" | 
          species == "Acacia harpophylla" & canonicalName == "Acacia harpopylla" |
-         species == "Syzygium tierneyanum" & canonicalName == "Waterhousea floribunda")
+         species == "Syzygium tierneyanum" & canonicalName == "Waterhousea floribunda" |
+         species == "Acer pseudoplatanus" & canonicalName == "Acer atropurpureum" |
+         species == "Acer pseudoplatanus" & canonicalName == "Acer latifolium" | 
+         species == "Acer rubrum" & canonicalName == "Acer stenocarpum" | 
+         species == "Acer saccharinum" & canonicalName == "Acer album" | 
+         species == "Acer saccharinum" & canonicalName == "Acer pallidum")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -13899,8 +13904,9 @@ gh_drought <- all_entities_short %>%
 all_entities_short <- anti_join(all_entities_short, gh_drought)
 
 # Gwilym changes
-# change Leguminosae into Fabaceae
+# fix family names
 all_entities_short[] <- lapply(all_entities_short, gsub, pattern = "Leguminosae", replacement = "Fabaceae")
+all_entities_short[] <- lapply(all_entities_short, gsub, pattern = "Compositae", replacement = "Asteraceae")
 
 # adding tolerances to species
 
