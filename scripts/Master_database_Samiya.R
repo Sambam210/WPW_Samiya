@@ -12833,7 +12833,8 @@ all_entities_short <- all_entities_short %>%
          family = if_else(entity == "Quisqualis indica", "Myrtaceae", family),
          family = if_else(entity == "Regelia velutina", "Myrtaceae", family),
          family = if_else(entity == "Citrus maxima", "Rutaceae", family),
-         family = if_else(genus == "Syzygium", "Myrtaceae", family))
+         family = if_else(genus == "Syzygium", "Myrtaceae", family),
+         family = if_else(genus == "Aloe", "Asphodelaceae", family))
 
 # check
 
@@ -13835,7 +13836,10 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Acacia excelsa", canonicalName = "Racosperma excelsum") %>%
   add_row(species = "Acacia gunnii", canonicalName = "Racosperma gunnii") %>%
   add_row(species = "Acacia hakeoides", canonicalName = "Racosperma hakeoides") %>%
-  add_row(species = "Syzygium floribundum", canonicalName = "Waterhousea floribunda")
+  add_row(species = "Syzygium floribundum", canonicalName = "Waterhousea floribunda") %>%
+  add_row(species = "Actinostrobus pyramidalis", canonicalName = "Callitris pyramidalis") %>%
+  add_row(species = "Allium siculum", canonicalName = "Nectaroscordum siculum") %>%
+  add_row(species = "Allocasuarina luehmannii", canonicalName = "Casuarina luehmannii")
   
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
@@ -13854,7 +13858,24 @@ syn_remove <- gbif_synonyms %>%
          species == "Acer pseudoplatanus" & canonicalName == "Acer latifolium" | 
          species == "Acer rubrum" & canonicalName == "Acer stenocarpum" | 
          species == "Acer saccharinum" & canonicalName == "Acer album" | 
-         species == "Acer saccharinum" & canonicalName == "Acer pallidum")
+         species == "Acer saccharinum" & canonicalName == "Acer pallidum" | 
+         species == "Acronychia oblongifolia" & canonicalName == "Eriostemon oblongifolium" | 
+         species == "Acronychia oblongifolia" & canonicalName == "Eriostemon oblongifolius" | 
+         species == "Adiantum hispidulum" | 
+         species == "Aechmea caudata" & canonicalName == "Aechmea floribunda" | 
+         species == "Aechmea nudicaulis" & canonicalName == "Tillandsia serrata" | 
+         species == "Aechmea pineliana" & canonicalName == "Echinostachys rosea" | 
+         species == "Aesculus californica" & canonicalName == "Pavia californica" | 
+         species == "Aesculus glabra" & canonicalName == "Aesculus carnea" |
+         species == "Aesculus glabra" & canonicalName == "Pavia carnea" | 
+         species == "Agave geminiflora" & canonicalName == "Tillandsia juncea" | 
+         species == "Agave geminiflora" & canonicalName == "Dracaena filamentosa" | 
+         species == "Ajuga reptans" & canonicalName == "Ajuga alpina" |
+         species == "Albizia julibrissin" & canonicalName == "Albizzia julibrissin" |
+         species == "Alnus glutinosa" & canonicalName == "Alnus imperialis" | 
+         species == "Alnus glutinosa" & canonicalName == "Alnus aurea" | 
+         species == "Aloe succotrina" & canonicalName == "Aloe soccotorina" | 
+         species == "Aloe succotrina" & canonicalName == "Aloe soccotrina" )
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
