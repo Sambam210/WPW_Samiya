@@ -13839,7 +13839,8 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Syzygium floribundum", canonicalName = "Waterhousea floribunda") %>%
   add_row(species = "Actinostrobus pyramidalis", canonicalName = "Callitris pyramidalis") %>%
   add_row(species = "Allium siculum", canonicalName = "Nectaroscordum siculum") %>%
-  add_row(species = "Allocasuarina luehmannii", canonicalName = "Casuarina luehmannii")
+  add_row(species = "Allocasuarina luehmannii", canonicalName = "Casuarina luehmannii") %>%
+  add_row(species = "Alonsoa meridionalis", canonicalName = "Alonsoa warscewiczii")
   
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
@@ -13875,7 +13876,9 @@ syn_remove <- gbif_synonyms %>%
          species == "Alnus glutinosa" & canonicalName == "Alnus imperialis" | 
          species == "Alnus glutinosa" & canonicalName == "Alnus aurea" | 
          species == "Aloe succotrina" & canonicalName == "Aloe soccotorina" | 
-         species == "Aloe succotrina" & canonicalName == "Aloe soccotrina" )
+         species == "Aloe succotrina" & canonicalName == "Aloe soccotrina" | 
+         species == "Aloe vera" & canonicalName == "Aloe humilis" |
+         species == "Alonsoa meridionalis")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
