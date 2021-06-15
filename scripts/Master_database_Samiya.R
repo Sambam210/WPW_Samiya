@@ -13824,32 +13824,12 @@ gbif_synonyms <- anti_join(gbif_synonyms, gbif_synonyms_remove)
 gbif_synonyms <- filter(gbif_synonyms, !grepl("publ", canonicalName))
 gbif_synonyms <- filter(gbif_synonyms, !grepl("oppr", canonicalName))
 
-# Add synonyms that Gwilym says
-
-gbif_synonyms_add <- data.frame("Acacia buxifolia", "Racosperma buxifolium")
-names(gbif_synonyms_add) <- c("species", "canonicalName")
-
-gbif_synonyms_add <- gbif_synonyms_add %>%
-  add_row(species = "Abelia grandiflora", canonicalName = "Linnaea × grandiflora") %>%
-  add_row(species = "Abelia grandiflora", canonicalName = "Abelia × grandiflora") %>%
-  add_row(species = "Acacia dangarensis", canonicalName = "Racosperma dangarense") %>%
-  add_row(species = "Acacia excelsa", canonicalName = "Racosperma excelsum") %>%
-  add_row(species = "Acacia gunnii", canonicalName = "Racosperma gunnii") %>%
-  add_row(species = "Acacia hakeoides", canonicalName = "Racosperma hakeoides") %>%
-  add_row(species = "Syzygium floribundum", canonicalName = "Waterhousea floribunda") %>%
-  add_row(species = "Actinostrobus pyramidalis", canonicalName = "Callitris pyramidalis") %>%
-  add_row(species = "Allium siculum", canonicalName = "Nectaroscordum siculum") %>%
-  add_row(species = "Allocasuarina luehmannii", canonicalName = "Casuarina luehmannii") %>%
-  add_row(species = "Alonsoa meridionalis", canonicalName = "Alonsoa warscewiczii")
-  
-
-gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
 
 # fix some spelling mistakes
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xpiperita", replacement = "Mentha x piperita")
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xrotundifolia", replacement = "Mentha x rotundifolia")
 
-# remove the synonyms for malus that are confusing, and wrong synonyms
+# remove the synonyms for malus that are confusing, and wrong synonyms according to Gwilym
 syn_remove <- gbif_synonyms %>%
   filter(species == "Malus pumila" & canonicalName == "Malus domestica" | 
          species == "Malus sieboldii" & canonicalName == "Malus floribunda" | 
@@ -13878,9 +13858,49 @@ syn_remove <- gbif_synonyms %>%
          species == "Aloe succotrina" & canonicalName == "Aloe soccotorina" | 
          species == "Aloe succotrina" & canonicalName == "Aloe soccotrina" | 
          species == "Aloe vera" & canonicalName == "Aloe humilis" |
-         species == "Alonsoa meridionalis")
+         species == "Alonsoa meridionalis" | 
+         species == "Aloysia citrodora" & canonicalName == "Aloysia citridora" | 
+         species == "Aloysia citrodora" & canonicalName == "Verbena fragrans" | 
+         species == "Alpinia zerumbet" & canonicalName == "Amomum nutans" | 
+         species == "Alpinia zerumbet" & canonicalName == "Languas schumanniana" | 
+         species == "Alpinia zerumbet" & canonicalName == "Languas speciosa" | 
+         species == "Alpinia zerumbet" & canonicalName == "Renealmia nutans" | 
+         species == "Alpinia zerumbet" & canonicalName == "Renealmia spectabilis" | 
+         species == "Alternanthera ficoidea" & canonicalName == "Achyranthes ficoides" | 
+         species == "Alternanthera ficoidea" & canonicalName == "Alternanthera polygonoides" |
+         species == "Alternanthera ficoidea" & canonicalName == "Alternanthera tenella" | 
+         species == "Alternanthera ficoidea" & canonicalName == "Bucholzia brachiata" |
+         species == "Alternanthera ficoidea" & canonicalName == "Illecebrum tenellum" |  
+         species == "Alternanthera ficoidea" & canonicalName == "Paronychia tenella" | 
+         species == "Amaranthus tricolor" & canonicalName == "Amaranthus lancifolius" | 
+         species == "Amaranthus tricolor" & canonicalName == "Amaranthus lancefolius" |
+         species == "Amaranthus tricolor" & canonicalName == "Amaranthus polygamus" | 
+         species == "Amaranthus tricolor" & canonicalName == "Amaranthus roxburgianus" | 
+         species == "Amelanchier canadensis" | 
+         species == "Amsonia tabernaemontana" & canonicalName == "Amsonia amsonia")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
+
+# Add synonyms that Gwilym says
+
+gbif_synonyms_add <- data.frame("Acacia buxifolia", "Racosperma buxifolium")
+names(gbif_synonyms_add) <- c("species", "canonicalName")
+
+gbif_synonyms_add <- gbif_synonyms_add %>%
+  add_row(species = "Abelia grandiflora", canonicalName = "Linnaea × grandiflora") %>%
+  add_row(species = "Abelia grandiflora", canonicalName = "Abelia × grandiflora") %>%
+  add_row(species = "Acacia dangarensis", canonicalName = "Racosperma dangarense") %>%
+  add_row(species = "Acacia excelsa", canonicalName = "Racosperma excelsum") %>%
+  add_row(species = "Acacia gunnii", canonicalName = "Racosperma gunnii") %>%
+  add_row(species = "Acacia hakeoides", canonicalName = "Racosperma hakeoides") %>%
+  add_row(species = "Syzygium floribundum", canonicalName = "Waterhousea floribunda") %>%
+  add_row(species = "Actinostrobus pyramidalis", canonicalName = "Callitris pyramidalis") %>%
+  add_row(species = "Allium siculum", canonicalName = "Nectaroscordum siculum") %>%
+  add_row(species = "Allocasuarina luehmannii", canonicalName = "Casuarina luehmannii") %>%
+  add_row(species = "Alonsoa meridionalis", canonicalName = "Alonsoa warscewiczii") %>%
+  add_row(species = "Amelanchier canadensis", canonicalName = "Amelanchier austromontana")
+  
+gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
 
 # IT IS ALL CLEANED, NOW TO JOIN TOGETHER
 # https://stackoverflow.com/questions/38514988/concatenate-strings-by-group-with-dplyr
