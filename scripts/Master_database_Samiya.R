@@ -12245,6 +12245,7 @@ leveneTest(PET_max ~ drought_tolerance, data = PET_max) # no evidence that varia
 # removed several inappropriate species
 # removed water requirements from 'planting and maintenance'
 # Remove drought tolerance for glasshouse species
+# Added 'timber' as a 'use'
 
 #### Things to do
 # check weeds with Michelle
@@ -12253,9 +12254,9 @@ leveneTest(PET_max ~ drought_tolerance, data = PET_max) # no evidence that varia
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_17May2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_17Jun2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_17May2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_17Jun2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -13583,7 +13584,7 @@ all_entities_short <- all_entities_short %>%
 #   distinct(scientificNameStd, plant_name, .keep_all = TRUE) %>%
 #   select(scientificNameStd, plant_name, tree, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
 # 
-# write.csv(co_benefit,"Master_database_output/Ale/co_benefit_analysis_ST_12.4.2021.csv",row.names = FALSE)
+# write.csv(co_benefit,"Master_database_output/Ale/co_benefit_analysis_ST_17.6.2021.csv",row.names = FALSE)
 
 categories <- read.csv("Master_database_input/Ale/co_benefit_analysis_ST_12.4.2021_AO.csv")
 
@@ -13877,7 +13878,13 @@ syn_remove <- gbif_synonyms %>%
          species == "Amaranthus tricolor" & canonicalName == "Amaranthus polygamus" | 
          species == "Amaranthus tricolor" & canonicalName == "Amaranthus roxburgianus" | 
          species == "Amelanchier canadensis" | 
-         species == "Amsonia tabernaemontana" & canonicalName == "Amsonia amsonia")
+         species == "Amsonia tabernaemontana" & canonicalName == "Amsonia amsonia" | 
+         species == "Andromeda polifolia" & canonicalName == "Andomeda canescens" | 
+         species == "Angophora costata" & canonicalName == "Metrosideros apocynifolia" | 
+         species == "Angophora hispida" & canonicalName == "Metrosideros anomala" | 
+         species == "Angophora hispida" & canonicalName == "Metrosideros cordifolia" | 
+         species == "Angophora hispida" & canonicalName == "Metrosideros hirsuta" | 
+         species == "Angophora subvelutina")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -14231,6 +14238,22 @@ diff2 <- setdiff(metadata, disuses_filenames)
 # no differences
 
 write.csv(diff,"Master_database_output/photos/extensions_to_change.csv", row.names=FALSE)
+
+###### check that file names for metadata match for beta version images
+
+beta_version <- read.csv("Master_database_input/photos/beta_version_photo_list_17Jun2021.csv")
+
+metadata <- read.csv("Master_database_input/photos/photo_check_17Jun2021.csv")
+
+metadata <- select(metadata, New.file.name)
+
+names(metadata)[names(metadata) == 'New.file.name'] <- 'Photo_names'
+
+diff <- setdiff(beta_version, metadata)
+diff2 <- setdiff(metadata, beta_version)
+
+write.csv(diff,"Master_database_output/photos/beta_version_diff_17Jun2021.csv", row.names=FALSE)
+write.csv(diff2,"Master_database_output/photos/metadata_diff_17Jun2021.csv", row.names=FALSE)
 
 #################################################
 ##### For Gwilym
