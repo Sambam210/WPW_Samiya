@@ -12266,7 +12266,7 @@ all_entities_short <- all_entities %>%
   select(scientificNameStd, species, category, exp_tested, trait_name, value) %>%
   distinct(scientificNameStd, species, category, exp_tested, trait_name, value)
 
-check <- distinct(all_entities_short, species) # 2636 species, haven't lost anything
+check <- distinct(all_entities_short, species) # 2605 entities
 
 # remove the old height and width dimensions
 
@@ -12274,7 +12274,7 @@ all_entities_short <- all_entities_short %>%
   filter(trait_name != "max_height", trait_name != "height", trait_name != "min_height", 
          trait_name != "max_width", trait_name != "width", trait_name != "min_width")
 
-check <- distinct(all_entities_short, species) # 2636 species, haven't lost anything
+check <- distinct(all_entities_short, species) # 2605 entities, haven't lost anything
 
 ##### new height and width data
 
@@ -12348,7 +12348,7 @@ height_width_long$value <- as.character(height_width_long$value)
 all_entities_short <- bind_rows(all_entities_short, height_width_long)
 all_entities_short <- arrange(all_entities_short, scientificNameStd, species, trait_name, value)
 
-check <- distinct(all_entities_short, species) # 2636 species, haven't lost anything
+check <- distinct(all_entities_short, species) # 2605 entities, haven't lost anything
 
 ### do drought classifications
 
@@ -12358,10 +12358,13 @@ drought <- all_entities %>%
   filter(trait_name == "drought_tolerance") %>%
   select(scientificNameStd, species, category, exp_tested, trait_name, value)
 
+# make all the values upper case
+drought$value <- gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", drought$value, perl=TRUE)
+
 drought_summary <- drought %>%
   group_by(scientificNameStd, species) %>%
   summarise(number_records = n())
-# 1743 records
+# 1799 records
 
 drought["number"] <- 1 # add new column populated by '1'
 
@@ -12419,7 +12422,7 @@ frost$value <- gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", frost$value, pe
 frost_summary <- frost %>%
   group_by(scientificNameStd, species) %>%
   summarise(number_records = n())
-# 1852 records
+# 1875 records
 
 frost["number"] <- 1 # add new column populated by '1'
 
@@ -12472,7 +12475,7 @@ coastal$value <- gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", coastal$value
 coastal_summary <- coastal %>%
   group_by(scientificNameStd, species) %>%
   summarise(number_records = n())
-# 874 records
+# 945 records
 
 coastal["number"] <- 1 # add new column populated by '1'
 
@@ -12517,14 +12520,14 @@ plant_type_origin <- all_entities %>%
   filter(Min_5_traits == "TRUE") %>%
   filter(Include_in_tool == "Yes") %>%
   select(species, plantType, origin) %>%
-  distinct(species, plantType, origin) # 2636 plants
+  distinct(species, plantType, origin) # 2605 entities
 
 # join to main dataset
 all_entities_short <- left_join(all_entities_short, plant_type_origin, by = "species")
 
 all_entities_short <- all_entities_short %>%
   select(scientificNameStd, species, plantType, origin, category, exp_tested, trait_name, value) %>%
-  filter(trait_name != "native_exotic") # do not remove 'form' as will need that later
+  filter(trait_name != "native_exotic")
 
 ###### separate the species and genus names
 # https://stackoverflow.com/questions/4350440/split-data-frame-string-column-into-multiple-columns
@@ -12569,46 +12572,18 @@ all_entities_short$synonym <- ifelse(all_entities_short$category == "SYN", all_e
 
 all_entities_short <- select(all_entities_short, scientificNameStd, family, genus, species, entity, synonym, plantType, origin, category, exp_tested, trait_name, value)
 
-####### extract the ecological services data
 
-eco <- all_entities_short %>%
-  filter(trait_name == "ecological_services") %>%
-  select(entity, trait_name, value)
-
-eco$score <- "1"
-
-# change from long to wide
-
-eco_wide <- eco %>%
-  spread(value, score, fill = 0) 
-
-glimpse(eco_wide) 
-
-eco_wide$bird <- as.numeric(as.character(eco_wide$bird))
-eco_wide$insect <- as.numeric(as.character(eco_wide$insect))
-eco_wide$lizard <- as.numeric(as.character(eco_wide$lizard))
-eco_wide$native_mammal <- as.numeric(as.character(eco_wide$native_mammal))
-eco_wide$pollinator <- as.numeric(as.character(eco_wide$pollinator))  
-
-eco_wide <- eco_wide %>%
-  mutate(biodiversity_score = bird + insect + lizard + native_mammal + pollinator) %>%
-  select(-trait_name)
-
-# join to main database
-all_entities_short <- left_join(all_entities_short, eco_wide, by = "entity")
-
-# replace the NAs with 0
-
-all_entities_short$bird[is.na(all_entities_short$bird)] <- 0
-all_entities_short$insect[is.na(all_entities_short$insect)] <- 0
-all_entities_short$lizard[is.na(all_entities_short$lizard)] <- 0
-all_entities_short$native_mammal[is.na(all_entities_short$native_mammal)] <- 0
-all_entities_short$pollinator[is.na(all_entities_short$pollinator)] <- 0
-all_entities_short$biodiversity_score[is.na(all_entities_short$biodiversity_score)] <- 0
-
+############## ecological services data
 # remove the ecological services trait
 all_entities_short <- all_entities_short %>%
   filter(trait_name != "ecological_services")
+
+# add the data that Paul and Sally sent
+
+biodiversity <- read.csv("Master_database_input/biodiversity/Biodiversity_values_PR_Sp_17Jun2017.csv")
+
+# join to main database
+all_entities_short <- left_join(all_entities_short, biodiversity, by = "entity")
 
 ##### extract the plant form data
 
@@ -12653,12 +12628,10 @@ all_entities_short$shade_index <- ""
 all_entities_short$carbon_value <- ""
 all_entities_short$carbon_index <-""
 
-names(all_entities_short)[names(all_entities_short) == 'biodiversity_score'] <- 'biodiversity_value'
-
 # rearrange all the columns
 all_entities_short <- select(all_entities_short, scientificNameStd, family, genus, species, entity, synonym, model_type, plantType, climber, 
                              cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, category, exp_tested, trait_name, value,
-                             bird, insect, lizard, native_mammal, pollinator, biodiversity_value, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
+                             bird, insect, mammal_lizard, animal_pollinated, habitat, biodiversity_value, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
 
 #### add the max height and width for shade and carbon values
 
@@ -12691,8 +12664,7 @@ all_entities_short <- left_join(all_entities_short, height_width_wide, by = "ent
 
 # rearrange all the columns
 all_entities_short <- select(all_entities_short, scientificNameStd, family, genus, species, entity, synonym, model_type, plantType, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, category, exp_tested, trait_name, value,
-                             bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
-
+                             bird, insect, mammal_lizard, animal_pollinated, habitat, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
 
 ##### fix up family names for H, HC, GC
 
@@ -12750,7 +12722,7 @@ found <- found %>%
   mutate_if(is.factor, as.character) %>%
   mutate(family = if_else(genus == "Rheum", "Polygonaceae", family))
 
-## add parents of Gc, H, HC
+## add parents of GC, H, HC
 
 parents <- read.csv("Master_database_input/hybrids_genus_cultivars_parents_new.csv")
 
@@ -12766,7 +12738,7 @@ found <- left_join(found, parents, by = "entity")
 found <- found %>%
   select(-frequency) %>%
   select(scientificNameStd, family, genus, species, entity, synonym, Parent_1, Parent_2,Parent_3, Parent_4, model_type, plantType, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, category, exp_tested, trait_name, value,
-         bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
+         bird, insect, mammal_lizard, animal_pollinated, habitat, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
 
 # replace the blank parent cells with NA
 
@@ -12782,7 +12754,7 @@ found <- found %>%
   mutate_if(is.factor, as.character) %>%
   mutate(Parent_4 = if_else(Parent_4 == "", "NA", Parent_4))
 
-# remove H, HC, Gc from database
+# remove H, HC, GC from database
 
 all_entities_short <- all_entities_short %>%
   filter(category != "H" & category != "GC" & category != "HC")
@@ -12798,7 +12770,7 @@ all_entities_short$Parent_4 <- "NA"
 
 all_entities_short <- all_entities_short %>%
   select(scientificNameStd, family, genus, species, entity, synonym, Parent_1, Parent_2,Parent_3, Parent_4, model_type, plantType, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, category, exp_tested, trait_name, value,
-         bird, insect, lizard, native_mammal, pollinator, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
+         bird, insect, mammal_lizard, animal_pollinated, habitat, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
 
 # join back the H, HC, GCs
 
@@ -12810,7 +12782,7 @@ all_entities_short <- arrange(all_entities_short, entity, trait_name, value)
 syn <- all_entities_short %>%
   filter(family == "") %>%
   select(entity) %>%
-  distinct(entity) #18
+  distinct(entity) # 17
 
 # find and fix
 
@@ -12842,7 +12814,7 @@ all_entities_short <- all_entities_short %>%
 syn_check <- filter(all_entities_short, family == "") # all fixed
 
 # filter out cultivars
-# check if sciename = entity
+# check if sciname = entity
 # check if they are all synonyms
 
 same <- all_entities_short %>%
@@ -12950,7 +12922,7 @@ all_entities_short <- arrange(all_entities_short, entity, trait_name, value)
 
 check_syn <- all_entities_short %>%
   filter(synonym != "NA") %>%
-  distinct(entity) # 166 synonyms which is 168 from original minus the two species I combined
+  distinct(entity) # 162 synonyms which is 164 from original minus the two species I combined
 
 # change entity to plant name
 names(all_entities_short)[names(all_entities_short) == 'entity'] <- 'plant_name'
