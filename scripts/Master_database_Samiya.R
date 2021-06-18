@@ -12246,13 +12246,13 @@ leveneTest(PET_max ~ drought_tolerance, data = PET_max) # no evidence that varia
 # removed water requirements from 'planting and maintenance'
 # Remove drought tolerance for glasshouse species
 # Added 'timber' as a 'use'
+# Removed 'habitat' as a 'use'
 # Removed 'model_type' column
 # Removed 'Koppen_zone' column
+# changed the column names for 'biodiversity' functions
 
 #### Things to do
 # check weeds with Michelle
-# Add new biodiversity co-benefits
-# send Ale heights and widths again to do calculations
 
 library(tidyverse)
 
@@ -13895,6 +13895,10 @@ all_entities_short <- anti_join(all_entities_short, gh_drought)
 
 # remove 'model_type' column
 all_entities_short <- select(all_entities_short, -model_type)
+
+# remove 'habitat' as a 'use
+all_entities_short <- all_entities_short %>%
+  filter(value != "habitat")
 
 # Gwilym changes
 # fix family names
