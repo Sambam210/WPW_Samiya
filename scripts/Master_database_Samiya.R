@@ -13554,9 +13554,9 @@ all_entities_short <- all_entities_short %>%
 #   distinct(scientificNameStd, plant_name, .keep_all = TRUE) %>%
 #   select(scientificNameStd, plant_name, tree, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
 # 
-# write.csv(co_benefit,"Master_database_output/Ale/co_benefit_analysis_ST_17.6.2021.csv",row.names = FALSE)
+# write.csv(co_benefit,"Master_database_output/Ale/co_benefit_analysis_ST_21.6.2021.csv",row.names = FALSE)
 
-categories <- read.csv("Master_database_input/Ale/co_benefit_analysis_ST_18.6.2021_AO.csv")
+categories <- read.csv("Master_database_input/Ale/co_benefit_analysis_ST_21.6.2021_AO.csv")
 
 # join to main database
 all_entities_short <- select(all_entities_short, -shade_index, -carbon_index)
@@ -13840,7 +13840,9 @@ syn_remove <- gbif_synonyms %>%
          species == "Angophora hispida" & canonicalName == "Metrosideros anomala" | 
          species == "Angophora hispida" & canonicalName == "Metrosideros cordifolia" | 
          species == "Angophora hispida" & canonicalName == "Metrosideros hirsuta" | 
-         species == "Angophora subvelutina")
+         species == "Angophora subvelutina" |
+         species == "Antennaria dioica" & canonicalName == "Antennaria dioeca" | 
+         species == "Arbutus unedo" & canonicalName == "Arbutus idaea")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -13913,6 +13915,13 @@ all_entities_short <- all_entities_short %>%
 # fix family names
 all_entities_short[] <- lapply(all_entities_short, gsub, pattern = "Leguminosae", replacement = "Fabaceae")
 all_entities_short[] <- lapply(all_entities_short, gsub, pattern = "Compositae", replacement = "Asteraceae")
+
+# remove 'canopy shape' trait from everything that isn't a tree or shrub
+canopy_shape_remove <- all_entities_short %>%
+  filter(tree == "0" & shrub == "0") %>%
+  filter(trait_name == "canopy shape")
+
+all_entities_short <- anti_join(all_entities_short, canopy_shape_remove)
 
 write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_18.6.2021_vers1.7.csv",row.names=FALSE)
 
