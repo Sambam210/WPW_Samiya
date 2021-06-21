@@ -13033,6 +13033,15 @@ all_entities_short$carbon_value[is.na(all_entities_short$carbon_value)] <- "NA"
 
 biodiversity <- read.csv("Master_database_input/biodiversity/Biodiversity_values_PR_Sp_17Jun2017.csv")
 
+# fix up some mistakes
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Acacia longifolia subsp Longifolia", replacement = "Acacia longifolia subsp longifolia")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Alyogne huegelii Delightfully Double", replacement = "Alyogyne huegelii Delightfully Double")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Lagerstroemia indica Commanchee", replacement = "Lagerstroemia indica Commanche")
+
+biodiversity <- biodiversity %>%
+  add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
+          habitat = "1", biodiversity_value = "4")
+
 # join to main database
 all_entities_short <- left_join(all_entities_short, biodiversity, by = "plant_name")
 
