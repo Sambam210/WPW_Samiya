@@ -14784,7 +14784,7 @@ syn <- all_entities_short %>%
   select(entity) %>%
   distinct(entity) # 17
 
-# find and fix
+# find and fix (also includes Gwilym corrections)
 
 all_entities_short <- all_entities_short %>%
   mutate_if(is.factor, as.character) %>%
@@ -14807,7 +14807,8 @@ all_entities_short <- all_entities_short %>%
          family = if_else(entity == "Regelia velutina", "Myrtaceae", family),
          family = if_else(entity == "Citrus maxima", "Rutaceae", family),
          family = if_else(genus == "Syzygium", "Myrtaceae", family),
-         family = if_else(genus == "Aloe", "Asphodelaceae", family))
+         family = if_else(genus == "Aloe", "Asphodelaceae", family),
+         family = if_else(genus == "Atriplex", "Chenopodiaceae", family))
 
 # check
 
@@ -15838,7 +15839,8 @@ syn_remove <- gbif_synonyms %>%
            species == "Angophora hispida" & canonicalName == "Metrosideros hirsuta" | 
            species == "Angophora subvelutina" |
            species == "Antennaria dioica" & canonicalName == "Antennaria dioeca" | 
-           species == "Arbutus unedo" & canonicalName == "Arbutus idaea")
+           species == "Arbutus unedo" & canonicalName == "Arbutus idaea" | 
+           species == "Banksia marginata" & canonicalName == "Banksia australis")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -15859,7 +15861,11 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Allium siculum", canonicalName = "Nectaroscordum siculum") %>%
   add_row(species = "Allocasuarina luehmannii", canonicalName = "Casuarina luehmannii") %>%
   add_row(species = "Alonsoa meridionalis", canonicalName = "Alonsoa warscewiczii") %>%
-  add_row(species = "Amelanchier canadensis", canonicalName = "Amelanchier austromontana")
+  add_row(species = "Amelanchier canadensis", canonicalName = "Amelanchier austromontana") %>%
+  add_row(species = "Atractocarpus fitzalanii", canonicalName = "Randia fitzalanii") %>%
+  add_row(species = "Atriplex paludosa", canonicalName = "Atriplex paludosa subsp cordata") %>%
+  add_row(species = "Auranticarpa rhombifolia", canonicalName = "Pittosporum rhombifolium") %>%
+  add_row(species = "Baloskion tetraphyllum", canonicalName = "Restio tetraphyllus")
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
 
