@@ -14252,9 +14252,9 @@ write.csv(gwilym,"Master_database_output/Gwilym/WPW_plant_list_20May2021.csv", r
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_17Jun2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_5Jul2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_17Jun2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_5Jul2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -14726,6 +14726,28 @@ found <- found %>%
 
 parents <- read.csv("Master_database_input/hybrids_genus_cultivars_parents_new.csv")
 
+# change some names
+parents[] <- lapply(parents, gsub, pattern = "Anigozanthos Red Cross", replacement = "Anigozanthos spp. Red Cross")
+parents[] <- lapply(parents, gsub, pattern = "Ceanothus Blue Pacific", replacement = "Ceanothus spp. Blue Pacific")
+parents[] <- lapply(parents, gsub, pattern = "Citrus Sunrise Lime", replacement = "Citrus spp. Sunrise Lime")
+parents[] <- lapply(parents, gsub, pattern = "Grevillea Canterbury Gold", replacement = "Grevillea spp. Canterbury Gold")
+parents[] <- lapply(parents, gsub, pattern = "Grevillea Coastal Sunset", replacement = "Grevillea spp. Coastal Sunset")
+parents[] <- lapply(parents, gsub, pattern = "Grevillea Crimson YulLo", replacement = "Grevillea spp. Crimson Yul-Lo")
+parents[] <- lapply(parents, gsub, pattern = "Grevillea Ivanhoe", replacement = "Grevillea spp. Ivanhoe")
+parents[] <- lapply(parents, gsub, pattern = "Grevillea Long John", replacement = "Grevillea spp. Long John")
+parents[] <- lapply(parents, gsub, pattern = "Grevillea Parakeet Pink", replacement = "Grevillea spp. Parakeet Pink")
+parents[] <- lapply(parents, gsub, pattern = "Grevillea Silvereye Cream", replacement = "Grevillea spp. Silvereye Cream")
+parents[] <- lapply(parents, gsub, pattern = "Grevillea Wattlebird Yellow", replacement = "Grevillea spp. Wattlebird Yellow")
+parents[] <- lapply(parents, gsub, pattern = "Myoporum Monaro Marvel", replacement = "Myoporum spp. Monaro Marvel")
+parents[] <- lapply(parents, gsub, pattern = "Philotheca Flower Girl", replacement = "Philotheca spp. Flower Girl")
+parents[] <- lapply(parents, gsub, pattern = "Prostanthera Poorinda Ballerina", replacement = "Prostanthera spp. Poorinda Ballerina")
+parents[] <- lapply(parents, gsub, pattern = "Prunus Elvins", replacement = "Prunus spp. Elvins")
+parents[] <- lapply(parents, gsub, pattern = "Telopea Braidwood Brilliant", replacement = "Telopea spp. Braidwood Brilliant")
+parents[] <- lapply(parents, gsub, pattern = "Telopea Shady Lady Red", replacement = "Telopea spp. Shady Lady Red")
+parents[] <- lapply(parents, gsub, pattern = "Ulmus Sapporo Autumn Gold", replacement = "Ulmus spp. Sapporo Autumn Gold")
+parents[] <- lapply(parents, gsub, pattern = "Xerochrysum Cockatoo", replacement = "Xerochrysum spp. Cockatoo")
+parents[] <- lapply(parents, gsub, pattern = "Xerochrysum Dargan Hill Monarch", replacement = "Xerochrysum spp. Dargan Hill Monarch")
+
 parents <- select(parents, -plantType)
 
 names(parents)[names(parents) == 'Species'] <- 'entity'
@@ -15030,10 +15052,39 @@ all_entities_short$carbon_value[is.na(all_entities_short$carbon_value)] <- "NA"
 
 biodiversity <- read.csv("Master_database_input/biodiversity/Biodiversity_values_PR_Sp_17Jun2017.csv")
 
-# fix up some mistakes
+# fix up some name changes
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Acacia longifolia subsp Longifolia", replacement = "Acacia longifolia subsp longifolia")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Alyogne huegelii Delightfully Double", replacement = "Alyogyne huegelii Delightfully Double")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Lagerstroemia indica Commanchee", replacement = "Lagerstroemia indica Commanche")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Acacia alata biglandulosa", replacement = "Acacia alata subsp biglandulosa")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Andromeda polifolia compacta", replacement = "Andromeda polifolia Compacta")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Anemone hupehensis japonica", replacement = "Anemone hupehensis Japonica")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Dianella caerulea ssp assera Curly Tops", replacement = "Dianella caerulea subsp assera Curly Tops")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eremophila bowmanii ssp latifolia", replacement = "Eremophila bowmanii subsp latifolia")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Escallonia rubra macrantha", replacement = "Escallonia rubra Macrantha")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Fagus sylvatica orientalis", replacement = "Fagus sylvatica Orientalis")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Grevillea preissii ssp preissii", replacement = "Grevillea preissii subsp preissii")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Lomandra confertifolia ssp pallida Golden Spray", replacement = "Lomandra confertifolia subsp pallida Golden Spray")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Anigozanthos Red Cross", replacement = "Anigozanthos spp. Red Cross")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Ceanothus Blue Pacific", replacement = "Ceanothus spp. Blue Pacific")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Citrus Sunrise Lime", replacement = "Citrus spp. Sunrise Lime")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Grevillea Canterbury Gold", replacement = "Grevillea spp. Canterbury Gold")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Grevillea Coastal Sunset", replacement = "Grevillea spp. Coastal Sunset")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Grevillea Crimson YulLo", replacement = "Grevillea spp. Crimson Yul-Lo")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Grevillea Ivanhoe", replacement = "Grevillea spp. Ivanhoe")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Grevillea Long John", replacement = "Grevillea spp. Long John")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Grevillea Parakeet Pink", replacement = "Grevillea spp. Parakeet Pink")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Grevillea Silvereye Cream", replacement = "Grevillea spp. Silvereye Cream")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Grevillea Wattlebird Yellow", replacement = "Grevillea spp. Wattlebird Yellow")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Myoporum Monaro Marvel", replacement = "Myoporum spp. Monaro Marvel")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Philotheca Flower Girl", replacement = "Philotheca spp. Flower Girl")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Prostanthera Poorinda Ballerina", replacement = "Prostanthera spp. Poorinda Ballerina")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Prunus Elvins", replacement = "Prunus spp. Elvins")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Telopea Braidwood Brilliant", replacement = "Telopea spp. Braidwood Brilliant")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Telopea Shady Lady Red", replacement = "Telopea spp. Shady Lady Red")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Ulmus Sapporo Autumn Gold", replacement = "Ulmus spp. Sapporo Autumn Gold")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Xerochrysum Cockatoo", replacement = "Xerochrysum spp. Cockatoo")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Xerochrysum Dargan Hill Monarch", replacement = "Xerochrysum spp. Dargan Hill Monarch")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -15555,6 +15606,14 @@ all_entities_short <- all_entities_short %>%
 
 categories <- read.csv("Master_database_input/Ale/co_benefit_analysis_ST_21.6.2021_AO.csv")
 
+# change some names, this will become redundant with a newer version of Ale's data
+categories[] <- lapply(categories, gsub, pattern = "Fagus sylvatica orientalis", replacement = "Fagus sylvatica Orientalis")
+categories[] <- lapply(categories, gsub, pattern = "Ceanothus Blue Pacific", replacement = "Ceanothus spp. Blue Pacific")
+categories[] <- lapply(categories, gsub, pattern = "Citrus Sunrise Lime", replacement = "Citrus spp. Sunrise Lime")
+categories[] <- lapply(categories, gsub, pattern = "Grevillea Ivanhoe", replacement = "Grevillea spp. Ivanhoe")
+categories[] <- lapply(categories, gsub, pattern = "Prunus Elvins", replacement = "Prunus spp. Elvins")
+categories[] <- lapply(categories, gsub, pattern = "Ulmus Sapporo Autumn Gold", replacement = "Ulmus spp. Sapporo Autumn Gold")
+
 # join to main database
 all_entities_short <- select(all_entities_short, -shade_index, -carbon_index)
 
@@ -15925,6 +15984,6 @@ canopy_shape_remove <- all_entities_short %>%
 
 all_entities_short <- anti_join(all_entities_short, canopy_shape_remove)
 
-# write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_30.6.2021_vers1.8.csv",row.names=FALSE)
+write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_30.6.2021_vers1.8_TEST.csv",row.names=FALSE)
 
 
