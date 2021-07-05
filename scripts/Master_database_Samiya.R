@@ -15924,7 +15924,9 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Atractocarpus fitzalanii", canonicalName = "Randia fitzalanii") %>%
   add_row(species = "Atriplex paludosa", canonicalName = "Atriplex paludosa subsp cordata") %>%
   add_row(species = "Auranticarpa rhombifolia", canonicalName = "Pittosporum rhombifolium") %>%
-  add_row(species = "Baloskion tetraphyllum", canonicalName = "Restio tetraphyllus")
+  add_row(species = "Baloskion tetraphyllum", canonicalName = "Restio tetraphyllus") %>%
+  add_row(species = "Bauhinia hookeri", canonicalName = "Lysiphyllum hookeri") %>%
+  add_row(species = "Beaucarnea recurvata", canonicalName = "Nolina recurvata")
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
 
