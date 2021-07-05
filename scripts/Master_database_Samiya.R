@@ -15984,6 +15984,6 @@ canopy_shape_remove <- all_entities_short %>%
 
 all_entities_short <- anti_join(all_entities_short, canopy_shape_remove)
 
-write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_30.6.2021_vers1.8_TEST.csv",row.names=FALSE)
+# write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_30.6.2021_vers1.8.csv",row.names=FALSE)
 
 
