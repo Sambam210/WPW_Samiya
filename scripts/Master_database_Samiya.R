@@ -14830,7 +14830,13 @@ all_entities_short <- all_entities_short %>%
          family = if_else(entity == "Citrus maxima", "Rutaceae", family),
          family = if_else(genus == "Syzygium", "Myrtaceae", family),
          family = if_else(genus == "Aloe", "Asphodelaceae", family),
-         family = if_else(genus == "Atriplex", "Chenopodiaceae", family))
+         family = if_else(genus == "Atriplex", "Chenopodiaceae", family),
+         family = if_else(genus == "Bulbine", "Asphodelaceae", family),
+         family = if_else(genus == "Johnsonia", "Asphodelaceae", family),
+         family = if_else(genus == "Phormium", "Asphodelaceae", family),
+         family = if_else(genus == "Stypandra", "Asphodelaceae", family),
+         family = if_else(genus == "Thelionema", "Asphodelaceae", family),
+         family = if_else(genus == "Dianella", "Asphodelaceae", family))
 
 # check
 
@@ -15899,7 +15905,8 @@ syn_remove <- gbif_synonyms %>%
            species == "Angophora subvelutina" |
            species == "Antennaria dioica" & canonicalName == "Antennaria dioeca" | 
            species == "Arbutus unedo" & canonicalName == "Arbutus idaea" | 
-           species == "Banksia marginata" & canonicalName == "Banksia australis")
+           species == "Banksia marginata" & canonicalName == "Banksia australis" | 
+           species == "Callitris columellaris" & canonicalName == "Callitris hugelii")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -15926,7 +15933,9 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Auranticarpa rhombifolia", canonicalName = "Pittosporum rhombifolium") %>%
   add_row(species = "Baloskion tetraphyllum", canonicalName = "Restio tetraphyllus") %>%
   add_row(species = "Bauhinia hookeri", canonicalName = "Lysiphyllum hookeri") %>%
-  add_row(species = "Beaucarnea recurvata", canonicalName = "Nolina recurvata")
+  add_row(species = "Beaucarnea recurvata", canonicalName = "Nolina recurvata") %>%
+  add_row(species = "Brugmansia sanguinea", canonicalName = "Datura sanguinea")
+
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
 
@@ -15989,3 +15998,24 @@ all_entities_short <- anti_join(all_entities_short, canopy_shape_remove)
 # write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_30.6.2021_vers1.8.csv",row.names=FALSE)
 
 
+
+
+
+
+#################################################################
+## extract data for Gwilym
+
+Gwilym <- all_entities_short %>%
+  filter(tree == "1") %>%
+  filter(trait_name == "growth rate" | trait_name == "maximum height" | trait_name == "maximum width") %>%
+  select(plant_name, trait_name, value) %>%
+  group_by(plant_name, trait_name) %>%
+  mutate(value = paste0(value, collapse = ", ")) %>%
+  distinct(plant_name, trait_name, value)
+
+Gwilym_wide <- Gwilym %>%
+  spread(trait_name, value, fill = NA)
+
+write.csv(Gwilym_wide,"Master_database_output/Gwilym/Gwilym_canopy_projections.csv",row.names=FALSE)
+
+#################################################################
