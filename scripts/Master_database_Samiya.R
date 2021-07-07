@@ -14837,7 +14837,8 @@ all_entities_short <- all_entities_short %>%
          family = if_else(genus == "Phormium", "Asphodelaceae", family),
          family = if_else(genus == "Stypandra", "Asphodelaceae", family),
          family = if_else(genus == "Thelionema", "Asphodelaceae", family),
-         family = if_else(genus == "Dianella", "Asphodelaceae", family))
+         family = if_else(genus == "Dianella", "Asphodelaceae", family),
+         family = if_else(genus == "Camellia", "Theaceae", family))
 
 # check
 
@@ -15092,9 +15093,13 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Telopea Shady Lady Red",
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Ulmus Sapporo Autumn Gold", replacement = "Ulmus spp. Sapporo Autumn Gold")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Xerochrysum Cockatoo", replacement = "Xerochrysum spp. Cockatoo")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Xerochrysum Dargan Hill Monarch", replacement = "Xerochrysum spp. Dargan Hill Monarch")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Camellia sasangua", replacement = "Camellia sasanqua")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Capparis spinosa var nummularia", replacement = "Capparis spinosa subsp nummularia")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
+          habitat = "1", biodiversity_value = "4") %>%
+  add_row(plant_name = "Carissa macrocarpa Emerald Star", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
           habitat = "1", biodiversity_value = "4")
 
 # join to main database
@@ -15620,6 +15625,7 @@ categories[] <- lapply(categories, gsub, pattern = "Citrus Sunrise Lime", replac
 categories[] <- lapply(categories, gsub, pattern = "Grevillea Ivanhoe", replacement = "Grevillea spp. Ivanhoe")
 categories[] <- lapply(categories, gsub, pattern = "Prunus Elvins", replacement = "Prunus spp. Elvins")
 categories[] <- lapply(categories, gsub, pattern = "Ulmus Sapporo Autumn Gold", replacement = "Ulmus spp. Sapporo Autumn Gold")
+categories[] <- lapply(categories, gsub, pattern = "Camellia sasangua", replacement = "Camellia sasanqua")
 
 # join to main database
 all_entities_short <- select(all_entities_short, -shade_index, -carbon_index)
@@ -15907,7 +15913,11 @@ syn_remove <- gbif_synonyms %>%
            species == "Antennaria dioica" & canonicalName == "Antennaria dioeca" | 
            species == "Arbutus unedo" & canonicalName == "Arbutus idaea" | 
            species == "Banksia marginata" & canonicalName == "Banksia australis" | 
-           species == "Callitris columellaris" & canonicalName == "Callitris hugelii")
+           species == "Callitris columellaris" & canonicalName == "Callitris hugelii" | 
+           species == "Calytrix tetragona" & canonicalName == "Calycothrix sullivani" | 
+           species == "Camellia japonica" & canonicalName == "Kemelia japonica" | 
+           species == "Camellia sasangua" | 
+           species == "Carex gaudichaudiana" & canonicalName == "Carex vulpi-caudata")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -15935,7 +15945,8 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Baloskion tetraphyllum", canonicalName = "Restio tetraphyllus") %>%
   add_row(species = "Bauhinia hookeri", canonicalName = "Lysiphyllum hookeri") %>%
   add_row(species = "Beaucarnea recurvata", canonicalName = "Nolina recurvata") %>%
-  add_row(species = "Brugmansia sanguinea", canonicalName = "Datura sanguinea")
+  add_row(species = "Brugmansia sanguinea", canonicalName = "Datura sanguinea") %>%
+  add_row(species = "Camellia sasanqua", canonicalName = "Camellia oleifera")
 
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
