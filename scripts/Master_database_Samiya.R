@@ -14249,12 +14249,13 @@ write.csv(gwilym,"Master_database_output/Gwilym/WPW_plant_list_20May2021.csv", r
 ########## Version 1.8
 # Things that have changed:
 ### Gwilym's corrections
+### 'Weeds' are only declared species in each state
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_5Jul2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_7Jul2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_5Jul2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_7Jul2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -16019,3 +16020,31 @@ Gwilym_wide <- Gwilym %>%
 write.csv(Gwilym_wide,"Master_database_output/Gwilym/Gwilym_canopy_projections.csv",row.names=FALSE)
 
 #################################################################
+### check coverage of 'states_found' trait
+
+## first, check how many 'native' plants are in the database
+native_summary <- all_entities_short %>%
+  filter(origin == "Native") %>%
+  distinct(plant_name, category) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+# just species = 1150
+
+## see how many plants with the 'states_found' trait I have
+states_found <- all_entities %>%
+  filter(Min_5_traits == "TRUE") %>%
+  filter(Include_in_tool == "Yes") %>%
+  filter(origin == "Native") %>%
+  filter(trait_name == "states_found") %>%
+  distinct(species, category) %>%
+  group_by(category) %>%
+  summarise(frequency = n())
+# species + syn = 1153
+
+################################################################
+
+
+
+
+
+
