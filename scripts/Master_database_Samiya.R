@@ -16053,8 +16053,50 @@ states_found <- all_entities %>%
 # species + syn = 1153
 
 ################################################################
+##### Andrew Turnbull
+## extract species list for him
 
+species_list <- all_entities_short %>%
+  distinct(plant_name) %>%
+  arrange(plant_name)
 
+write.csv(species_list,"Master_database_output/Andrew_Turnbull/Andrew_species_list.csv",row.names=FALSE)
+
+# missing traits
+species_list <- as.vector(unlist(species_list$plant_name)) # change the dataframe into a list of vectors
+class(species_list)                                        # https://stackoverflow.com/questions/7070173/convert-data-frame-column-to-a-vector
+
+trait_list <- all_entities_short %>%                       # list of the traits
+  distinct(trait_name)
+
+# traits I don't want
+trait_discard <- trait_list %>%
+  filter(trait_name == "drought tolerance" | trait_name == "frost tolerance" | 
+         trait_name == "coastal tolerance" | trait_name == "canopy shape" | 
+           trait_name == "risk" | trait_name == "weed status in Australia")
+
+# filter out
+trait_list <- anti_join(trait_list, trait_discard)
+
+trait_list <- as.vector(unlist(trait_list$trait_name)) # change the dataframe into a list of vectors
+class(trait_list)                                        # https://stackoverflow.com/questions/7070173/convert-data-frame-column-to-a-vector
+
+species_alltraits <- expand.grid(species_list, trait_list) # create a new dataframe of all combinations of two vectors
+# https://stackoverflow.com/questions/11388359/unique-combination-of-all-elements-from-two-or-more-vectors
+
+colnames(species_alltraits) <- c("plant_name", "trait_name") # assign column names
+
+species_alltraits <- species_alltraits %>%
+  arrange(plant_name) # arrange by species
+
+# list of what we have
+what_we_have <- all_entities_short %>%
+  distinct(plant_name, trait_name) %>%
+  arrange(plant_name)
+
+traits_missing <- setdiff(species_alltraits, what_we_have) # the traits that we are missing
+
+write.csv(traits_missing,"Master_database_output/Andrew_Turnbull/missing_traits.csv",row.names=FALSE)
 
 
 
