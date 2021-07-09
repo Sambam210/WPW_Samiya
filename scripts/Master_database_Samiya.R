@@ -16098,6 +16098,63 @@ traits_missing <- setdiff(species_alltraits, what_we_have) # the traits that we 
 
 write.csv(traits_missing,"Master_database_output/Andrew_Turnbull/missing_traits.csv",row.names=FALSE)
 
+################################################################
+# cross reference the PlantSure list with what WPW was for weeds
 
+plantsure_list <- read.csv("Master_database_input/weeds/plantsure_list.csv")
+
+wpw_weeds <- read.csv("Master_database_input/weeds/weed_list_wpw_long.csv")
+
+# check the syns
+
+wpw_syn_weeds <- left_join(wpw_weeds, gbif_synonyms, by = c("plant_name" = "species"))
+wpw_syn_weeds <- select(wpw_syn_weeds, plant_name, canonicalName)
+
+# check against the plantsure list
+weeds_same_syn <- semi_join(plantsure_list, wpw_syn_weeds, by = c("plant_name" = "canonicalName"))
+# found 2
+
+plantsure_weeds <- semi_join(wpw_weeds, plantsure_list, by = "plant_name")
+
+# add the two species form before
+weeds_add <- wpw_weeds %>%
+  filter(plant_name == "Lagerstroemia indica" | plant_name == "Cenchrus setaceus")
+
+plantsure_weeds <- rbind(plantsure_weeds, weeds_add)
+
+# add the synonyms from the wpw database
+wpw_species_list <- all_entities_short %>%
+  distinct(plant_name, synonym)
+
+plantsure_weeds <- left_join(plantsure_weeds, wpw_species_list, by = "plant_name")
+plantsure_weeds <- select(plantsure_weeds, plant_name, synonym, value_David, value_Other, Source)
+
+write.csv(plantsure_weeds,"Master_database_output/weeds/plantsure_weeds.csv",row.names=FALSE)
+
+# check how many species in the plantsure list match with the wpw list
+wpw_species_list <- all_entities_short %>%
+  distinct(plant_name, synonym)
+
+same_species <- semi_join(plantsure_list, wpw_species_list, by = "plant_name")
+
+# check syns, can't do it this way as it need to be in 'long' format
+# same_syn <- semi_join(plantsure_list, wpw_species_list, by = c("plant_name" = "synonym"))
+# same_syn <- semi_join(wpw_species_list, plantsure_list, by = c("synonym" = "plant_name"))
+
+same_syn <- semi_join(plantsure_list, gbif_synonyms, by = c("plant_name" = "canonicalName"))
+
+# add these to first list
+same_species <- rbind(same_species, same_syn)
+same_species <- arrange(same_species)
+
+# differences
+diff_species <- anti_join(plantsure_list, same_species)
+
+# make this into a dataframe
+colnames(same_species) <- "name_match"
+colnames(diff_species) <- "no_name_match"
+
+write.csv(same_species,"Master_database_output/weeds/plantsure_WPW_same.csv",row.names=FALSE)
+write.csv(diff_species,"Master_database_output/weeds/plantsure_WPW_diff.csv",row.names=FALSE)
 
 
