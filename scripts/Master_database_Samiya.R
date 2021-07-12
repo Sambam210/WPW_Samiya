@@ -14250,12 +14250,13 @@ write.csv(gwilym,"Master_database_output/Gwilym/WPW_plant_list_20May2021.csv", r
 # Things that have changed:
 ### Gwilym's corrections
 ### 'Weeds' are only declared species in each state
+### GC, CULVAR, and SSP fixed
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_7Jul2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_12Jul2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_7Jul2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_12Jul2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -15095,6 +15096,20 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Xerochrysum Cockatoo", r
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Xerochrysum Dargan Hill Monarch", replacement = "Xerochrysum spp. Dargan Hill Monarch")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Camellia sasangua", replacement = "Camellia sasanqua")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Capparis spinosa var nummularia", replacement = "Capparis spinosa subsp nummularia")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Acacia longifolia var sophorae", replacement = "Acacia longifolia subsp sophorae")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Amphipogon caricinus var caricinus", replacement = "Amphipogon caricinus subsp caricinus")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Ceanothus papillosus var roweanus", replacement = "Ceanothus papillosus subsp roweanus")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Correa alba var alba Starlight", replacement = "Correa alba Starlight")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Microlaena stipoides var stipoides", replacement = "Microlaena stipoides subsp stipoides")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eremophila maculata var maculata", replacement = "Eremophila maculata subsp maculata")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eriogonum fasciculatum var foliolosum", replacement = "Eriogonum fasciculatum subsp foliolosum")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eucalyptus erythronema var marginata", replacement = "Eucalyptus erythronema subsp marginata")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Gossypium sturtianum var sturtianum", replacement = "Gossypium sturtianum subsp sturtianum")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Melia azedarach var australasica", replacement = "Melia azedarach subsp australasica")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Osmanthus fragrans var aurantiacus", replacement = "Osmanthus fragrans subsp aurantiacus")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Pittosporum phillyraeoides var microcarpa", replacement = "Pittosporum phillyraeoides subsp microcarpa")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Platanus orientalis var insularis", replacement = "Platanus orientalis Insularis")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Platanus orientalis var insularis Autumn Glory", replacement = "Platanus orientalis Insularis Autumn Glory")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -15626,6 +15641,12 @@ categories[] <- lapply(categories, gsub, pattern = "Grevillea Ivanhoe", replacem
 categories[] <- lapply(categories, gsub, pattern = "Prunus Elvins", replacement = "Prunus spp. Elvins")
 categories[] <- lapply(categories, gsub, pattern = "Ulmus Sapporo Autumn Gold", replacement = "Ulmus spp. Sapporo Autumn Gold")
 categories[] <- lapply(categories, gsub, pattern = "Camellia sasangua", replacement = "Camellia sasanqua")
+categories[] <- lapply(categories, gsub, pattern = "Eucalyptus erythronema var marginata", replacement = "Eucalyptus erythronema subsp marginata")
+categories[] <- lapply(categories, gsub, pattern = "Pittosporum phillyraeoides var microcarpa", replacement = "Pittosporum phillyraeoides subsp microcarpa")
+categories[] <- lapply(categories, gsub, pattern = "Platanus orientalis var insularis", replacement = "Platanus orientalis Insularis")
+categories[] <- lapply(categories, gsub, pattern = "Platanus orientalis var insularis Autumn Glory", replacement = "Platanus orientalis Insularis Autumn Glory")
+categories[] <- lapply(categories, gsub, pattern = "Melia azedarach var australasica", replacement = "Melia azedarach subsp australasica")
+
 
 # join to main database
 all_entities_short <- select(all_entities_short, -shade_index, -carbon_index)
@@ -16007,7 +16028,7 @@ canopy_shape_remove <- all_entities_short %>%
 
 all_entities_short <- anti_join(all_entities_short, canopy_shape_remove)
 
-# write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_30.6.2021_vers1.8.csv",row.names=FALSE)
+# write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_30.6.2021_vers1.8TEST.csv",row.names=FALSE)
 
 
 
