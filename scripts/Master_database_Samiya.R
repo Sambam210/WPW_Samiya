@@ -14839,7 +14839,8 @@ all_entities_short <- all_entities_short %>%
          family = if_else(genus == "Stypandra", "Asphodelaceae", family),
          family = if_else(genus == "Thelionema", "Asphodelaceae", family),
          family = if_else(genus == "Dianella", "Asphodelaceae", family),
-         family = if_else(genus == "Camellia", "Theaceae", family))
+         family = if_else(genus == "Camellia", "Theaceae", family),
+         family = if_else(entity == "Carya illinoinensis", "Juglandaceae", family))
 
 # check
 
@@ -15110,6 +15111,7 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Osmanthus fragrans var a
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Pittosporum phillyraeoides var microcarpa", replacement = "Pittosporum phillyraeoides var. microcarpa")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Platanus orientalis var insularis", replacement = "Platanus orientalis Insularis")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Platanus orientalis var insularis Autumn Glory", replacement = "Platanus orientalis Insularis Autumn Glory")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Carya illinoiensis", replacement = "Carya illinoinensis")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -15646,6 +15648,7 @@ categories[] <- lapply(categories, gsub, pattern = "Pittosporum phillyraeoides v
 categories[] <- lapply(categories, gsub, pattern = "Platanus orientalis var insularis", replacement = "Platanus orientalis Insularis")
 categories[] <- lapply(categories, gsub, pattern = "Platanus orientalis var insularis Autumn Glory", replacement = "Platanus orientalis Insularis Autumn Glory")
 categories[] <- lapply(categories, gsub, pattern = "Melia azedarach var australasica", replacement = "Melia azedarach var. australasica")
+categories[] <- lapply(categories, gsub, pattern = "Carya illinoiensis", replacement = "Carya illinoinensis")
 
 # join to main database
 all_entities_short <- select(all_entities_short, -shade_index, -carbon_index)
@@ -15874,6 +15877,7 @@ gbif_synonyms <- filter(gbif_synonyms, !grepl("oppr", canonicalName))
 # fix some spelling mistakes
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xpiperita", replacement = "Mentha x piperita")
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xrotundifolia", replacement = "Mentha x rotundifolia")
+gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Carya illinoiensis", replacement = "Carya illinoinensis")
 
 # remove the synonyms for malus that are confusing, and wrong synonyms according to Gwilym
 syn_remove <- gbif_synonyms %>%
@@ -15937,7 +15941,8 @@ syn_remove <- gbif_synonyms %>%
            species == "Calytrix tetragona" & canonicalName == "Calycothrix sullivani" | 
            species == "Camellia japonica" & canonicalName == "Kemelia japonica" | 
            species == "Camellia sasangua" | 
-           species == "Carex gaudichaudiana" & canonicalName == "Carex vulpi-caudata")
+           species == "Carex gaudichaudiana" & canonicalName == "Carex vulpi-caudata" | 
+           species == "Carya illinoinensis" & canonicalName == "Carya illinoensis")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
