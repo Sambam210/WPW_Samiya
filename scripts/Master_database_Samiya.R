@@ -16182,4 +16182,16 @@ colnames(diff_species) <- "no_name_match"
 write.csv(same_species,"Master_database_output/weeds/plantsure_WPW_same.csv",row.names=FALSE)
 write.csv(diff_species,"Master_database_output/weeds/plantsure_WPW_diff.csv",row.names=FALSE)
 
+############################################################################################
+### do a photo check
 
+database <- all_entities_short %>%
+  distinct(plant_name) # 2581
+
+photos <- read.csv("Master_database_input/photos/photo_check_13Jul2021.csv")
+
+photos <- photos %>%
+  distinct(plant_name) # 2588
+
+diff <- setdiff(photos, database)
+diff2 <- setdiff(database, photos)
