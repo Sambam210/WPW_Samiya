@@ -14840,7 +14840,8 @@ all_entities_short <- all_entities_short %>%
          family = if_else(genus == "Thelionema", "Asphodelaceae", family),
          family = if_else(genus == "Dianella", "Asphodelaceae", family),
          family = if_else(genus == "Camellia", "Theaceae", family),
-         family = if_else(entity == "Carya illinoinensis", "Juglandaceae", family))
+         family = if_else(entity == "Carya illinoinensis", "Juglandaceae", family),
+         family = if_else(genus == "Chamelaucium", "Myrtaceae", family))
 
 # check
 
@@ -15112,6 +15113,11 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Pittosporum phillyraeoid
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Platanus orientalis var insularis", replacement = "Platanus orientalis Insularis")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Platanus orientalis var insularis Autumn Glory", replacement = "Platanus orientalis Insularis Autumn Glory")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Carya illinoiensis", replacement = "Carya illinoinensis")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Chamaelaucium uncinatum", replacement = "Chamelaucium uncinatum")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Chamaelaucium uncinatum Burgundy Blush", replacement = "Chamelaucium uncinatum Burgundy Blush")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Chamaelaucium uncinatum Mullering Brook", replacement = "Chamelaucium uncinatum Mullering Brook")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Chamaelaucium uncinatum Murfit Rose", replacement = "Chamelaucium uncinatum Murfit Rose")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Cordyline australis Cabernett", replacement = "Cordyline australis Cabernet")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -15942,7 +15948,8 @@ syn_remove <- gbif_synonyms %>%
            species == "Camellia japonica" & canonicalName == "Kemelia japonica" | 
            species == "Camellia sasangua" | 
            species == "Carex gaudichaudiana" & canonicalName == "Carex vulpi-caudata" | 
-           species == "Carya illinoinensis" & canonicalName == "Carya illinoensis")
+           species == "Carya illinoinensis" & canonicalName == "Carya illinoensis" | 
+           species == "Crataegus phaenopyrum" & canonicalName == "Cotoneaster cordata")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -15971,7 +15978,20 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Bauhinia hookeri", canonicalName = "Lysiphyllum hookeri") %>%
   add_row(species = "Beaucarnea recurvata", canonicalName = "Nolina recurvata") %>%
   add_row(species = "Brugmansia sanguinea", canonicalName = "Datura sanguinea") %>%
-  add_row(species = "Camellia sasanqua", canonicalName = "Camellia oleifera")
+  add_row(species = "Camellia sasanqua", canonicalName = "Camellia oleifera") %>%
+  add_row(species = "Chamaecyparis lawsoniana", canonicalName = "Cupressus lawsoniana") %>%
+  add_row(species = "Chrysocephalum apiculatum", canonicalName = "Helichrysum apiculatum") %>%
+  add_row(species = "Chrysocephalum semipapposum", canonicalName = "Helichrysum semipapposum") %>%
+  add_row(species = "Corymbia aparrerinja", canonicalName = "Eucalyptus papuana var. aparrerinja") %>%
+  add_row(species = "Corymbia aparrerinja", canonicalName = "Eucalyptus aparrerinja") %>%
+  add_row(species = "Corymbia citriodora", canonicalName = "Eucalyptus citriodora") %>%
+  add_row(species = "Corymbia eximia", canonicalName = "Eucalyptus eximia") %>%
+  add_row(species = "Corymbia ficifolia", canonicalName = "Eucalyptus ficifolia") %>%
+  add_row(species = "Corymbia henryi", canonicalName = "Eucalyptus henryi") %>%
+  add_row(species = "Corymbia maculata", canonicalName = "Eucalyptus maculata") %>%
+  add_row(species = "Corymbia terminalis", canonicalName = "Eucalyptus terminalis") %>%
+  add_row(species = "Corymbia tessellaris", canonicalName = "Eucalyptus tessellaris") %>%
+  add_row(species = "Crinodendron hookerianum", canonicalName = "Tricuspidaria hookerianum")
 
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
