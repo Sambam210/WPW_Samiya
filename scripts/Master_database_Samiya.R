@@ -15887,7 +15887,7 @@ gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xpiperita", rep
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xrotundifolia", replacement = "Mentha x rotundifolia")
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Carya illinoiensis", replacement = "Carya illinoinensis")
 
-# remove the synonyms for malus that are confusing, and wrong synonyms according to Gwilym
+# remove the synonyms for malus that are confusing, and also wrong synonyms according to Gwilym
 syn_remove <- gbif_synonyms %>%
   filter(species == "Malus pumila" & canonicalName == "Malus domestica" | 
            species == "Malus sieboldii" & canonicalName == "Malus floribunda" | 
