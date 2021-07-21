@@ -16219,3 +16219,39 @@ photos <- photos %>%
 
 diff <- setdiff(photos, database)
 diff2 <- setdiff(database, photos)
+
+############################################################################################
+# Extract traits for Rony
+
+rony_list <- read.csv("Master_database_input/Rony/suggested_789_spp.csv")
+
+wpw_species <- all_entities_short %>%
+  distinct(scientificNameStd)
+
+same <- semi_join(wpw_species, rony_list, by = c("scientificNameStd" = "Rony_species"))
+# 372/789 match
+
+same$wpw_list <- same$scientificNameStd
+names(same)[names(same) == 'scientificNameStd'] <- 'rony_list'
+
+# now check the names that didn't match and see if they are synonyms
+
+diffs <- anti_join(rony_list, wpw_species, by = c("Rony_species" = "scientificNameStd"))
+# 417 species
+
+# check the synonyms
+synonyms_rony <- semi_join(diffs, gbif_synonyms, by = c("Rony_species" = "canonicalName"))
+# only two species (but one of them is not a synonym)
+# add that one to the master list
+
+same <- same %>%
+  add_row(rony_list = "Leucopogon parviflorus", wpw_list = "Leptecophylla juniperina")
+# so in total 373/789 match
+
+same <- arrange(same, wpw_list)
+
+write.csv(same,"Master_database_output/Rony/rony_789_spp_wpw_traits.csv",row.names=FALSE)
+
+
+
+
