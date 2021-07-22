@@ -15120,6 +15120,8 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Chamaelaucium uncinatum 
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Chamaelaucium uncinatum Murfit Rose", replacement = "Chamelaucium uncinatum Murfit Rose")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Cordyline australis Cabernett", replacement = "Cordyline australis Cabernet")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Diplarrhena moraea", replacement = "Diplarrena moraea")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Dodonaea viscosa Angustissima", replacement = "Dodonaea viscosa subsp Angustissima")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Dodonaea viscosa Cuneata", replacement = "Dodonaea viscosa subsp Cuneata")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -15952,7 +15954,8 @@ syn_remove <- gbif_synonyms %>%
            species == "Carex gaudichaudiana" & canonicalName == "Carex vulpi-caudata" | 
            species == "Carya illinoinensis" & canonicalName == "Carya illinoensis" | 
            species == "Crataegus phaenopyrum" & canonicalName == "Cotoneaster cordata" | 
-           species == "Cupressus torulosa" & canonicalName == "Juniperus gracilis")
+           species == "Cupressus torulosa" & canonicalName == "Juniperus gracilis" | 
+           species == "Doryopteris raddiana" & canonicalName == "Adiantum raddianum")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -16030,12 +16033,12 @@ names(all_entities_short)[names(all_entities_short) == 'grass'] <- 'grass-like'
 
 # for gh species, remove the horticultural drought tolerance trait
 
-gh_drought <- all_entities_short %>%
-  filter(exp_tested == "Y") %>%
-  filter(trait_name == "drought tolerance")
+# gh_drought <- all_entities_short %>%
+#   filter(exp_tested == "Y") %>%
+#   filter(trait_name == "drought tolerance")
 
 # remove
-all_entities_short <- anti_join(all_entities_short, gh_drought)
+# all_entities_short <- anti_join(all_entities_short, gh_drought)
 
 # remove 'model_type' column
 all_entities_short <- select(all_entities_short, -model_type)
@@ -16252,6 +16255,31 @@ same <- arrange(same, wpw_list)
 
 write.csv(same,"Master_database_output/Rony/rony_789_spp_wpw_traits.csv",row.names=FALSE)
 
+#####################################################################################################
+# extract the drought tolerances for expt species for Gwilym
 
+drought_Gwilym <- all_entities_short %>%
+  filter(exp_tested == "Y") %>%
+  filter(trait_name == "drought tolerance") %>%
+  select(plant_name, trait_name, value)
 
+drought_Gwilym[] <- lapply(drought_Gwilym, gsub, pattern = "putatively high", replacement = "high")
+drought_Gwilym[] <- lapply(drought_Gwilym, gsub, pattern = "putatively moderate", replacement = "moderate")
+drought_Gwilym[] <- lapply(drought_Gwilym, gsub, pattern = "putatively no", replacement = "no")
+
+# add the missing species to the bottom
+
+missing_species <- all_entities_short %>%
+  filter(exp_tested == "Y") %>%
+  distinct(plant_name)
+
+diff <- anti_join(missing_species, drought_Gwilym, by = "plant_name")
+diff$trait_name <- "drought tolerance"
+diff$value <- "NA"
+
+drought_Gwilym <- rbind(drought_Gwilym, diff)
+
+drought_Gwilym <- arrange(drought_Gwilym, plant_name)
+
+write.csv(drought_Gwilym,"Master_database_output/Gwilym/experimental_species_drought.csv", row.names=FALSE)
 
