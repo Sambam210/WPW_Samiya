@@ -14842,7 +14842,8 @@ all_entities_short <- all_entities_short %>%
          family = if_else(genus == "Camellia", "Theaceae", family),
          family = if_else(entity == "Carya illinoinensis", "Juglandaceae", family),
          family = if_else(genus == "Chamelaucium", "Myrtaceae", family),
-         family = if_else(genus == "Diplarrena", "Iridaceae", family))
+         family = if_else(genus == "Diplarrena", "Iridaceae", family),
+         family = if_else(entity == "Eremophila macdonnellii", "Scrophulariaceae", family))
 
 # check
 
@@ -14868,7 +14869,7 @@ all_entities_short[] <-lapply(all_entities_short, gsub, pattern = "Pittosporum p
 # Species with multiple synonyms that have 5 min traits: Abelia uniflora, Myoporum tenuifolium
 
 # Species and synonyms that have 5 min traits: Bauhinia variegata, Coronidium scorpioides,
-# Cupressus arizonica, Eucalyptus leucoxylon, Ficinia nodosa, Melaleuca fulgens,
+# Cupressus arizonica, Ficinia nodosa, Melaleuca fulgens,
 # Syringa vulgaris, Syzygium tierneyanum, Virgilia oroboides, Pittosporum phillyraeoides
 
 # summary of what we have so far
@@ -14884,7 +14885,7 @@ summary_original <- all_entities_short %>%
 syn_good <- all_entities_short %>%
   filter(scientificNameStd != "Abelia uniflora" & scientificNameStd != "Myoporum tenuifolium" & scientificNameStd != "Pittosporum phillyraeoides" 
          & scientificNameStd != "Bauhinia variegata" & scientificNameStd != "Coronidium scorpioides" & scientificNameStd != "Cupressus arizonica" 
-         & scientificNameStd != "Eucalyptus leucoxylon" & scientificNameStd != "Ficinia nodosa" & scientificNameStd != "Melaleuca fulgens" 
+         & scientificNameStd != "Ficinia nodosa" & scientificNameStd != "Melaleuca fulgens" 
          & scientificNameStd != "Syringa vulgaris" & scientificNameStd != "Syzygium tierneyanum" & scientificNameStd != "Virgilia oroboides")
 
 # add back the GC, H, HC
@@ -14930,7 +14931,7 @@ multi_syn$category <- "SP"
 # species with 5 min traits for species and synonyms
 sp_syn <- all_entities_short %>%
   filter(scientificNameStd == "Pittosporum phillyraeoides" | scientificNameStd == "Bauhinia variegata" | scientificNameStd == "Coronidium scorpioides" | scientificNameStd == "Cupressus arizonica" 
-         | scientificNameStd == "Eucalyptus leucoxylon" | scientificNameStd == "Ficinia nodosa" | scientificNameStd == "Melaleuca fulgens" 
+         | scientificNameStd == "Ficinia nodosa" | scientificNameStd == "Melaleuca fulgens" 
          | scientificNameStd == "Syringa vulgaris" | scientificNameStd == "Syzygium tierneyanum" | scientificNameStd == "Virgilia oroboides")
 
 # salvage the cultivars
@@ -15104,7 +15105,6 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Amphipogon caricinus var
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Ceanothus papillosus var roweanus", replacement = "Ceanothus papillosus var. roweanus")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Correa alba var alba Starlight", replacement = "Correa alba Starlight")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Microlaena stipoides var stipoides", replacement = "Microlaena stipoides var. stipoides")
-biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eremophila maculata var maculata", replacement = "Eremophila maculata var. maculata")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eriogonum fasciculatum var foliolosum", replacement = "Eriogonum fasciculatum var. foliolosum")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eucalyptus erythronema var marginata", replacement = "Eucalyptus erythronema var. marginata")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Gossypium sturtianum var sturtianum", replacement = "Gossypium sturtianum var. sturtianum")
@@ -15122,6 +15122,7 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Cordyline australis Cabe
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Diplarrhena moraea", replacement = "Diplarrena moraea")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Dodonaea viscosa Angustissima", replacement = "Dodonaea viscosa subsp Angustissima")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Dodonaea viscosa Cuneata", replacement = "Dodonaea viscosa subsp Cuneata")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eremophila macdonellii", replacement = "Eremophila macdonnellii")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -15888,6 +15889,7 @@ gbif_synonyms <- filter(gbif_synonyms, !grepl("oppr", canonicalName))
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xpiperita", replacement = "Mentha x piperita")
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xrotundifolia", replacement = "Mentha x rotundifolia")
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Carya illinoiensis", replacement = "Carya illinoinensis")
+gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Eremophila macdonellii", replacement = "Eremophila macdonnellii")
 
 # remove the synonyms for malus that are confusing, and also wrong synonyms according to Gwilym
 syn_remove <- gbif_synonyms %>%
