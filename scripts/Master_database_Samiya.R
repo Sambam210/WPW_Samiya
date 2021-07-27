@@ -16285,3 +16285,39 @@ drought_Gwilym <- arrange(drought_Gwilym, plant_name)
 
 write.csv(drought_Gwilym,"Master_database_output/Gwilym/experimental_species_drought.csv", row.names=FALSE)
 
+###############################################################################
+# test the 'fuzzy matching' technique for Waverley species list
+# https://stackoverflow.com/questions/26405895/how-can-i-match-fuzzy-match-strings-from-two-datasets
+
+wpw_species <- all_entities_short %>%
+  distinct(plant_name)
+
+waverley <- read.csv("Master_database_input/Waverley/waverley_species_list.csv")
+
+# remove white space
+# https://stackoverflow.com/questions/20760547/removing-whitespace-from-a-whole-data-frame-in-r
+
+glimpse(waverley)
+# change to character (https://stackoverflow.com/questions/2851015/convert-data-frame-columns-from-factors-to-characters)
+waverley[] <- lapply(waverley, as.character)
+
+waverley <- waverley %>%
+  mutate_if(is.character, str_trim)
+
+# install.packages("fuzzyjoin")
+library(fuzzyjoin)
+
+test <- stringdist_join(waverley, wpw_species, 
+                        by = "plant_name",
+                        mode = "left",
+                        ignore_case = FALSE, 
+                        method = "jw", 
+                        max_dist = 99, 
+                        distance_col = "dist") 
+ 
+# 0.000 is a perfect match
+test_filtered <- filter(test, dist < 0.06) # can adjust based on the amount of similarity you want, I think this number works best for the waverley list
+test_filtered <- arrange(test_filtered, plant_name.x)
+
+# next step is to rescue the synonyms
+
