@@ -16000,7 +16000,8 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Corymbia terminalis", canonicalName = "Eucalyptus terminalis") %>%
   add_row(species = "Corymbia tessellaris", canonicalName = "Eucalyptus tessellaris") %>%
   add_row(species = "Crinodendron hookerianum", canonicalName = "Tricuspidaria hookerianum") %>%
-  add_row(species = "Dichopogon strictus", canonicalName = "Arthropodium fimbriatum")
+  add_row(species = "Dichopogon strictus", canonicalName = "Arthropodium fimbriatum") %>%
+  add_row(species = "Hakea salicifolia", canonicalName = "Hakea saligna")
 
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
