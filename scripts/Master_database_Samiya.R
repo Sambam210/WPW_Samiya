@@ -14254,9 +14254,9 @@ write.csv(gwilym,"Master_database_output/Gwilym/WPW_plant_list_20May2021.csv", r
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_12Jul2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_3Aug2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_12Jul2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_3Aug2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -16297,7 +16297,6 @@ waverley <- read.csv("Master_database_input/Waverley/waverley_species_list.csv")
 
 # remove white space
 # https://stackoverflow.com/questions/20760547/removing-whitespace-from-a-whole-data-frame-in-r
-
 glimpse(waverley)
 # change to character (https://stackoverflow.com/questions/2851015/convert-data-frame-columns-from-factors-to-characters)
 waverley[] <- lapply(waverley, as.character)
@@ -16308,7 +16307,7 @@ waverley <- waverley %>%
 # install.packages("fuzzyjoin")
 library(fuzzyjoin)
 
-test <- stringdist_join(waverley, wpw_species, 
+waverley_fuzzy <- stringdist_join(waverley, wpw_species, 
                         by = "plant_name",
                         mode = "left",
                         ignore_case = FALSE, 
@@ -16317,8 +16316,39 @@ test <- stringdist_join(waverley, wpw_species,
                         distance_col = "dist") 
  
 # 0.000 is a perfect match
-test_filtered <- filter(test, dist < 0.06) # can adjust based on the amount of similarity you want, I think this number works best for the waverley list
-test_filtered <- arrange(test_filtered, plant_name.x)
+waverley_fuzzy_filtered <- filter(waverley_fuzzy, dist < 0.06) # can adjust based on the amount of similarity you want, I think this number works best for the waverley list
+waverley_fuzzy_filtered <- arrange(waverley_fuzzy_filtered, plant_name.x)
 
-# next step is to rescue the synonyms
+# extract the species that did not match and check them against synonyms
 
+matchedspecies <- as.data.frame(waverley_fuzzy_filtered$plant_name.x)
+names(matchedspecies)[names(matchedspecies) == 'waverley_fuzzy_filtered$plant_name.x'] <- 'plant_name'
+mismatchedspecies <- anti_join(waverley, matchedspecies, by = "plant_name")
+
+# fuzzy match the synonyms
+waverley_syn_fuzzy <- stringdist_join(mismatchedspecies, gbif_synonyms, 
+                                  by = c("plant_name" = "canonicalName"),
+                                  mode = "left",
+                                  ignore_case = FALSE, 
+                                  method = "jw", 
+                                  max_dist = 99, 
+                                  distance_col = "dist") 
+
+waverley_syn_fuzzy <- filter(waverley_syn_fuzzy, dist < 0.06)
+
+# join these to the main list
+waverley_fuzzy_filtered <- select(waverley_fuzzy_filtered, -dist)
+names(waverley_fuzzy_filtered)[names(waverley_fuzzy_filtered) == 'plant_name.x'] <- 'waverley_plant_name'
+names(waverley_fuzzy_filtered)[names(waverley_fuzzy_filtered) == 'plant_name.y'] <- 'wpw_plant_name'
+
+waverley_syn_fuzzy <- select(waverley_syn_fuzzy, plant_name, species)
+names(waverley_syn_fuzzy)[names(waverley_syn_fuzzy) == 'plant_name'] <- 'waverley_plant_name'
+names(waverley_syn_fuzzy)[names(waverley_syn_fuzzy) == 'species'] <- 'wpw_plant_name'
+
+waverley_fuzzy_filtered <- rbind(waverley_fuzzy_filtered, waverley_syn_fuzzy)
+
+waverley_fuzzy_filtered <- arrange(waverley_fuzzy_filtered, waverley_plant_name)
+
+# out of the 295 species in the Waverley list, 154 match with wpw
+
+write.csv(waverley_fuzzy_filtered,"Master_database_output/waverley_council/waverley_species_list_match.csv", row.names=FALSE)
