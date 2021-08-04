@@ -15957,7 +15957,9 @@ syn_remove <- gbif_synonyms %>%
            species == "Carya illinoinensis" & canonicalName == "Carya illinoensis" | 
            species == "Crataegus phaenopyrum" & canonicalName == "Cotoneaster cordata" | 
            species == "Cupressus torulosa" & canonicalName == "Juniperus gracilis" | 
-           species == "Doryopteris raddiana" & canonicalName == "Adiantum raddianum")
+           species == "Doryopteris raddiana" & canonicalName == "Adiantum raddianum" |
+           species == "Melia azedarach" | 
+           species == "Pandanus tectorius")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -16001,7 +16003,13 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Corymbia tessellaris", canonicalName = "Eucalyptus tessellaris") %>%
   add_row(species = "Crinodendron hookerianum", canonicalName = "Tricuspidaria hookerianum") %>%
   add_row(species = "Dichopogon strictus", canonicalName = "Arthropodium fimbriatum") %>%
-  add_row(species = "Hakea salicifolia", canonicalName = "Hakea saligna")
+  add_row(species = "Hakea salicifolia", canonicalName = "Hakea saligna") %>%
+  add_row(species = "Pandanus tectorius", canonicalName = "Pandanus tectorius var. australianus") %>%
+  add_row(species = "Pandanus tectorius", canonicalName = "Pandanus pedunculatus") %>%
+  add_row(species = "Pandanus tectorius", canonicalName = "Pandanus veitchii") %>%
+  add_row(species = "Pandanus tectorius", canonicalName = "Pandanus baptistii") %>%
+  add_row(species = "Pandanus tectorius", canonicalName = "Pandanus sanderi") %>%
+  add_row(species = "Pandanus tectorius", canonicalName = "Pandanus stradbrokensis")
 
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
