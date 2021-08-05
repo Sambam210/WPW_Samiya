@@ -16360,3 +16360,102 @@ waverley_fuzzy_filtered <- arrange(waverley_fuzzy_filtered, waverley_plant_name)
 # out of the 295 species in the Waverley list, 154 match with wpw
 
 write.csv(waverley_fuzzy_filtered,"Master_database_output/waverley_council/waverley_species_list_match.csv", row.names=FALSE)
+
+
+# randwick species
+
+wpw_species <- all_entities_short %>%
+  distinct(plant_name)
+
+randwick <- read.csv("Master_database_input/Waverley/randwick_species_list.csv")
+
+# remove white space
+# https://stackoverflow.com/questions/20760547/removing-whitespace-from-a-whole-data-frame-in-r
+glimpse(randwick)
+# change to character (https://stackoverflow.com/questions/2851015/convert-data-frame-columns-from-factors-to-characters)
+randwick[] <- lapply(randwick, as.character)
+
+randwick <- randwick %>%
+  mutate_if(is.character, str_trim)
+
+library(fuzzyjoin)
+
+randwick_fuzzy <- stringdist_join(randwick, wpw_species, 
+                                  by = "plant_name",
+                                  mode = "left",
+                                  ignore_case = FALSE, 
+                                  method = "jw", 
+                                  max_dist = 99, 
+                                  distance_col = "dist") 
+
+# 0.000 is a perfect match
+randwick_fuzzy_filtered <- filter(randwick_fuzzy, dist < 0.06) # can adjust based on the amount of similarity you want, I think this number works best for the waverley list
+randwick_fuzzy_filtered <- arrange(waverley_fuzzy_filtered, plant_name.x)
+
+# extract the species that did not match and check them against synonyms
+
+matchedspecies <- as.data.frame(randwick_fuzzy_filtered$plant_name.x)
+names(matchedspecies)[names(matchedspecies) == 'randwick_fuzzy_filtered$plant_name.x'] <- 'plant_name'
+mismatchedspecies <- anti_join(randwick, matchedspecies, by = "plant_name")
+
+# fuzzy match the synonyms
+randwick_syn_fuzzy <- stringdist_join(mismatchedspecies, gbif_synonyms, 
+                                      by = c("plant_name" = "canonicalName"),
+                                      mode = "left",
+                                      ignore_case = FALSE, 
+                                      method = "jw", 
+                                      max_dist = 99, 
+                                      distance_col = "dist") 
+
+randwick_syn_fuzzy <- filter(randwick_syn_fuzzy, dist < 0.06)
+
+# join these to the main list
+randwick_fuzzy_filtered <- select(randwick_fuzzy_filtered, -dist)
+names(randwick_fuzzy_filtered)[names(randwick_fuzzy_filtered) == 'plant_name.x'] <- 'randwick_plant_name'
+names(randwick_fuzzy_filtered)[names(randwick_fuzzy_filtered) == 'plant_name.y'] <- 'wpw_plant_name'
+
+randwick_syn_fuzzy <- select(randwick_syn_fuzzy, plant_name, species)
+names(randwick_syn_fuzzy)[names(randwick_syn_fuzzy) == 'plant_name'] <- 'randwick_plant_name'
+names(randwick_syn_fuzzy)[names(randwick_syn_fuzzy) == 'species'] <- 'wpw_plant_name'
+randwick_syn_fuzzy <- distinct(randwick_syn_fuzzy, randwick_plant_name, wpw_plant_name)
+
+# fix some things that I saw
+randwick_fuzzy_filtered <- randwick_fuzzy_filtered %>%
+  add_row(randwick_plant_name = "Philotheca 'Winter Rouge'", wpw_plant_name = "Eriostemon myoporoides Winter Rouge")
+
+remove <- randwick_fuzzy_filtered %>%
+  filter(randwick_plant_name == "Pyrus calleryana" & wpw_plant_name == "Pyrus calleryana D6" | 
+           randwick_plant_name == "Melaleuca ericifolia" & wpw_plant_name == "Melaleuca hypericifolia" | 
+           randwick_plant_name == "Melaleuca hypericifolia" & wpw_plant_name == "Melaleuca ericifolia")
+
+randwick_fuzzy_filtered <- anti_join(randwick_fuzzy_filtered, remove)
+
+randwick_fuzzy_filtered <- rbind(randwick_fuzzy_filtered, randwick_syn_fuzzy)
+
+randwick_fuzzy_filtered <- arrange(randwick_fuzzy_filtered, randwick_plant_name)
+
+# check there are not any duplicates
+check1 <- randwick_fuzzy_filtered %>%
+  group_by(randwick_plant_name) %>%
+  summarise(frequency = n())
+
+check2 <- randwick_fuzzy_filtered %>%
+  group_by(wpw_plant_name) %>%
+  summarise(frequency = n())
+
+# remove mistakes
+remove2 <- randwick_fuzzy_filtered %>%
+  filter(randwick_plant_name == "Restio tetraphyllus" & wpw_plant_name == "Baloskion tetraphyllum" | 
+           randwick_plant_name == "Baurea rubioides" & wpw_plant_name == "Bauera rubioides" | 
+           randwick_plant_name == "Isolepis nodosa" & wpw_plant_name == "Ficinia nodosa" | 
+           randwick_plant_name == "Melalueca armillaris" & wpw_plant_name == "Melaleuca armillaris" |
+           randwick_plant_name == "Philotheca myropoides" & wpw_plant_name == "Philotheca myoporoides" | 
+           randwick_plant_name == "Themeda australis" & wpw_plant_name == "Themeda triandra")
+
+randwick_fuzzy_filtered <- anti_join(randwick_fuzzy_filtered, remove2)
+
+# out of the 435 species in the Waverley list, 242 match with wpw
+
+write.csv(randwick_fuzzy_filtered,"Master_database_output/waverley_council/randwick_species_list_match.csv", row.names=FALSE)
+
+
