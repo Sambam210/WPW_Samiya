@@ -14747,7 +14747,6 @@ parents[] <- lapply(parents, gsub, pattern = "Prunus Elvins", replacement = "Pru
 parents[] <- lapply(parents, gsub, pattern = "Telopea Braidwood Brilliant", replacement = "Telopea spp. Braidwood Brilliant")
 parents[] <- lapply(parents, gsub, pattern = "Telopea Shady Lady Red", replacement = "Telopea spp. Shady Lady Red")
 parents[] <- lapply(parents, gsub, pattern = "Ulmus Sapporo Autumn Gold", replacement = "Ulmus spp. Sapporo Autumn Gold")
-parents[] <- lapply(parents, gsub, pattern = "Xerochrysum Cockatoo", replacement = "Xerochrysum spp. Cockatoo")
 parents[] <- lapply(parents, gsub, pattern = "Xerochrysum Dargan Hill Monarch", replacement = "Xerochrysum spp. Dargan Hill Monarch")
 
 parents <- select(parents, -plantType)
@@ -15096,7 +15095,6 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Prunus Elvins", replacem
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Telopea Braidwood Brilliant", replacement = "Telopea spp. Braidwood Brilliant")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Telopea Shady Lady Red", replacement = "Telopea spp. Shady Lady Red")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Ulmus Sapporo Autumn Gold", replacement = "Ulmus spp. Sapporo Autumn Gold")
-biodiversity[] <- lapply(biodiversity, gsub, pattern = "Xerochrysum Cockatoo", replacement = "Xerochrysum spp. Cockatoo")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Xerochrysum Dargan Hill Monarch", replacement = "Xerochrysum spp. Dargan Hill Monarch")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Camellia sasangua", replacement = "Camellia sasanqua")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Capparis spinosa var nummularia", replacement = "Capparis spinosa var. nummularia")
