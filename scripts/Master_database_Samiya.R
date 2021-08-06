@@ -16357,7 +16357,22 @@ waverley_fuzzy_filtered <- rbind(waverley_fuzzy_filtered, waverley_syn_fuzzy)
 
 waverley_fuzzy_filtered <- arrange(waverley_fuzzy_filtered, waverley_plant_name)
 
-# out of the 295 species in the Waverley list, 154 match with wpw
+# check there are not any duplicates
+check1 <- waverley_fuzzy_filtered %>%
+  group_by(waverley_plant_name) %>%
+  summarise(frequency = n())
+
+check2 <- waverley_fuzzy_filtered %>%
+  group_by(wpw_plant_name) %>%
+  summarise(frequency = n())
+
+# remove mistakes
+remove_waverley <- waverley_fuzzy_filtered %>%
+  filter(waverley_plant_name == "Isolepis nodosa" & wpw_plant_name == "Ficinia nodosa")
+
+waverley_fuzzy_filtered <- anti_join(waverley_fuzzy_filtered, remove_waverley)
+
+# out of the 295 species in the Waverley list, 153 match with wpw
 
 write.csv(waverley_fuzzy_filtered,"Master_database_output/waverley_council/waverley_species_list_match.csv", row.names=FALSE)
 
@@ -16390,7 +16405,7 @@ randwick_fuzzy <- stringdist_join(randwick, wpw_species,
 
 # 0.000 is a perfect match
 randwick_fuzzy_filtered <- filter(randwick_fuzzy, dist < 0.06) # can adjust based on the amount of similarity you want, I think this number works best for the waverley list
-randwick_fuzzy_filtered <- arrange(waverley_fuzzy_filtered, plant_name.x)
+randwick_fuzzy_filtered <- arrange(randwick_fuzzy_filtered, plant_name.x)
 
 # extract the species that did not match and check them against synonyms
 
@@ -16421,7 +16436,8 @@ randwick_syn_fuzzy <- distinct(randwick_syn_fuzzy, randwick_plant_name, wpw_plan
 
 # fix some things that I saw
 randwick_fuzzy_filtered <- randwick_fuzzy_filtered %>%
-  add_row(randwick_plant_name = "Philotheca 'Winter Rouge'", wpw_plant_name = "Eriostemon myoporoides Winter Rouge")
+  add_row(randwick_plant_name = "Philotheca 'Winter Rouge'", wpw_plant_name = "Eriostemon myoporoides Winter Rouge") %>%
+  add_row(randwick_plant_name = "Acacia longifolia var. sophora", wpw_plant_name = "Acacia longifolia subsp sophorae")
 
 remove <- randwick_fuzzy_filtered %>%
   filter(randwick_plant_name == "Pyrus calleryana" & wpw_plant_name == "Pyrus calleryana D6" | 
@@ -16454,8 +16470,20 @@ remove2 <- randwick_fuzzy_filtered %>%
 
 randwick_fuzzy_filtered <- anti_join(randwick_fuzzy_filtered, remove2)
 
-# out of the 435 species in the Waverley list, 242 match with wpw
+# out of the 435 species in the Waverley list, 243 match with wpw
 
 write.csv(randwick_fuzzy_filtered,"Master_database_output/waverley_council/randwick_species_list_match.csv", row.names=FALSE)
+
+# check the suitability data from Farzin to get rid of removed species
+
+wpw_species <- all_entities_short %>%
+  distinct(plant_name)
+
+farzin <- read.csv("Master_database_input/Waverley/species_suitability_farzin.csv")
+
+diff <- setdiff(farzin, wpw_species)
+
+
+
 
 
