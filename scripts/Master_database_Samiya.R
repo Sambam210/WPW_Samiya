@@ -15957,7 +15957,11 @@ syn_remove <- gbif_synonyms %>%
            species == "Cupressus torulosa" & canonicalName == "Juniperus gracilis" | 
            species == "Doryopteris raddiana" & canonicalName == "Adiantum raddianum" |
            species == "Melia azedarach" | 
-           species == "Pandanus tectorius")
+           species == "Pandanus tectorius" |
+           species == "Quercus robur" | 
+           species == "Robinia pseudoacacia" | 
+           species == "Thuja occidentalis" | 
+           species == "Triadica sebifera" & canonicalName == "Croton macrocarpus")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
