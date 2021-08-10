@@ -14251,6 +14251,8 @@ write.csv(gwilym,"Master_database_output/Gwilym/WPW_plant_list_20May2021.csv", r
 ### Gwilym's corrections
 ### 'Weeds' are only declared species in each state
 ### GC, CULVAR, and SSP fixed
+### 'silvery' chaged to 'silver'
+### decimal numbers for heights and widths > 2 instead of > 1
 
 library(tidyverse)
 
@@ -14312,9 +14314,9 @@ height_width <- measurements %>%
 # change min, max and average values into integars
 height_width <- height_width %>%
   mutate_if(is.factor, as.character) %>%
-  mutate(max_new = if_else(max > 1, round(max), max),
-         min_new = if_else(min > 1, round(min), min),
-         average_new = if_else(average > 1, round(average), average))
+  mutate(max_new = if_else(max > 2, round(max), max),
+         min_new = if_else(min > 2, round(min), min),
+         average_new = if_else(average > 2, round(average), average))
 
 height_width <- select(height_width, -max, -min, -average)
 
@@ -15118,9 +15120,10 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Chamaelaucium uncinatum 
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Chamaelaucium uncinatum Murfit Rose", replacement = "Chamelaucium uncinatum Murfit Rose")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Cordyline australis Cabernett", replacement = "Cordyline australis Cabernet")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Diplarrhena moraea", replacement = "Diplarrena moraea")
-biodiversity[] <- lapply(biodiversity, gsub, pattern = "Dodonaea viscosa Angustissima", replacement = "Dodonaea viscosa subsp Angustissima")
-biodiversity[] <- lapply(biodiversity, gsub, pattern = "Dodonaea viscosa Cuneata", replacement = "Dodonaea viscosa subsp Cuneata")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Dodonaea viscosa Angustissima", replacement = "Dodonaea viscosa subsp angustissima")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Dodonaea viscosa Cuneata", replacement = "Dodonaea viscosa subsp cuneata")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eremophila macdonellii", replacement = "Eremophila macdonnellii")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eucalyptus camaldulensis Obtusa", replacement = "Eucalyptus camaldulensis subsp obtusa")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -15384,10 +15387,10 @@ all_entities_short <- all_entities_short %>%
          value_new = if_else(value == "lightgreen", "green", value_new),
          value_new = if_else(value == "redpink", "red", value_new),
          value_new = if_else(value == "pinkred", "red", value_new),
-         value_new = if_else(value == "silver", "silvery", value_new),
-         value_new = if_else(value == "silver_foliage", "silvery", value_new),
-         value_new = if_else(value == "silvergreen", "silvery", value_new),
-         value_new = if_else(value == "silvergrey", "silvery", value_new),
+         value_new = if_else(value == "silver", "silver", value_new),
+         value_new = if_else(value == "silver_foliage", "silver", value_new),
+         value_new = if_else(value == "silvergreen", "silver", value_new),
+         value_new = if_else(value == "silvergrey", "silver", value_new),
          value_new = if_else(value == "yellowgreen", "yellow", value_new),
          value_new = if_else(value == "variagations", "variagated", value_new))
 
@@ -16011,7 +16014,8 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Pandanus tectorius", canonicalName = "Pandanus veitchii") %>%
   add_row(species = "Pandanus tectorius", canonicalName = "Pandanus baptistii") %>%
   add_row(species = "Pandanus tectorius", canonicalName = "Pandanus sanderi") %>%
-  add_row(species = "Pandanus tectorius", canonicalName = "Pandanus stradbrokensis")
+  add_row(species = "Pandanus tectorius", canonicalName = "Pandanus stradbrokensis") %>%
+  add_row(species = "Eucalyptus albopurpurea", canonicalName = "Eucalyptus lansdowneana subsp. albopurpurea")
 
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
@@ -16072,7 +16076,10 @@ canopy_shape_remove <- all_entities_short %>%
 
 all_entities_short <- anti_join(all_entities_short, canopy_shape_remove)
 
-# write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_30.6.2021_vers1.8TEST.csv",row.names=FALSE)
+# fix the subsp
+all_entities_short[] <- lapply(all_entities_short, gsub, pattern = "subsp ", replacement = "subsp. ")
+
+# write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_30.8.2021_vers1.8TEST.csv",row.names=FALSE)
 
 
 
