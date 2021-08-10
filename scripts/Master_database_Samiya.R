@@ -15124,6 +15124,7 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Dodonaea viscosa Angusti
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Dodonaea viscosa Cuneata", replacement = "Dodonaea viscosa subsp cuneata")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eremophila macdonellii", replacement = "Eremophila macdonnellii")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eucalyptus camaldulensis Obtusa", replacement = "Eucalyptus camaldulensis subsp obtusa")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Banksia integrifolia Austraflora Roller Coaster", replacement = "Banksia integrifolia Roller Coaster")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -16500,6 +16501,9 @@ wpw_species <- all_entities_short %>%
 farzin <- read.csv("Master_database_input/Waverley/species_suitability_farzin.csv")
 
 diff <- setdiff(farzin, wpw_species)
+
+##################################################################################################################
+
 
 
 
