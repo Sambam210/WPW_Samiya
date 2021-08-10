@@ -14254,9 +14254,9 @@ write.csv(gwilym,"Master_database_output/Gwilym/WPW_plant_list_20May2021.csv", r
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_3Aug2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_10Aug2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_3Aug2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_10Aug2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -16245,7 +16245,7 @@ wpw_species <- all_entities_short %>%
   distinct(scientificNameStd)
 
 same <- semi_join(wpw_species, rony_list, by = c("scientificNameStd" = "Rony_species"))
-# 372/789 match
+# 370/789 match
 
 same$wpw_list <- same$scientificNameStd
 names(same)[names(same) == 'scientificNameStd'] <- 'rony_list'
@@ -16253,7 +16253,7 @@ names(same)[names(same) == 'scientificNameStd'] <- 'rony_list'
 # now check the names that didn't match and see if they are synonyms
 
 diffs <- anti_join(rony_list, wpw_species, by = c("Rony_species" = "scientificNameStd"))
-# 417 species
+# 419 species
 
 # check the synonyms
 synonyms_rony <- semi_join(diffs, gbif_synonyms, by = c("Rony_species" = "canonicalName"))
@@ -16262,9 +16262,18 @@ synonyms_rony <- semi_join(diffs, gbif_synonyms, by = c("Rony_species" = "canoni
 
 same <- same %>%
   add_row(rony_list = "Leucopogon parviflorus", wpw_list = "Leptecophylla juniperina")
-# so in total 373/789 match
+# so in total 371/789 match
 
 same <- arrange(same, wpw_list)
+
+# attach the traits
+wpw_traits <- all_entities_short %>%
+  select(plant_name, trait_name, value)
+
+same <- left_join(same, wpw_traits, by = c("wpw_list" = "plant_name"))
+
+check <- same %>%
+  distinct(wpw_list) # 371
 
 write.csv(same,"Master_database_output/Rony/rony_789_spp_wpw_traits.csv",row.names=FALSE)
 
