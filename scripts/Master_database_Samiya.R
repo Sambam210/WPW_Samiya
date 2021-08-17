@@ -15965,7 +15965,8 @@ syn_remove <- gbif_synonyms %>%
            species == "Quercus robur" | 
            species == "Robinia pseudoacacia" | 
            species == "Thuja occidentalis" | 
-           species == "Triadica sebifera" & canonicalName == "Croton macrocarpus")
+           species == "Triadica sebifera" & canonicalName == "Croton macrocarpus" | 
+           species == "Eucalyptus lesouefii")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -16016,7 +16017,9 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Pandanus tectorius", canonicalName = "Pandanus baptistii") %>%
   add_row(species = "Pandanus tectorius", canonicalName = "Pandanus sanderi") %>%
   add_row(species = "Pandanus tectorius", canonicalName = "Pandanus stradbrokensis") %>%
-  add_row(species = "Eucalyptus albopurpurea", canonicalName = "Eucalyptus lansdowneana subsp. albopurpurea")
+  add_row(species = "Eucalyptus albopurpurea", canonicalName = "Eucalyptus lansdowneana subsp. albopurpurea") %>%
+  add_row(species = "Euphorbia characias", canonicalName = "Euphorbia wulfenii") %>%
+  add_row(species = "Euryomyrtus ramosissima", canonicalName = "Baeckea ramosissima")
 
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
