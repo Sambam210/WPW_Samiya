@@ -15966,7 +15966,8 @@ syn_remove <- gbif_synonyms %>%
            species == "Robinia pseudoacacia" | 
            species == "Thuja occidentalis" | 
            species == "Triadica sebifera" & canonicalName == "Croton macrocarpus" | 
-           species == "Eucalyptus lesouefii")
+           species == "Eucalyptus lesouefii" | 
+           species == "Fraxinus pennsylvanica")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
