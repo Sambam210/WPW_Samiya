@@ -15968,7 +15968,8 @@ syn_remove <- gbif_synonyms %>%
            species == "Triadica sebifera" & canonicalName == "Croton macrocarpus" | 
            species == "Eucalyptus lesouefii" | 
            species == "Fraxinus pennsylvanica" | 
-           species == "Syringa vulgaris" & canonicalName == "Ligustrum vulgare")
+           species == "Syringa vulgaris" & canonicalName == "Ligustrum vulgare" | 
+           species == "Lysimachia monellii" & canonicalName == "Anagallis monellii")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
