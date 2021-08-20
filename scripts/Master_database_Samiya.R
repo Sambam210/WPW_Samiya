@@ -14256,9 +14256,9 @@ write.csv(gwilym,"Master_database_output/Gwilym/WPW_plant_list_20May2021.csv", r
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_10Aug2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_20Aug2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_10Aug2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_20Aug2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -15967,7 +15967,8 @@ syn_remove <- gbif_synonyms %>%
            species == "Thuja occidentalis" | 
            species == "Triadica sebifera" & canonicalName == "Croton macrocarpus" | 
            species == "Eucalyptus lesouefii" | 
-           species == "Fraxinus pennsylvanica")
+           species == "Fraxinus pennsylvanica" | 
+           species == "Syringa vulgaris" & canonicalName == "Ligustrum vulgare")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -16105,7 +16106,7 @@ Gwilym <- all_entities_short %>%
 Gwilym_wide <- Gwilym %>%
   spread(trait_name, value, fill = NA)
 
-write.csv(Gwilym_wide,"Master_database_output/Gwilym/Gwilym_canopy_projections.csv",row.names=FALSE)
+# write.csv(Gwilym_wide,"Master_database_output/Gwilym/Gwilym_canopy_projections.csv",row.names=FALSE)
 
 #################################################################
 ### check coverage of 'states_found' trait
@@ -16508,10 +16509,54 @@ diff <- setdiff(farzin, wpw_species)
 
 ##################################################################################################################
 ##################################################################################################################
+# check the weeds
 
+weeds <- read.csv("Master_database_input/weeds/weeds_state_lists.csv")
 
+wpw_species <- all_entities_short %>%
+  distinct(plant_name)
 
+library(fuzzyjoin)
 
+weeds_fuzzy <- stringdist_join(weeds, wpw_species, 
+                                  by = "plant_name",
+                                  mode = "left",
+                                  ignore_case = FALSE, 
+                                  method = "jw", 
+                                  max_dist = 99, 
+                                  distance_col = "dist") 
+
+# 0.000 is a perfect match
+weeds_fuzzy_filtered <- filter(weeds_fuzzy, dist < 0.06) # can adjust based on the amount of similarity you want, I think this number works best for the waverley list
+weeds_fuzzy_filtered <- arrange(weeds_fuzzy_filtered, plant_name.x)
+
+# extract the species that did not match and check them against synonyms
+matchedspecies <- as.data.frame(weeds_fuzzy_filtered$plant_name.x)
+names(matchedspecies)[names(matchedspecies) == 'weeds_fuzzy_filtered$plant_name.x'] <- 'plant_name'
+mismatchedspecies <- anti_join(weeds, matchedspecies, by = "plant_name")
+
+# fuzzy match the synonyms
+weeds_syn_fuzzy <- stringdist_join(mismatchedspecies, gbif_synonyms, 
+                                      by = c("plant_name" = "canonicalName"),
+                                      mode = "left",
+                                      ignore_case = FALSE, 
+                                      method = "jw", 
+                                      max_dist = 99, 
+                                      distance_col = "dist") 
+
+weeds_syn_fuzzy <- filter(weeds_syn_fuzzy, dist < 0.06)
+
+# join these to the main list
+names(weeds_fuzzy_filtered)[names(weeds_fuzzy_filtered) == 'plant_name.x'] <- 'weed_plant_name'
+names(weeds_fuzzy_filtered)[names(weeds_fuzzy_filtered) == 'plant_name.y'] <- 'wpw_plant_name'
+
+names(weeds_syn_fuzzy)[names(weeds_syn_fuzzy) == 'plant_name'] <- 'weed_plant_name'
+names(weeds_syn_fuzzy)[names(weeds_syn_fuzzy) == 'species'] <- 'wpw_plant_name'
+weeds_syn_fuzzy <- select(weeds_syn_fuzzy, -canonicalName)
+
+weeds_fuzzy_filtered <- rbind(weeds_fuzzy_filtered, weeds_syn_fuzzy)
+
+write.csv(weeds_fuzzy_filtered,"Master_database_output/weeds/weeds_state_list_matched.csv", row.names=FALSE)
 
 
 
