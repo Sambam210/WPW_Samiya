@@ -14256,9 +14256,9 @@ write.csv(gwilym,"Master_database_output/Gwilym/WPW_plant_list_20May2021.csv", r
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_20Aug2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_26Aug2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_20Aug2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_26Aug2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -14844,7 +14844,8 @@ all_entities_short <- all_entities_short %>%
          family = if_else(entity == "Carya illinoinensis", "Juglandaceae", family),
          family = if_else(genus == "Chamelaucium", "Myrtaceae", family),
          family = if_else(genus == "Diplarrena", "Iridaceae", family),
-         family = if_else(entity == "Eremophila macdonnellii", "Scrophulariaceae", family))
+         family = if_else(entity == "Eremophila macdonnellii", "Scrophulariaceae", family),
+         family = if_else(genus == "Hibiscus", "Malvaceae", family))
 
 # check
 
@@ -15125,6 +15126,7 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Dodonaea viscosa Cuneata
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eremophila macdonellii", replacement = "Eremophila macdonnellii")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eucalyptus camaldulensis Obtusa", replacement = "Eucalyptus camaldulensis subsp obtusa")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Banksia integrifolia Austraflora Roller Coaster", replacement = "Banksia integrifolia Roller Coaster")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Hibiscus hakeifolius", replacement = "Hibiscus hakeifolia")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -15892,6 +15894,7 @@ gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xpiperita", rep
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xrotundifolia", replacement = "Mentha x rotundifolia")
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Carya illinoiensis", replacement = "Carya illinoinensis")
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Eremophila macdonellii", replacement = "Eremophila macdonnellii")
+gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Hibiscus hakeifolius", replacement = "Hibiscus hakeifolia")
 
 # remove the synonyms for malus that are confusing, and also wrong synonyms according to Gwilym
 syn_remove <- gbif_synonyms %>%
@@ -16022,10 +16025,11 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Pandanus tectorius", canonicalName = "Pandanus stradbrokensis") %>%
   add_row(species = "Eucalyptus albopurpurea", canonicalName = "Eucalyptus lansdowneana subsp. albopurpurea") %>%
   add_row(species = "Euphorbia characias", canonicalName = "Euphorbia wulfenii") %>%
-  add_row(species = "Euryomyrtus ramosissima", canonicalName = "Baeckea ramosissima")
-
+  add_row(species = "Euryomyrtus ramosissima", canonicalName = "Baeckea ramosissima") %>%
+  add_row(species = "Hibiscus hakeifolia", canonicalName = "Alyogyne hakeifolia")
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
+gbif_synonyms <- arrange(gbif_synonyms, species, canonicalName)
 
 # IT IS ALL CLEANED, NOW TO JOIN TOGETHER
 # https://stackoverflow.com/questions/38514988/concatenate-strings-by-group-with-dplyr
