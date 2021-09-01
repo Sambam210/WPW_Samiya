@@ -14250,8 +14250,8 @@ write.csv(gwilym,"Master_database_output/Gwilym/WPW_plant_list_20May2021.csv", r
 # Things that have changed:
 ### Gwilym's corrections
 ### 'Weeds' are only declared species in each state
-### GC, CULVAR, and SSP fixed
-### 'silvery' chaged to 'silver'
+### GC, CULVAR, and SSP fixed, spp. removed from GCs
+### 'silvery' changed to 'silver'
 ### decimal numbers for heights and widths > 2 instead of > 1
 
 library(tidyverse)
@@ -15971,8 +15971,7 @@ syn_remove <- gbif_synonyms %>%
            species == "Triadica sebifera" & canonicalName == "Croton macrocarpus" | 
            species == "Eucalyptus lesouefii" | 
            species == "Fraxinus pennsylvanica" | 
-           species == "Syringa vulgaris" & canonicalName == "Ligustrum vulgare" | 
-           species == "Lysimachia monellii" & canonicalName == "Anagallis monellii")
+           species == "Syringa vulgaris" & canonicalName == "Ligustrum vulgare")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -16026,7 +16025,8 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Eucalyptus albopurpurea", canonicalName = "Eucalyptus lansdowneana subsp. albopurpurea") %>%
   add_row(species = "Euphorbia characias", canonicalName = "Euphorbia wulfenii") %>%
   add_row(species = "Euryomyrtus ramosissima", canonicalName = "Baeckea ramosissima") %>%
-  add_row(species = "Hibiscus hakeifolia", canonicalName = "Alyogyne hakeifolia")
+  add_row(species = "Hibiscus hakeifolia", canonicalName = "Alyogyne hakeifolia") %>%
+  add_row(species = "Lysiphyllum hookeri", canonicalName = "Bauhinia hookeri")
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
 gbif_synonyms <- arrange(gbif_synonyms, species, canonicalName)
@@ -16089,6 +16089,9 @@ all_entities_short <- anti_join(all_entities_short, canopy_shape_remove)
 
 # fix the subsp
 all_entities_short[] <- lapply(all_entities_short, gsub, pattern = "subsp ", replacement = "subsp. ")
+
+# fix the genus cultivars
+all_entities_short[] <- lapply(all_entities_short, gsub, pattern = " spp. ", replacement = " ")
 
 # write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_30.8.2021_vers1.8TEST.csv",row.names=FALSE)
 
