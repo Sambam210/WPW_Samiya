@@ -14256,9 +14256,9 @@ write.csv(gwilym,"Master_database_output/Gwilym/WPW_plant_list_20May2021.csv", r
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_26Aug2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_2Sept2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_26Aug2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_2Sept2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -14845,7 +14845,8 @@ all_entities_short <- all_entities_short %>%
          family = if_else(genus == "Chamelaucium", "Myrtaceae", family),
          family = if_else(genus == "Diplarrena", "Iridaceae", family),
          family = if_else(entity == "Eremophila macdonnellii", "Scrophulariaceae", family),
-         family = if_else(genus == "Hibiscus", "Malvaceae", family))
+         family = if_else(genus == "Hibiscus", "Malvaceae", family),
+         family = if_else(entity == "Mimulus aurantiacus", "Phrymaceae", family))
 
 # check
 
@@ -15127,6 +15128,7 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eremophila macdonellii",
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eucalyptus camaldulensis Obtusa", replacement = "Eucalyptus camaldulensis subsp obtusa")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Banksia integrifolia Austraflora Roller Coaster", replacement = "Banksia integrifolia Roller Coaster")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Hibiscus hakeifolius", replacement = "Hibiscus hakeifolia")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Mimulus auriantiacus", replacement = "Mimulus aurantiacus")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -15888,7 +15890,6 @@ gbif_synonyms <- anti_join(gbif_synonyms, gbif_synonyms_remove)
 gbif_synonyms <- filter(gbif_synonyms, !grepl("publ", canonicalName))
 gbif_synonyms <- filter(gbif_synonyms, !grepl("oppr", canonicalName))
 
-
 # fix some spelling mistakes
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xpiperita", replacement = "Mentha x piperita")
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xrotundifolia", replacement = "Mentha x rotundifolia")
@@ -15971,7 +15972,8 @@ syn_remove <- gbif_synonyms %>%
            species == "Triadica sebifera" & canonicalName == "Croton macrocarpus" | 
            species == "Eucalyptus lesouefii" | 
            species == "Fraxinus pennsylvanica" | 
-           species == "Syringa vulgaris" & canonicalName == "Ligustrum vulgare")
+           species == "Syringa vulgaris" & canonicalName == "Ligustrum vulgare" | 
+           species == "Mimulus aurantiacus")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
