@@ -14253,6 +14253,8 @@ write.csv(gwilym,"Master_database_output/Gwilym/WPW_plant_list_20May2021.csv", r
 ### GC, CULVAR, and SSP fixed, spp. removed from GCs
 ### 'silvery' changed to 'silver'
 ### decimal numbers for heights and widths > 2 instead of > 1
+### origin changed to have more info
+### changed WSUD to Water Sensitive Urban Design
 
 library(tidyverse)
 
@@ -14750,6 +14752,7 @@ parents[] <- lapply(parents, gsub, pattern = "Telopea Braidwood Brilliant", repl
 parents[] <- lapply(parents, gsub, pattern = "Telopea Shady Lady Red", replacement = "Telopea spp. Shady Lady Red")
 parents[] <- lapply(parents, gsub, pattern = "Ulmus Sapporo Autumn Gold", replacement = "Ulmus spp. Sapporo Autumn Gold")
 parents[] <- lapply(parents, gsub, pattern = "Xerochrysum Dargan Hill Monarch", replacement = "Xerochrysum spp. Dargan Hill Monarch")
+parents[] <- lapply(parents, gsub, pattern = "Myoporum tenuifolium", replacement = "Myoporum montanum")
 
 parents <- select(parents, -plantType)
 
@@ -14846,7 +14849,8 @@ all_entities_short <- all_entities_short %>%
          family = if_else(genus == "Diplarrena", "Iridaceae", family),
          family = if_else(entity == "Eremophila macdonnellii", "Scrophulariaceae", family),
          family = if_else(genus == "Hibiscus", "Malvaceae", family),
-         family = if_else(entity == "Mimulus aurantiacus", "Phrymaceae", family))
+         family = if_else(entity == "Mimulus aurantiacus", "Phrymaceae", family),
+         family = if_else(genus == "Myoporum", "Scrophulariaceae", family))
 
 # check
 
@@ -14869,7 +14873,7 @@ all_entities_short[] <-lapply(all_entities_short, gsub, pattern = "Pittosporum p
 # remove the category 'synonym'
 
 # these are the problematic ones
-# Species with multiple synonyms that have 5 min traits: Abelia uniflora, Myoporum tenuifolium
+# Species with multiple synonyms that have 5 min traits: Abelia uniflora
 
 # Species and synonyms that have 5 min traits: Bauhinia variegata, Coronidium scorpioides,
 # Cupressus arizonica, Ficinia nodosa, Melaleuca fulgens,
@@ -14886,7 +14890,7 @@ summary_original <- all_entities_short %>%
 # exclude the problematic ones
 
 syn_good <- all_entities_short %>%
-  filter(scientificNameStd != "Abelia uniflora" & scientificNameStd != "Myoporum tenuifolium" & scientificNameStd != "Pittosporum phillyraeoides" 
+  filter(scientificNameStd != "Abelia uniflora" & scientificNameStd != "Pittosporum phillyraeoides" 
          & scientificNameStd != "Bauhinia variegata" & scientificNameStd != "Coronidium scorpioides" & scientificNameStd != "Cupressus arizonica" 
          & scientificNameStd != "Ficinia nodosa" & scientificNameStd != "Melaleuca fulgens" 
          & scientificNameStd != "Syringa vulgaris" & scientificNameStd != "Syzygium tierneyanum" & scientificNameStd != "Virgilia oroboides")
@@ -14914,9 +14918,9 @@ syn_good_change$entity <- syn_good_change$scientificNameStd
 syn_good_change$category <- "SP"
 
 # species with multiple synonyms and 5 min traits
-# Abelia uniflora, Myoporum tenuifolium
+# Abelia uniflora
 multi_syn <- all_entities_short %>%
-  filter(scientificNameStd == "Abelia uniflora" | category == "SYN" & scientificNameStd == "Myoporum tenuifolium")
+  filter(scientificNameStd == "Abelia uniflora")
 
 multi_syn <- multi_syn %>%
   mutate_if(is.factor, as.character) %>%
@@ -15129,6 +15133,7 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eucalyptus camaldulensis
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Banksia integrifolia Austraflora Roller Coaster", replacement = "Banksia integrifolia Roller Coaster")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Hibiscus hakeifolius", replacement = "Hibiscus hakeifolia")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Mimulus auriantiacus", replacement = "Mimulus aurantiacus")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Myoporum tenuifolium", replacement = "Myoporum montanum")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -15288,7 +15293,7 @@ all_entities_short <- all_entities_short %>%
   mutate(value_new = if_else(value == "avenue", "street", value_new),
          value_new = if_else(value == "largegarden", "park", value_new),
          value_new = if_else(value == "powerlines", "under powerlines", value_new),
-         value_new = if_else(value == "wet", "WSUD", value_new),
+         value_new = if_else(value == "wet", "Water Sensitive Urban Design", value_new),
          value_new = if_else(value == "container", "garden", value_new),
          value_new = if_else(value == "indoor", "garden", value_new))
 
@@ -15845,18 +15850,14 @@ syn_already_have <- all_entities_short %>%
   filter(synonym != "NA") %>%
   distinct(plant_name, synonym)
 
-# fix up Myoporum tenuifolium (Myoporum acuminatum, Myoporum montanum) and Abelia uniflora (Abelia engleriana, Abelia schumannii)
+# fix up Abelia uniflora (Abelia engleriana, Abelia schumannii)
 syn_already_have <- syn_already_have %>%
-  filter(plant_name != "Abelia uniflora" & plant_name != "Myoporum tenuifolium")
+  filter(plant_name != "Abelia uniflora")
 
 syn_already_have <- syn_already_have %>%
   add_row(plant_name = "Abelia uniflora", synonym = "Abelia engleriana")
 syn_already_have <- syn_already_have %>%
   add_row(plant_name = "Abelia uniflora", synonym = "Abelia schumannii")
-syn_already_have <- syn_already_have %>%
-  add_row(plant_name = "Myoporum tenuifolium", synonym = "Myoporum acuminatum")
-syn_already_have <- syn_already_have %>%
-  add_row(plant_name = "Myoporum tenuifolium", synonym = "Myoporum montanum")
 
 names(syn_already_have)[names(syn_already_have) == 'plant_name'] <- 'species'
 names(syn_already_have)[names(syn_already_have) == 'synonym'] <- 'canonicalName'
