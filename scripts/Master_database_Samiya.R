@@ -15168,7 +15168,7 @@ all_entities_short <- all_entities_short %>%
          | trait_name == "height_min" | trait_name == "height_average" | trait_name == "width_max" | trait_name == "width_min" | trait_name == "width_average"
          | trait_name == "soil_type" | trait_name == "soil_pH" | trait_name == "ideal_conditions" | trait_name == "frost_tolerance" | trait_name == "drought_tolerance" 
          | trait_name == "coastal_tolerance" | trait_name == "habit_canopy" | trait_name == "growth_rate" | trait_name == "foliage_colour" | trait_name == "risk" 
-         | trait_name == "weed_status")
+         | trait_name == "weed_status" | trait_name == "states_found")
 
 # check they are all there
 trait_name_check <- all_entities_short %>%
@@ -15185,6 +15185,32 @@ all_entities_short$value_new <- all_entities_short$value
 all_entities_short <- all_entities_short %>%
   select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, climber, cycad, fern, grass, herb, palm, shrub, succulent, tree, origin, trait_name, trait_name_new, value,
          value_new, bird, insect, mammal_lizard, animal_pollinated, habitat, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
+
+# states found
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(trait_name_new = if_else(trait_name == "states_found", "states found", trait_name_new))
+
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(value_new = if_else(value == "NewSouthWales", "NSW", value_new),
+         value_new = if_else(value == "Victoria", "VIC", value_new),
+         value_new = if_else(value == "Queensland", "QLD", value_new),
+         value_new = if_else(value == "SouthAustralia", "SA", value_new),
+         value_new = if_else(value == "WesternAustralia", "WA", value_new),
+         value_new = if_else(value == "NorthernTerritory", "NT", value_new),
+         value_new = if_else(value == "Tasmania", "TAS", value_new),
+         value_new = if_else(value == "NorfolkIsland", "Norfolk Island", value_new))
+
+# filter out the rest
+remove_states <- all_entities_short %>%
+  filter(trait_name == "states_found" & value == "introduced_NewSouthWales" | trait_name == "states_found" & value == "introduced_NorthernTerritory" | 
+           trait_name == "states_found" & value == "introduced_Queensland" | trait_name == "states_found" & value == "introduced_SouthAustralia" | 
+           trait_name == "states_found" & value == "introduced_Tasmania" | trait_name == "states_found" & value == "introduced_Tasmanis" | 
+           trait_name == "states_found" & value == "introduced_Victoria" | trait_name == "states_found" & value == "introduced_WesternAustralia")
+
+# remove
+all_entities_short <- anti_join(all_entities_short, remove_states)
 
 # COMMON NAME
 all_entities_short <- all_entities_short %>%
@@ -15320,7 +15346,6 @@ all_entities_short <- all_entities_short %>%
          value_new = if_else(value == "protected", "sheltered", value_new),
          value_new = if_else(value == "poorly_drained", "poorly drained soil", value_new),
          value_new = if_else(value == "well_drained", "well drained soil", value_new))
-
 
 # change back the growth rate medium values
 all_entities_short <- all_entities_short %>%
@@ -16057,6 +16082,78 @@ all_entities_short <- all_entities_short %>%
   select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, climber, cycad, fern, grass, herbaceous, palm, shrub, succulent, tree, origin, trait_name, value,
          bird, insect, mammal_lizard, animal_pollinated, habitat, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index, drought_strategy, heat_tolerance)
 
+# check coverage of the 'states found' trait
+# do it again
+native_summary <- all_entities_short %>%
+  filter(origin == "Native") %>%
+  filter(category == "SP") %>%
+  distinct(plant_name) # 1144 species
+
+states_found_summary <- all_entities_short %>%
+  filter(trait_name == "states found") %>%
+  distinct(plant_name) # 1144 species
+
+diff <- setdiff(native_summary, states_found_summary) # 0 different
+diff2 <- setdiff(states_found_summary, native_summary) # 0 different
+
+# pull out states found and origin
+states_found <- all_entities_short %>%
+  filter(trait_name == "states found") %>%
+  select(plant_name, origin, trait_name, value) %>%
+  arrange(plant_name, value)
+
+# join the states together
+states_found <- states_found %>%
+  select(-trait_name) %>%
+  group_by(plant_name, origin) %>%
+  mutate(value = paste0(value, collapse = ", ")) %>%
+  distinct(plant_name, origin, value)
+
+# join together
+states_found$value_new <- paste0("(", states_found$value , ")")
+
+states_found$origin_new <- paste(states_found$origin, (states_found$value_new))
+
+states_found <- select(states_found, plant_name, origin_new)
+# get rid of origin
+states_found <- states_found[,2:3]
+names(states_found)[names(states_found) == 'origin_new'] <- 'origin'
+
+# join to main dataset
+all_entities_short <- all_entities_short %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate()
+
+# extract the other species
+wpw_species <- all_entities_short %>%
+  distinct(plant_name)
+
+other_species <- anti_join(wpw_species, states_found, by = "plant_name")
+
+# join the origins for these other species
+origins <- all_entities_short %>%
+  distinct(plant_name, origin)
+
+other_species <- left_join(other_species, origins, by = "plant_name")
+
+states_found <- rbind(states_found, other_species)
+states_found <- arrange(states_found, plant_name)
+
+# join to main dataset
+all_entities_short <- select(all_entities_short, -origin)
+
+all_entities_short <- left_join(all_entities_short , states_found, by = "plant_name")
+
+# rearrange columns
+all_entities_short <- all_entities_short %>%
+  select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, climber, cycad, fern, grass, herbaceous, palm, shrub, succulent, tree, origin, trait_name, value,
+         bird, insect, mammal_lizard, animal_pollinated, habitat, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index, drought_strategy, heat_tolerance)
+
+# remove the trait 'states found'
+all_entities_short <- all_entities_short %>%
+  filter(trait_name != "states found")
+
+
 # internal beta testing feedback
 # Michelle: change 'grass' to 'grass-like'
 names(all_entities_short)[names(all_entities_short) == 'grass'] <- 'grass-like'
@@ -16073,7 +16170,7 @@ names(all_entities_short)[names(all_entities_short) == 'grass'] <- 'grass-like'
 # remove 'model_type' column
 all_entities_short <- select(all_entities_short, -model_type)
 
-# remove 'habitat' as a 'use
+# remove 'habitat' as a 'use'
 all_entities_short <- all_entities_short %>%
   filter(value != "habitat")
 
@@ -16094,6 +16191,10 @@ all_entities_short[] <- lapply(all_entities_short, gsub, pattern = "subsp ", rep
 
 # fix the genus cultivars
 all_entities_short[] <- lapply(all_entities_short, gsub, pattern = " spp. ", replacement = " ")
+
+# check numbers
+check <- all_entities_short %>%
+  distinct(plant_name)
 
 # write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_30.8.2021_vers1.8TEST.csv",row.names=FALSE)
 
@@ -16127,7 +16228,7 @@ native_summary <- all_entities_short %>%
   distinct(plant_name, category) %>%
   group_by(category) %>%
   summarise(frequency = n())
-# just species = 1150
+# just species = 1145
 
 ## see how many plants with the 'states_found' trait I have
 states_found <- all_entities %>%
@@ -16138,7 +16239,7 @@ states_found <- all_entities %>%
   distinct(species, category) %>%
   group_by(category) %>%
   summarise(frequency = n())
-# species + syn = 1153
+# species + syn = 1147
 
 ################################################################
 ##### Andrew Turnbull
