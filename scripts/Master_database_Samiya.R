@@ -14753,6 +14753,7 @@ parents[] <- lapply(parents, gsub, pattern = "Telopea Shady Lady Red", replaceme
 parents[] <- lapply(parents, gsub, pattern = "Ulmus Sapporo Autumn Gold", replacement = "Ulmus spp. Sapporo Autumn Gold")
 parents[] <- lapply(parents, gsub, pattern = "Xerochrysum Dargan Hill Monarch", replacement = "Xerochrysum spp. Dargan Hill Monarch")
 parents[] <- lapply(parents, gsub, pattern = "Myoporum tenuifolium", replacement = "Myoporum montanum")
+parents[] <- lapply(parents, gsub, pattern = "Hebe x franciscana Variegated", replacement = "Hebe x franciscana Variegata")
 
 parents <- select(parents, -plantType)
 
@@ -15134,6 +15135,7 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Banksia integrifolia Aus
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Hibiscus hakeifolius", replacement = "Hibiscus hakeifolia")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Mimulus auriantiacus", replacement = "Mimulus aurantiacus")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Myoporum tenuifolium", replacement = "Myoporum montanum")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Hebe x franciscana Variegated", replacement = "Hebe x franciscana Variegata")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -16180,9 +16182,9 @@ all_entities_short <- all_entities_short %>%
 all_entities_short[] <- lapply(all_entities_short, gsub, pattern = "Leguminosae", replacement = "Fabaceae")
 all_entities_short[] <- lapply(all_entities_short, gsub, pattern = "Compositae", replacement = "Asteraceae")
 
-# remove 'canopy shape' trait from everything that isn't a tree or shrub
+# remove 'canopy shape' trait from everything that isn't a tree
 canopy_shape_remove <- all_entities_short %>%
-  filter(tree == "0" & shrub == "0") %>%
+  filter(tree == "0") %>%
   filter(trait_name == "canopy shape")
 
 all_entities_short <- anti_join(all_entities_short, canopy_shape_remove)
