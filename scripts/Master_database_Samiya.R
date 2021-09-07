@@ -14754,6 +14754,7 @@ parents[] <- lapply(parents, gsub, pattern = "Ulmus Sapporo Autumn Gold", replac
 parents[] <- lapply(parents, gsub, pattern = "Xerochrysum Dargan Hill Monarch", replacement = "Xerochrysum spp. Dargan Hill Monarch")
 parents[] <- lapply(parents, gsub, pattern = "Myoporum tenuifolium", replacement = "Myoporum montanum")
 parents[] <- lapply(parents, gsub, pattern = "Hebe x franciscana Variegated", replacement = "Hebe x franciscana Variegata")
+parents[] <- lapply(parents, gsub, pattern = "Tilia x europea", replacement = "Tilia x europaea")
 
 parents <- select(parents, -plantType)
 
@@ -15136,6 +15137,7 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Hibiscus hakeifolius", r
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Mimulus auriantiacus", replacement = "Mimulus aurantiacus")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Myoporum tenuifolium", replacement = "Myoporum montanum")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Hebe x franciscana Variegated", replacement = "Hebe x franciscana Variegata")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Tilia x europea", replacement = "Tilia x europaea")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -16001,7 +16003,8 @@ syn_remove <- gbif_synonyms %>%
            species == "Eucalyptus lesouefii" | 
            species == "Fraxinus pennsylvanica" | 
            species == "Syringa vulgaris" & canonicalName == "Ligustrum vulgare" | 
-           species == "Mimulus aurantiacus")
+           species == "Mimulus aurantiacus" | 
+           species == "Themeda triandra")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -16056,8 +16059,9 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Euphorbia characias", canonicalName = "Euphorbia wulfenii") %>%
   add_row(species = "Euryomyrtus ramosissima", canonicalName = "Baeckea ramosissima") %>%
   add_row(species = "Hibiscus hakeifolia", canonicalName = "Alyogyne hakeifolia") %>%
-  add_row(species = "Lysiphyllum hookeri", canonicalName = "Bauhinia hookeri")
-
+  add_row(species = "Lysiphyllum hookeri", canonicalName = "Bauhinia hookeri") %>%
+  add_row(species = "Themeda triandra", canonicalName = "Themeda australis")
+  
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
 gbif_synonyms <- arrange(gbif_synonyms, species, canonicalName)
 
