@@ -16122,6 +16122,7 @@ states_found$value_new <- paste0("(", states_found$value , ")")
 states_found$origin_new <- paste(states_found$origin, (states_found$value_new))
 
 states_found <- select(states_found, plant_name, origin_new)
+
 # get rid of origin
 states_found <- states_found[,2:3]
 names(states_found)[names(states_found) == 'origin_new'] <- 'origin'
@@ -16675,6 +16676,46 @@ weeds_syn_fuzzy <- select(weeds_syn_fuzzy, -canonicalName)
 weeds_fuzzy_filtered <- rbind(weeds_fuzzy_filtered, weeds_syn_fuzzy)
 
 write.csv(weeds_fuzzy_filtered,"Master_database_output/weeds/weeds_state_list_matched.csv", row.names=FALSE)
+
+####################################################
+# extract traits for Waverley Council
+
+wanted_traits <- all_entities_short %>%
+  select(plant_name, origin, climber, cycad, fern, "grass-like", herbaceous, palm, shrub, succulent, tree, 
+         bird, insect, mammal_lizard, animal_pollinated, trait_name, value) %>%
+  filter(trait_name == "shade tolerance" | trait_name == "average height" | trait_name == "average width" | 
+         trait_name == "soil type" | trait_name == "soil pH" | trait_name == "urban context" | 
+         trait_name == "uses" | trait_name == "coastal tolerance" | trait_name == "drought tolerance")
+
+# rename the grass colum so it's easier
+names(wanted_traits)[names(wanted_traits) == 'grass-like'] <- 'grass'
+
+# make form into long format
+# select just the form columns
+
+form <- wanted_traits %>%
+  select(plant_name, climber, cycad, fern, grass, herbaceous, palm, shrub, succulent, tree)
+
+form <- form %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(climber = if_else(climber == "1", "climber", ""),
+         cycad = if_else(cycad == "1", "cycad", ""),
+         fern = if_else(fern == "1", "fern", ""),
+         grass = if_else(grass == "1", "grass", ""),
+         herbaceous = if_else(herbaceous == "1", "herbaceous", ""),
+         palm = if_else(palm == "1", "palm", ""), 
+         shrub = if_else(shrub == "1", "shrub", ""), 
+         succulent = if_else(succulent == "1", "succulent", ""),
+         tree = if_else(tree == "1", "tree", ""))
+
+form <- form %>%
+  group_by(plant_name) %>%
+  mutate(form = paste0(climber, cycad, fern, grass, herbaceous, palm, shrub, succulent, tree, collapse = ", ")) %>%
+  distinct(plant_name, form)
+
+
+
+
 
 
 
