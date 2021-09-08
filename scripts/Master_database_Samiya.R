@@ -16687,10 +16687,10 @@ wanted_traits <- all_entities_short %>%
          trait_name == "soil type" | trait_name == "soil pH" | trait_name == "urban context" | 
          trait_name == "uses" | trait_name == "coastal tolerance" | trait_name == "drought tolerance")
 
-# rename the grass colum so it's easier
+# rename the grass column so it's easier
 names(wanted_traits)[names(wanted_traits) == 'grass-like'] <- 'grass'
 
-# make form into long format
+### make form into long format
 # select just the form columns
 
 form <- wanted_traits %>%
@@ -16708,12 +16708,88 @@ form <- form %>%
          succulent = if_else(succulent == "1", "succulent", ""),
          tree = if_else(tree == "1", "tree", ""))
 
+# change the blank cells into NAs
+# https://stackoverflow.com/questions/24172111/change-the-blank-cells-to-na
+form <- form %>% 
+  mutate_all(na_if,"")
+
+# one line for each species
 form <- form %>%
-  group_by(plant_name) %>%
-  mutate(form = paste0(climber, cycad, fern, grass, herbaceous, palm, shrub, succulent, tree, collapse = ", ")) %>%
-  distinct(plant_name, form)
+  distinct(plant_name, climber, cycad, fern, grass, herbaceous, palm, shrub, succulent, tree)
 
+# join the forms
+# https://stackoverflow.com/questions/13944078/concatenate-rows-of-a-data-frame
+form <- form %>%
+  unite(form_new, climber, cycad, fern, grass, herbaceous, palm, shrub, succulent, tree, sep = ", ", na.rm = TRUE)
 
+names(form)[names(form) == 'form_new'] <- 'form'
+
+# join to main dataset
+wanted_traits <- wanted_traits %>%
+  select(-climber, -cycad, -fern, -grass, -herbaceous, -palm, -shrub, -succulent, -tree)
+
+wanted_traits <- left_join(wanted_traits, form, by = "plant_name")
+
+### make biodiversity into long format
+# select just the biodiversity columns
+
+diversity <- wanted_traits %>%
+  select(plant_name, bird, insect, mammal_lizard, animal_pollinated)
+
+diversity <- diversity %>%
+  mutate_if(is.factor, as.character) %>%
+  mutate(bird = if_else(bird == "1", "bird", ""),
+         insect = if_else(insect == "1", "insect", ""),
+         mammal_lizard = if_else(mammal_lizard == "1", "mammal/lizard", ""),
+         animal_pollinated = if_else(animal_pollinated == "1", "pollinator", ""))
+
+# change the blank cells into NAs
+diversity <- diversity %>% 
+  mutate_all(na_if,"")
+
+# one line for each species
+diversity <- diversity %>%
+  distinct(plant_name, bird, insect, mammal_lizard, animal_pollinated)
+
+# join the forms
+diversity <- diversity %>%
+  unite(biodiversity, bird, insect, mammal_lizard, animal_pollinated, sep = ", ", na.rm = TRUE)
+
+diversity <- diversity %>% 
+  mutate_all(na_if,"")
+
+# join to main dataset
+wanted_traits <- wanted_traits %>%
+  select(-bird, -insect, -mammal_lizard, -animal_pollinated)
+
+wanted_traits <- left_join(wanted_traits, diversity, by = "plant_name")
+
+### make the traits wide format
+# extract the traits
+
+council_traits <- wanted_traits %>%
+  select(plant_name, trait_name, value)
+
+council_traits[] <- lapply(council_traits, gsub, pattern = "putatively high", replacement = "high")
+council_traits[] <- lapply(council_traits, gsub, pattern = "putatively moderate", replacement = "moderate")
+council_traits[] <- lapply(council_traits, gsub, pattern = "putatively no", replacement = "no")
+
+# join values for the same trait together
+council_traits <- council_traits %>%
+  group_by(plant_name, trait_name) %>%
+  mutate(value_new = paste0(value, collapse = ", ")) %>%
+  distinct(plant_name, trait_name, value_new)
+
+# change to long format
+council_traits_long <- spread(council_traits, trait_name, value_new, fill = NA)
+
+# join to main dataset
+wanted_traits <- wanted_traits %>%
+  select(-trait_name, -value)
+
+wanted_traits <- left_join(wanted_traits, council_traits_long, by = "plant_name")
+
+wanted_traits <- distinct(wanted_traits, plant_name, .keep_all = TRUE)
 
 
 
