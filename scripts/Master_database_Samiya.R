@@ -16683,9 +16683,10 @@ write.csv(weeds_fuzzy_filtered,"Master_database_output/weeds/weeds_state_list_ma
 wanted_traits <- all_entities_short %>%
   select(plant_name, origin, climber, cycad, fern, "grass-like", herbaceous, palm, shrub, succulent, tree, 
          bird, insect, mammal_lizard, animal_pollinated, trait_name, value) %>%
-  filter(trait_name == "shade tolerance" | trait_name == "average height" | trait_name == "average width" | 
-         trait_name == "soil type" | trait_name == "soil pH" | trait_name == "urban context" | 
-         trait_name == "uses" | trait_name == "coastal tolerance" | trait_name == "drought tolerance")
+  filter(trait_name == "common name" | trait_name == "shade tolerance" | trait_name == "leaf loss" | trait_name == "average height" | trait_name == "average width" | 
+         trait_name == "soil texture" | trait_name == "soil pH" | trait_name == "urban context" | 
+         trait_name == "uses" | trait_name == "coastal tolerance" | trait_name == "drought tolerance" | 
+         trait_name == "weed status in Australia")
 
 # rename the grass column so it's easier
 names(wanted_traits)[names(wanted_traits) == 'grass-like'] <- 'grass'
@@ -16791,7 +16792,34 @@ wanted_traits <- left_join(wanted_traits, council_traits_long, by = "plant_name"
 
 wanted_traits <- distinct(wanted_traits, plant_name, .keep_all = TRUE)
 
+# load the council lists
+council_lists_combined <- read.csv("Master_database_input/Waverley/council_lists_combined.csv")
 
+# RANDWICK
+randwick <- council_lists_combined %>%
+  filter(Council == "Randwick")
+
+# attach suitabilities
+randwick_suitability <- read.csv("Master_database_input/Waverley/randwick_suitability.csv")
+
+randwick_suitability <- select(randwick_suitability, -Council)
+
+# join to main dataset
+randwick <- left_join(randwick, randwick_suitability, by = c("wpw_name" = "Species"))
+
+# Replace NAs with unsuitable (ACTUALLY I NEED TO CHECK THIS)
+randwick[is.na(randwick)] <- "UNSUITABLE"
+
+# join on the traits
+randwick <- left_join(randwick, wanted_traits, by = c("wpw_name" = "plant_name"))
+
+randwick <- select(randwick, Council, List, council_name, wpw_name, "common name", X2030, X2050, X2070, origin, form, biodiversity, "leaf loss", "average height", "average width", "coastal tolerance", "drought tolerance", "shade tolerance", "soil texture", "soil pH", "urban context", uses)
+
+names(randwick)[names(randwick) == 'X2030'] <- '2030'
+names(randwick)[names(randwick) == 'X2050'] <- '2050'
+names(randwick)[names(randwick) == 'X2070'] <- '2070'
+
+randwick <- arrange(randwick, List, wpw_name)
 
 
 
