@@ -16807,8 +16807,10 @@ randwick_suitability <- select(randwick_suitability, -Council)
 # join to main dataset
 randwick <- left_join(randwick, randwick_suitability, by = c("wpw_name" = "Species"))
 
-# Replace NAs with unsuitable (ACTUALLY I NEED TO CHECK THIS)
-randwick[is.na(randwick)] <- "UNSUITABLE"
+# fill in the missing values for Callistemon citrinus
+randwick[[7,5]] <- "SUITABLE"
+randwick[[7,6]] <- "MARGINAL"
+randwick[[7,7]] <- "MARGINAL"
 
 # join on the traits
 randwick <- left_join(randwick, wanted_traits, by = c("wpw_name" = "plant_name"))
@@ -16821,5 +16823,60 @@ names(randwick)[names(randwick) == 'X2070'] <- '2070'
 
 randwick <- arrange(randwick, List, wpw_name)
 
+# WAVERLEY
+waverley <- council_lists_combined %>%
+  filter(Council == "Waverley")
+
+# attach suitabilities
+waverley_suitability <- read.csv("Master_database_input/Waverley/waverley_suitability.csv")
+
+waverley_suitability <- select(waverley_suitability, -Council)
+
+# join to main dataset
+waverley <- left_join(waverley, waverley_suitability, by = c("wpw_name" = "Species"))
+
+# fill in the missing values for Callistemon citrinus
+waverley[[8,5]] <- "SUITABLE"
+waverley[[8,6]] <- "MARGINAL"
+waverley[[8,7]] <- "MARGINAL"
+
+# join on the traits
+waverley <- left_join(waverley, wanted_traits, by = c("wpw_name" = "plant_name"))
+
+waverley <- select(waverley, Council, List, council_name, wpw_name, "common name", X2030, X2050, X2070, origin, form, biodiversity, "leaf loss", "average height", "average width", "coastal tolerance", "drought tolerance", "shade tolerance", "soil texture", "soil pH", "urban context", uses)
+
+names(waverley)[names(waverley) == 'X2030'] <- '2030'
+names(waverley)[names(waverley) == 'X2050'] <- '2050'
+names(waverley)[names(waverley) == 'X2070'] <- '2070'
+
+waverley <- arrange(waverley, List, wpw_name)
+
+# WOOLLAHRA
+woollahra <- council_lists_combined %>%
+  filter(Council == "Woollahra")
+
+# attach suitabilities
+woollahra_suitability <- read.csv("Master_database_input/Waverley/woollahra_suitability.csv")
+
+woollahra_suitability <- select(woollahra_suitability, -Council)
+
+# join to main dataset
+woollahra <- left_join(woollahra, woollahra_suitability, by = c("wpw_name" = "Species"))
+
+# fill in the missing values for Callistemon citrinus
+woollahra[[8,5]] <- "SUITABLE"
+woollahra[[8,6]] <- "MARGINAL"
+woollahra[[8,7]] <- "MARGINAL"
+
+# join on the traits
+woollahra <- left_join(woollahra, wanted_traits, by = c("wpw_name" = "plant_name"))
+
+woollahra <- select(woollahra, Council, List, council_name, wpw_name, "common name", X2030, X2050, X2070, origin, form, biodiversity, "leaf loss", "average height", "average width", "coastal tolerance", "drought tolerance", "shade tolerance", "soil texture", "soil pH", "urban context", uses)
+
+names(woollahra)[names(woollahra) == 'X2030'] <- '2030'
+names(woollahra)[names(woollahra) == 'X2050'] <- '2050'
+names(woollahra)[names(woollahra) == 'X2070'] <- '2070'
+
+woollahra <- arrange(woollahra, List, wpw_name)
 
 
