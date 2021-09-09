@@ -16004,7 +16004,11 @@ syn_remove <- gbif_synonyms %>%
            species == "Fraxinus pennsylvanica" | 
            species == "Syringa vulgaris" & canonicalName == "Ligustrum vulgare" | 
            species == "Mimulus aurantiacus" | 
-           species == "Themeda triandra")
+           species == "Themeda triandra" | 
+           species == "Calamagrostis arundinacea" | 
+           species == "Calytrix tetragona" | 
+           species == "Canna indica" | 
+           species == "Coleus scutellarioides")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
