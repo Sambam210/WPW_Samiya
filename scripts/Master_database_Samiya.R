@@ -14852,7 +14852,8 @@ all_entities_short <- all_entities_short %>%
          family = if_else(entity == "Eremophila macdonnellii", "Scrophulariaceae", family),
          family = if_else(genus == "Hibiscus", "Malvaceae", family),
          family = if_else(entity == "Mimulus aurantiacus", "Phrymaceae", family),
-         family = if_else(genus == "Myoporum", "Scrophulariaceae", family))
+         family = if_else(genus == "Myoporum", "Scrophulariaceae", family), 
+         family = if_else(genus == "Poa", "Poaceae", family))
 
 # check
 
@@ -15138,6 +15139,10 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Mimulus auriantiacus", r
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Myoporum tenuifolium", replacement = "Myoporum montanum")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Hebe x franciscana Variegated", replacement = "Hebe x franciscana Variegata")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Tilia x europea", replacement = "Tilia x europaea")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eriostemon myoporoides Profusion", replacement = "Philotheca myoporoides Profusion")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eriostemon myoporoides Winter Rouge", replacement = "Philotheca myoporoides Winter Rouge")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Poa labillardierei", replacement = "Poa labillardieri")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Pittosporum phillyraeoides var. microcarpa", replacement = "Pittosporum angustifolium var. microcarpa")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -15926,6 +15931,7 @@ gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Mentha xrotundifolia",
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Carya illinoiensis", replacement = "Carya illinoinensis")
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Eremophila macdonellii", replacement = "Eremophila macdonnellii")
 gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Hibiscus hakeifolius", replacement = "Hibiscus hakeifolia")
+gbif_synonyms[] <- lapply(gbif_synonyms, gsub, pattern = "Poa labillardierei", replacement = "Poa labillardieri")
 
 # remove the synonyms for malus that are confusing, and also wrong synonyms according to Gwilym
 syn_remove <- gbif_synonyms %>%
@@ -16008,7 +16014,8 @@ syn_remove <- gbif_synonyms %>%
            species == "Calamagrostis arundinacea" | 
            species == "Calytrix tetragona" | 
            species == "Canna indica" | 
-           species == "Coleus scutellarioides")
+           species == "Coleus scutellarioides" | 
+           species == "Phormium tenax" & canonicalName == "Phormium atropurpureum")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -16064,8 +16071,10 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Euryomyrtus ramosissima", canonicalName = "Baeckea ramosissima") %>%
   add_row(species = "Hibiscus hakeifolia", canonicalName = "Alyogyne hakeifolia") %>%
   add_row(species = "Lysiphyllum hookeri", canonicalName = "Bauhinia hookeri") %>%
-  add_row(species = "Themeda triandra", canonicalName = "Themeda australis")
+  add_row(species = "Themeda triandra", canonicalName = "Themeda australis") %>%
+  add_row(species = "Pinus radiata", canonicalName = "Pinus insignis")
   
+
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
 gbif_synonyms <- arrange(gbif_synonyms, species, canonicalName)
 
