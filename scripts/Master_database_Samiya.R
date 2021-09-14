@@ -16812,6 +16812,15 @@ council_lists_combined <- read.csv("Master_database_input/Waverley/council_lists
 randwick <- council_lists_combined %>%
   filter(Council == "Randwick")
 
+# add extra species 
+
+randwick <- randwick %>%
+  add_row(Council = "Randwick", List = "Extra", wpw_name = "Acacia decurrens") %>%
+  add_row(Council = "Randwick", List = "Extra", wpw_name = "Acronychia imperforata") %>%
+  add_row(Council = "Randwick", List = "Extra", wpw_name = "Alphitonia excelsa") %>%
+  add_row(Council = "Randwick", List = "Extra", wpw_name = "Prostanthera ovalifolia") %>%
+  add_row(Council = "Randwick", List = "Extra", wpw_name = "Melaleuca bracteata")
+  
 # attach suitabilities
 randwick_suitability <- read.csv("Master_database_input/Waverley/randwick_suitability.csv")
 
@@ -16839,6 +16848,15 @@ randwick <- arrange(randwick, List, wpw_name)
 # WAVERLEY
 waverley <- council_lists_combined %>%
   filter(Council == "Waverley")
+
+# add extra species 
+
+waverley <- waverley %>%
+  add_row(Council = "Waverley", List = "Extra", wpw_name = "Acacia maidenii") %>%
+  add_row(Council = "Waverley", List = "Extra", wpw_name = "Alpinia caerulea") %>%
+  add_row(Council = "Waverley", List = "Extra", wpw_name = "Banksia robur") %>%
+  add_row(Council = "Waverley", List = "Extra", wpw_name = "Brachyscome multifida") %>%
+  add_row(Council = "Waverley", List = "Extra", wpw_name = "Corymbia ficifolia")
 
 # attach suitabilities
 waverley_suitability <- read.csv("Master_database_input/Waverley/waverley_suitability.csv")
@@ -16868,6 +16886,14 @@ waverley <- arrange(waverley, List, wpw_name)
 woollahra <- council_lists_combined %>%
   filter(Council == "Woollahra")
 
+# add extra species 
+
+woollahra <- woollahra %>%
+  add_row(Council = "Woollahra", List = "Extra", wpw_name = "Melicope elleryana") %>%
+  add_row(Council = "Woollahra", List = "Extra", wpw_name = "Toona ciliata") %>%
+  add_row(Council = "Woollahra", List = "Extra", wpw_name = "Melastoma malabathricum") %>%
+  add_row(Council = "Woollahra", List = "Extra", wpw_name = "Flindersia xanthoxyla")
+
 # attach suitabilities
 woollahra_suitability <- read.csv("Master_database_input/Waverley/woollahra_suitability.csv")
 
@@ -16880,6 +16906,20 @@ woollahra <- left_join(woollahra, woollahra_suitability, by = c("wpw_name" = "Sp
 woollahra[[8,5]] <- "SUITABLE"
 woollahra[[8,6]] <- "MARGINAL"
 woollahra[[8,7]] <- "MARGINAL"
+
+# fill in the missing values for the extra species
+woollahra[[48,5]] <- "SUITABLE"
+woollahra[[48,6]] <- "SUITABLE"
+woollahra[[48,7]] <- "SUITABLE"
+woollahra[[49,5]] <- "SUITABLE"
+woollahra[[49,6]] <- "SUITABLE"
+woollahra[[49,7]] <- "SUITABLE"
+woollahra[[50,5]] <- "SUITABLE"
+woollahra[[50,6]] <- "SUITABLE"
+woollahra[[50,7]] <- "SUITABLE"
+woollahra[[51,5]] <- "SUITABLE"
+woollahra[[51,6]] <- "SUITABLE"
+woollahra[[51,7]] <- "SUITABLE"
 
 # join on the traits
 woollahra <- left_join(woollahra, wanted_traits, by = c("wpw_name" = "plant_name"))
