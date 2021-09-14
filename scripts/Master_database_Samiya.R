@@ -14253,7 +14253,6 @@ write.csv(gwilym,"Master_database_output/Gwilym/WPW_plant_list_20May2021.csv", r
 ### GC, CULVAR, and SSP fixed, spp. removed from GCs
 ### 'silvery' changed to 'silver'
 ### decimal numbers for heights and widths > 2 instead of > 1
-### origin changed to have more info
 ### changed WSUD to Water Sensitive Urban Design
 
 library(tidyverse)
@@ -16102,78 +16101,79 @@ all_entities_short <- all_entities_short %>%
   select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, climber, cycad, fern, grass, herbaceous, palm, shrub, succulent, tree, origin, trait_name, value,
          bird, insect, mammal_lizard, animal_pollinated, habitat, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index, drought_strategy, heat_tolerance)
 
+########################## REMOVED BECAUSE TOO MANY ERRORS
 # check coverage of the 'states found' trait
 # do it again
-native_summary <- all_entities_short %>%
-  filter(origin == "Native") %>%
-  filter(category == "SP") %>%
-  distinct(plant_name) # 1144 species
-
-states_found_summary <- all_entities_short %>%
-  filter(trait_name == "states found") %>%
-  distinct(plant_name) # 1144 species
-
-diff <- setdiff(native_summary, states_found_summary) # 0 different
-diff2 <- setdiff(states_found_summary, native_summary) # 0 different
+# native_summary <- all_entities_short %>%
+#   filter(origin == "Native") %>%
+#   filter(category == "SP") %>%
+#   distinct(plant_name) # 1144 species
+# 
+# states_found_summary <- all_entities_short %>%
+#   filter(trait_name == "states found") %>%
+#   distinct(plant_name) # 1144 species
+# 
+# diff <- setdiff(native_summary, states_found_summary) # 0 different
+# diff2 <- setdiff(states_found_summary, native_summary) # 0 different
 
 # pull out states found and origin
-states_found <- all_entities_short %>%
-  filter(trait_name == "states found") %>%
-  select(plant_name, origin, trait_name, value) %>%
-  arrange(plant_name, value)
+# states_found <- all_entities_short %>%
+#   filter(trait_name == "states found") %>%
+#   select(plant_name, origin, trait_name, value) %>%
+#   arrange(plant_name, value)
 
 # join the states together
-states_found <- states_found %>%
-  select(-trait_name) %>%
-  group_by(plant_name, origin) %>%
-  mutate(value = paste0(value, collapse = ", ")) %>%
-  distinct(plant_name, origin, value)
+# states_found <- states_found %>%
+#   select(-trait_name) %>%
+#   group_by(plant_name, origin) %>%
+#   mutate(value = paste0(value, collapse = ", ")) %>%
+#   distinct(plant_name, origin, value)
 
 # join together
-states_found$value_new <- paste0("(", states_found$value , ")")
-
-states_found$origin_new <- paste(states_found$origin, (states_found$value_new))
-
-states_found <- select(states_found, plant_name, origin_new)
+# states_found$value_new <- paste0("(", states_found$value , ")")
+# 
+# states_found$origin_new <- paste(states_found$origin, (states_found$value_new))
+# 
+# states_found <- select(states_found, plant_name, origin_new)
 
 # get rid of origin
-states_found <- states_found[,2:3]
-names(states_found)[names(states_found) == 'origin_new'] <- 'origin'
+# states_found <- states_found[,2:3]
+# names(states_found)[names(states_found) == 'origin_new'] <- 'origin'
 
 # join to main dataset
-all_entities_short <- all_entities_short %>%
-  mutate_if(is.factor, as.character) %>%
-  mutate()
+# all_entities_short <- all_entities_short %>%
+#   mutate_if(is.factor, as.character) %>%
+#   mutate()
 
 # extract the other species
-wpw_species <- all_entities_short %>%
-  distinct(plant_name)
-
-other_species <- anti_join(wpw_species, states_found, by = "plant_name")
+# wpw_species <- all_entities_short %>%
+#   distinct(plant_name)
+# 
+# other_species <- anti_join(wpw_species, states_found, by = "plant_name")
 
 # join the origins for these other species
-origins <- all_entities_short %>%
-  distinct(plant_name, origin)
-
-other_species <- left_join(other_species, origins, by = "plant_name")
-
-states_found <- rbind(states_found, other_species)
-states_found <- arrange(states_found, plant_name)
+# origins <- all_entities_short %>%
+#   distinct(plant_name, origin)
+# 
+# other_species <- left_join(other_species, origins, by = "plant_name")
+# 
+# states_found <- rbind(states_found, other_species)
+# states_found <- arrange(states_found, plant_name)
 
 # join to main dataset
-all_entities_short <- select(all_entities_short, -origin)
-
-all_entities_short <- left_join(all_entities_short , states_found, by = "plant_name")
+# all_entities_short <- select(all_entities_short, -origin)
+# 
+# all_entities_short <- left_join(all_entities_short , states_found, by = "plant_name")
 
 # rearrange columns
-all_entities_short <- all_entities_short %>%
-  select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, climber, cycad, fern, grass, herbaceous, palm, shrub, succulent, tree, origin, trait_name, value,
-         bird, insect, mammal_lizard, animal_pollinated, habitat, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index, drought_strategy, heat_tolerance)
+# all_entities_short <- all_entities_short %>%
+#   select(scientificNameStd, family, genus, species, plant_name, synonym, category, exp_tested, Parent_1, Parent_2,Parent_3, Parent_4, model_type, climber, cycad, fern, grass, herbaceous, palm, shrub, succulent, tree, origin, trait_name, value,
+#          bird, insect, mammal_lizard, animal_pollinated, habitat, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index, drought_strategy, heat_tolerance)
 
 # remove the trait 'states found'
-all_entities_short <- all_entities_short %>%
-  filter(trait_name != "states found")
-
+# all_entities_short <- all_entities_short %>%
+#   filter(trait_name != "states found")
+######################################################
 
 # internal beta testing feedback
 # Michelle: change 'grass' to 'grass-like'
@@ -16931,5 +16931,15 @@ names(woollahra)[names(woollahra) == 'X2050'] <- '2050'
 names(woollahra)[names(woollahra) == 'X2070'] <- '2070'
 
 woollahra <- arrange(woollahra, List, wpw_name)
+
+
+
+
+
+
+
+
+  
+  
 
 
