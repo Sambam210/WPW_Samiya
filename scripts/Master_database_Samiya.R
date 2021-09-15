@@ -14257,9 +14257,9 @@ write.csv(gwilym,"Master_database_output/Gwilym/WPW_plant_list_20May2021.csv", r
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_2Sept2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_15Sep2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_2Sept2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_15Sep2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -14852,7 +14852,8 @@ all_entities_short <- all_entities_short %>%
          family = if_else(genus == "Hibiscus", "Malvaceae", family),
          family = if_else(entity == "Mimulus aurantiacus", "Phrymaceae", family),
          family = if_else(genus == "Myoporum", "Scrophulariaceae", family), 
-         family = if_else(genus == "Poa", "Poaceae", family))
+         family = if_else(genus == "Poa", "Poaceae", family), 
+         family = if_else(entity == "Prunus blireana", "Rosaceae", family))
 
 # check
 
@@ -15142,6 +15143,7 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eriostemon myoporoides P
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eriostemon myoporoides Winter Rouge", replacement = "Philotheca myoporoides Winter Rouge")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Poa labillardierei", replacement = "Poa labillardieri")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Pittosporum phillyraeoides var. microcarpa", replacement = "Pittosporum angustifolium var. microcarpa")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Prunus blireiana", replacement = "Prunus blireana")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -16014,7 +16016,8 @@ syn_remove <- gbif_synonyms %>%
            species == "Calytrix tetragona" | 
            species == "Canna indica" | 
            species == "Coleus scutellarioides" | 
-           species == "Phormium tenax" & canonicalName == "Phormium atropurpureum")
+           species == "Phormium tenax" & canonicalName == "Phormium atropurpureum" | 
+           species == "Prumnopitys ladei" & canonicalName == "Poocarpus ladei")
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -16072,7 +16075,8 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Lysiphyllum hookeri", canonicalName = "Bauhinia hookeri") %>%
   add_row(species = "Themeda triandra", canonicalName = "Themeda australis") %>%
   add_row(species = "Pinus radiata", canonicalName = "Pinus insignis") %>%
-  add_row(species = "Polyspora axillaris", canonicalName = "Franklinia axillaris")
+  add_row(species = "Polyspora axillaris", canonicalName = "Franklinia axillaris") %>%
+  add_row(species = "Prumnopitys ladei", canonicalName = "Podocarpus ladai")
   
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
