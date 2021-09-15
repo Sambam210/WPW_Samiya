@@ -16071,7 +16071,8 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Hibiscus hakeifolia", canonicalName = "Alyogyne hakeifolia") %>%
   add_row(species = "Lysiphyllum hookeri", canonicalName = "Bauhinia hookeri") %>%
   add_row(species = "Themeda triandra", canonicalName = "Themeda australis") %>%
-  add_row(species = "Pinus radiata", canonicalName = "Pinus insignis")
+  add_row(species = "Pinus radiata", canonicalName = "Pinus insignis") %>%
+  add_row(species = "Polyspora axillaris", canonicalName = "Franklinia axillaris")
   
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
