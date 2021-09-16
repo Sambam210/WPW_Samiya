@@ -14853,7 +14853,9 @@ all_entities_short <- all_entities_short %>%
          family = if_else(entity == "Mimulus aurantiacus", "Phrymaceae", family),
          family = if_else(genus == "Myoporum", "Scrophulariaceae", family), 
          family = if_else(genus == "Poa", "Poaceae", family), 
-         family = if_else(entity == "Prunus blireana", "Rosaceae", family))
+         family = if_else(entity == "Prunus blireana", "Rosaceae", family),
+         family = if_else(entity == "Roepera billardierei", "Zygophyllaceae", family), 
+         family = if_else(entity == "Rytidosperma racemosum", "Poaceae", family))
 
 # check
 
@@ -15144,6 +15146,8 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Eriostemon myoporoides W
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Poa labillardierei", replacement = "Poa labillardieri")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Pittosporum phillyraeoides var. microcarpa", replacement = "Pittosporum angustifolium var. microcarpa")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Prunus blireiana", replacement = "Prunus blireana")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Roepera billardieri", replacement = "Roepera billardierei")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Rytidosperma racemosa", replacement = "Rytidosperma racemosum")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
