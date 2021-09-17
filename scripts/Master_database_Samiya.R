@@ -16080,7 +16080,11 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Themeda triandra", canonicalName = "Themeda australis") %>%
   add_row(species = "Pinus radiata", canonicalName = "Pinus insignis") %>%
   add_row(species = "Polyspora axillaris", canonicalName = "Franklinia axillaris") %>%
-  add_row(species = "Prumnopitys ladei", canonicalName = "Podocarpus ladai")
+  add_row(species = "Prumnopitys ladei", canonicalName = "Podocarpus ladai") %>%
+  add_row(species = "Sannantha virgata", canonicalName = "Babingtonia similis") %>%
+  add_row(species = "Sannantha virgata", canonicalName = "Baeckea virgata") %>%
+  add_row(species = "Sannantha virgata", canonicalName = "Sannantha similis") %>%
+  add_row(species = "Sansevieria trifasciata", canonicalName = "Dracaena trifasciata")
   
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
