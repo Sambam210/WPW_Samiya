@@ -14855,7 +14855,8 @@ all_entities_short <- all_entities_short %>%
          family = if_else(genus == "Poa", "Poaceae", family), 
          family = if_else(entity == "Prunus blireana", "Rosaceae", family),
          family = if_else(entity == "Roepera billardierei", "Zygophyllaceae", family), 
-         family = if_else(entity == "Rytidosperma racemosum", "Poaceae", family))
+         family = if_else(entity == "Rytidosperma racemosum", "Poaceae", family), 
+         family = if_else(entity == "Tetragonia implexicoma", "Aizoaceae", family))
 
 # check
 
@@ -15148,6 +15149,7 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Pittosporum phillyraeoid
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Prunus blireiana", replacement = "Prunus blireana")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Roepera billardieri", replacement = "Roepera billardierei")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Rytidosperma racemosa", replacement = "Rytidosperma racemosum")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Tertragonia implexicoma", replacement = "Tetragonia implexicoma")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -16021,7 +16023,10 @@ syn_remove <- gbif_synonyms %>%
            species == "Canna indica" | 
            species == "Coleus scutellarioides" | 
            species == "Phormium tenax" & canonicalName == "Phormium atropurpureum" | 
-           species == "Prumnopitys ladei" & canonicalName == "Poocarpus ladei")
+           species == "Prumnopitys ladei" & canonicalName == "Poocarpus ladei" | 
+           species == "Telopea speciosissima" & canonicalName == "Embothrium speciossimum" | 
+           species == "Telopea speciosissima" & canonicalName == "Embothrium speciosum")
+  
 
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
@@ -16084,7 +16089,12 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Sannantha virgata", canonicalName = "Babingtonia similis") %>%
   add_row(species = "Sannantha virgata", canonicalName = "Baeckea virgata") %>%
   add_row(species = "Sannantha virgata", canonicalName = "Sannantha similis") %>%
-  add_row(species = "Sansevieria trifasciata", canonicalName = "Dracaena trifasciata")
+  add_row(species = "Sansevieria trifasciata", canonicalName = "Dracaena trifasciata") %>%
+  add_row(species = "Taxandria juniperina", canonicalName = "Agonis juniperina") %>%
+  add_row(species = "Taxandria parviceps", canonicalName = "Agonis parviceps") %>%
+  add_row(species = "Tecoma capensis", canonicalName = "Bignonia capensis") %>%
+  add_row(species = "Telopea speciosissima", canonicalName = "Embothrium speciosissimum") %>%
+  add_row(species = "Toechima erythrocarpum", canonicalName = "Cupania erythrocarpa")
   
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
