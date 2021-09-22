@@ -16025,9 +16025,10 @@ syn_remove <- gbif_synonyms %>%
            species == "Phormium tenax" & canonicalName == "Phormium atropurpureum" | 
            species == "Prumnopitys ladei" & canonicalName == "Poocarpus ladei" | 
            species == "Telopea speciosissima" & canonicalName == "Embothrium speciossimum" | 
-           species == "Telopea speciosissima" & canonicalName == "Embothrium speciosum")
+           species == "Telopea speciosissima" & canonicalName == "Embothrium speciosum" | 
+           species == "Xerochrysum bracteatum")
   
-
+  
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
 # Add synonyms that Gwilym says
@@ -16094,7 +16095,9 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Taxandria parviceps", canonicalName = "Agonis parviceps") %>%
   add_row(species = "Tecoma capensis", canonicalName = "Bignonia capensis") %>%
   add_row(species = "Telopea speciosissima", canonicalName = "Embothrium speciosissimum") %>%
-  add_row(species = "Toechima erythrocarpum", canonicalName = "Cupania erythrocarpa")
+  add_row(species = "Toechima erythrocarpum", canonicalName = "Cupania erythrocarpa") %>%
+  add_row(species = "Veronica decorosa", canonicalName = "Derwentia decorosa") %>%
+  add_row(species = "Xerochrysum bracteatum", canonicalName = "Helichrysum bracteatum")
   
 
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
