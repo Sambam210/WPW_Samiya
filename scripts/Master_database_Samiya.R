@@ -14257,9 +14257,9 @@ write.csv(gwilym,"Master_database_output/Gwilym/WPW_plant_list_20May2021.csv", r
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_15Sep2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_23Sep2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_15Sep2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_23Sep2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -14848,14 +14848,14 @@ all_entities_short <- all_entities_short %>%
          family = if_else(entity == "Carya illinoinensis", "Juglandaceae", family),
          family = if_else(genus == "Chamelaucium", "Myrtaceae", family),
          family = if_else(genus == "Diplarrena", "Iridaceae", family),
-         family = if_else(entity == "Eremophila macdonnellii", "Scrophulariaceae", family),
+         family = if_else(genus == "Eremophila", "Scrophulariaceae", family),
          family = if_else(genus == "Hibiscus", "Malvaceae", family),
          family = if_else(entity == "Mimulus aurantiacus", "Phrymaceae", family),
          family = if_else(genus == "Myoporum", "Scrophulariaceae", family), 
          family = if_else(genus == "Poa", "Poaceae", family), 
-         family = if_else(entity == "Prunus blireana", "Rosaceae", family),
-         family = if_else(entity == "Roepera billardierei", "Zygophyllaceae", family), 
-         family = if_else(entity == "Rytidosperma racemosum", "Poaceae", family), 
+         family = if_else(genus == "Prunus", "Rosaceae", family),
+         family = if_else(genus == "Roepera", "Zygophyllaceae", family), 
+         family = if_else(genus == "Rytidosperma", "Poaceae", family), 
          family = if_else(entity == "Tetragonia implexicoma", "Aizoaceae", family))
 
 # check
@@ -15150,6 +15150,7 @@ biodiversity[] <- lapply(biodiversity, gsub, pattern = "Prunus blireiana", repla
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Roepera billardieri", replacement = "Roepera billardierei")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Rytidosperma racemosa", replacement = "Rytidosperma racemosum")
 biodiversity[] <- lapply(biodiversity, gsub, pattern = "Tertragonia implexicoma", replacement = "Tetragonia implexicoma")
+biodiversity[] <- lapply(biodiversity, gsub, pattern = "Pyrus calleryana Valzam Valiant", replacement = "Pyrus calleryana Valzam")
 
 biodiversity <- biodiversity %>%
   add_row(plant_name = "Syzygium australe", insect = "1", bird = "1", mammal_lizard = "0", animal_pollinated = "1",
@@ -15189,7 +15190,7 @@ all_entities_short <- all_entities_short %>%
          | trait_name == "height_min" | trait_name == "height_average" | trait_name == "width_max" | trait_name == "width_min" | trait_name == "width_average"
          | trait_name == "soil_type" | trait_name == "soil_pH" | trait_name == "ideal_conditions" | trait_name == "frost_tolerance" | trait_name == "drought_tolerance" 
          | trait_name == "coastal_tolerance" | trait_name == "habit_canopy" | trait_name == "growth_rate" | trait_name == "foliage_colour" | trait_name == "risk" 
-         | trait_name == "weed_status" | trait_name == "states_found")
+         | trait_name == "weed_status")
 
 # check they are all there
 trait_name_check <- all_entities_short %>%
@@ -15208,30 +15209,30 @@ all_entities_short <- all_entities_short %>%
          value_new, bird, insect, mammal_lizard, animal_pollinated, habitat, biodiversity_value, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
 
 # states found
-all_entities_short <- all_entities_short %>%
-  mutate_if(is.factor, as.character) %>%
-  mutate(trait_name_new = if_else(trait_name == "states_found", "states found", trait_name_new))
-
-all_entities_short <- all_entities_short %>%
-  mutate_if(is.factor, as.character) %>%
-  mutate(value_new = if_else(value == "NewSouthWales", "NSW", value_new),
-         value_new = if_else(value == "Victoria", "VIC", value_new),
-         value_new = if_else(value == "Queensland", "QLD", value_new),
-         value_new = if_else(value == "SouthAustralia", "SA", value_new),
-         value_new = if_else(value == "WesternAustralia", "WA", value_new),
-         value_new = if_else(value == "NorthernTerritory", "NT", value_new),
-         value_new = if_else(value == "Tasmania", "TAS", value_new),
-         value_new = if_else(value == "NorfolkIsland", "Norfolk Island", value_new))
+# all_entities_short <- all_entities_short %>%
+#   mutate_if(is.factor, as.character) %>%
+#   mutate(trait_name_new = if_else(trait_name == "states_found", "states found", trait_name_new))
+# 
+# all_entities_short <- all_entities_short %>%
+#   mutate_if(is.factor, as.character) %>%
+#   mutate(value_new = if_else(value == "NewSouthWales", "NSW", value_new),
+#          value_new = if_else(value == "Victoria", "VIC", value_new),
+#          value_new = if_else(value == "Queensland", "QLD", value_new),
+#          value_new = if_else(value == "SouthAustralia", "SA", value_new),
+#          value_new = if_else(value == "WesternAustralia", "WA", value_new),
+#          value_new = if_else(value == "NorthernTerritory", "NT", value_new),
+#          value_new = if_else(value == "Tasmania", "TAS", value_new),
+#          value_new = if_else(value == "NorfolkIsland", "Norfolk Island", value_new))
 
 # filter out the rest
-remove_states <- all_entities_short %>%
-  filter(trait_name == "states_found" & value == "introduced_NewSouthWales" | trait_name == "states_found" & value == "introduced_NorthernTerritory" | 
-           trait_name == "states_found" & value == "introduced_Queensland" | trait_name == "states_found" & value == "introduced_SouthAustralia" | 
-           trait_name == "states_found" & value == "introduced_Tasmania" | trait_name == "states_found" & value == "introduced_Tasmanis" | 
-           trait_name == "states_found" & value == "introduced_Victoria" | trait_name == "states_found" & value == "introduced_WesternAustralia")
-
+# remove_states <- all_entities_short %>%
+#   filter(trait_name == "states_found" & value == "introduced_NewSouthWales" | trait_name == "states_found" & value == "introduced_NorthernTerritory" | 
+#            trait_name == "states_found" & value == "introduced_Queensland" | trait_name == "states_found" & value == "introduced_SouthAustralia" | 
+#            trait_name == "states_found" & value == "introduced_Tasmania" | trait_name == "states_found" & value == "introduced_Tasmanis" | 
+#            trait_name == "states_found" & value == "introduced_Victoria" | trait_name == "states_found" & value == "introduced_WesternAustralia")
+# 
 # remove
-all_entities_short <- anti_join(all_entities_short, remove_states)
+# all_entities_short <- anti_join(all_entities_short, remove_states)
 
 # COMMON NAME
 all_entities_short <- all_entities_short %>%
@@ -15556,7 +15557,8 @@ gh_drought <- all_entities_short %>%
 
 # load the drought and heat tolerance data
 
-drought_heat <- read.csv("Master_database_input/name_comparisons.csv")
+drought_heat <- read.csv("Master_database_input/name_comparisons2.csv")
+# name_comparisons2 is the updated data with Gwilym's corrections
 
 drought_heat <- select(drought_heat, plant_name, drought_tolerance, dehydration_tolerance, heat_tolerance)
 
@@ -15614,61 +15616,6 @@ all_entities_short$heat_tolerance <- "NA"
 all_entities_short <- bind_rows(all_entities_short, gh_all)
 
 all_entities_short <- arrange(all_entities_short, plant_name, trait_name, value)
-
-## populate the model type column
-
-# sdm <- read.csv("Master_database_input/LindaFarzin/diff_ST_march_and_min5traits_good_10_03_2021_Clean.csv", strip.white = TRUE)
-# get rid of empty cells with white space
-# https://stackoverflow.com/questions/2261079/how-can-i-trim-leading-and-trailing-white-space
-
-# sdm_possible <- sdm %>%
-# select(SDM.is.possible) %>%
-# filter(SDM.is.possible != "")
-# out of 1914 species, 1469 have data to do sdm, which means 445 are missing
-
-# colnames(sdm_possible) <- "speciesName"
-
-# species with missing sdm
-# sdm_missing <- sdm %>%
-#   filter(SDM.is.possible == "") %>%
-#   select(species_list_ST_1Mar2021.csv)
-# 
-# colnames(sdm_missing) <- "speciesName"
-
-# load ale's niche data
-
-# niche <- read.csv("Master_database_input/Ale/niche_summaries_5414_species.csv")
-
-# niche <- niche %>%
-# distinct(speciesName)
-
-# diff between missing sdm and niche list
-# diff_missing_sdm_niche <- setdiff(sdm_missing, niche)
-# 77 species do not have a sdm or niche
-
-# diff between models that do not have sdm or niche data and models that do not have sdm data
-# diff_niches <- setdiff(sdm_missing, diff_missing_sdm_niche)
-# 368 species have niche data but not sdm
-
-# populate model type
-# diff_niches$model_type <- "niche"
-# diff_missing_sdm_niche$model_type <- "NA"
-# sdm_possible$model_type <- "sdm"
-
-# join together
-# model_type <- bind_rows(diff_niches, diff_missing_sdm_niche, sdm_possible)
-
-# join to database
-# all_entities_short <- select(all_entities_short, -model_type)
-# names(model_type)[names(model_type) == 'speciesName'] <- 'plant_name'
-# 
-# all_entities_short <- left_join(all_entities_short, model_type, by = "plant_name")
-# all_entities_short$model_type[is.na(all_entities_short$model_type)] <- "NA"
-# all_entities_short$scientificNameStd[is.na(all_entities_short$scientificNameStd)] <- "NA"
-# all_entities_short$species[is.na(all_entities_short$species)] <- "NA"
-# all_entities_short$canopy_cover[is.na(all_entities_short$canopy_cover)] <- "NA"
-# all_entities_short$shade_value[is.na(all_entities_short$shade_value)] <- "NA"
-# all_entities_short$carbon_value[is.na(all_entities_short$carbon_value)] <- "NA"
 
 # rearrange columns
 
@@ -16028,7 +15975,6 @@ syn_remove <- gbif_synonyms %>%
            species == "Telopea speciosissima" & canonicalName == "Embothrium speciosum" | 
            species == "Xerochrysum bracteatum")
   
-  
 gbif_synonyms <- anti_join(gbif_synonyms, syn_remove)
 
 # Add synonyms that Gwilym says
@@ -16099,7 +16045,6 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Veronica decorosa", canonicalName = "Derwentia decorosa") %>%
   add_row(species = "Xerochrysum bracteatum", canonicalName = "Helichrysum bracteatum")
   
-
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
 gbif_synonyms <- arrange(gbif_synonyms, species, canonicalName)
 
