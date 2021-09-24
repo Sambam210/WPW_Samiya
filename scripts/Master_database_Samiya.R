@@ -16673,7 +16673,7 @@ write.csv(weeds_fuzzy_filtered,"Master_database_output/weeds/weeds_state_list_ma
 
 wanted_traits <- all_entities_short %>%
   select(plant_name, origin, climber, cycad, fern, "grass-like", herbaceous, palm, shrub, succulent, tree, 
-         bird, insect, mammal_lizard, animal_pollinated, trait_name, value) %>%
+         bird, insect, mammal_lizard, animal_pollinated, trait_name, value, shade_index) %>%
   filter(trait_name == "common name" | trait_name == "shade tolerance" | trait_name == "leaf loss" | trait_name == "average height" | trait_name == "average width" | 
          trait_name == "soil texture" | trait_name == "soil pH" | trait_name == "urban context" | 
          trait_name == "uses" | trait_name == "coastal tolerance" | trait_name == "drought tolerance" | 
@@ -16743,7 +16743,7 @@ diversity <- diversity %>%
 diversity <- diversity %>%
   distinct(plant_name, bird, insect, mammal_lizard, animal_pollinated)
 
-# join the forms
+# join biodiversity
 diversity <- diversity %>%
   unite(biodiversity, bird, insect, mammal_lizard, animal_pollinated, sep = ", ", na.rm = TRUE)
 
@@ -16816,13 +16816,13 @@ randwick[[7,7]] <- "MARGINAL"
 randwick <- left_join(randwick, wanted_traits, by = c("wpw_name" = "plant_name"))
 # no species is a weed in NSW
 
-randwick <- select(randwick, Council, List, council_name, wpw_name, "common name", X2030, X2050, X2070, origin, form, biodiversity, "leaf loss", "average height", "average width", "coastal tolerance", "drought tolerance", "shade tolerance", "soil texture", "soil pH", "urban context", uses)
+randwick <- select(randwick, Council, List, council_name, wpw_name, "common name", X2030, X2050, X2070, origin, form, shade_index, biodiversity, "leaf loss", "average height", "average width", "coastal tolerance", "drought tolerance", "shade tolerance", "soil texture", "soil pH", "urban context", uses)
 
 names(randwick)[names(randwick) == 'X2030'] <- '2030'
 names(randwick)[names(randwick) == 'X2050'] <- '2050'
 names(randwick)[names(randwick) == 'X2070'] <- '2070'
 
-randwick <- arrange(randwick, List, wpw_name)
+write.csv(randwick,"Master_database_output/waverley_council/randwick_suitability.csv", row.names=FALSE)
 
 # WAVERLEY
 waverley <- council_lists_combined %>%
@@ -16850,16 +16850,22 @@ waverley[[8,5]] <- "SUITABLE"
 waverley[[8,6]] <- "MARGINAL"
 waverley[[8,7]] <- "MARGINAL"
 
+# fill in the missing values for Poa labillardieri
+waverley[[38,5]] <- "SUITABLE"
+waverley[[38,6]] <- "SUITABLE"
+waverley[[38,7]] <- "SUITABLE"
+
 # join on the traits
 waverley <- left_join(waverley, wanted_traits, by = c("wpw_name" = "plant_name"))
+# nothing is a weed in NSW
 
-waverley <- select(waverley, Council, List, council_name, wpw_name, "common name", X2030, X2050, X2070, origin, form, biodiversity, "leaf loss", "average height", "average width", "coastal tolerance", "drought tolerance", "shade tolerance", "soil texture", "soil pH", "urban context", uses)
+waverley <- select(waverley, Council, List, council_name, wpw_name, "common name", X2030, X2050, X2070, origin, form, shade_index, biodiversity, "leaf loss", "average height", "average width", "coastal tolerance", "drought tolerance", "shade tolerance", "soil texture", "soil pH", "urban context", uses)
 
 names(waverley)[names(waverley) == 'X2030'] <- '2030'
 names(waverley)[names(waverley) == 'X2050'] <- '2050'
 names(waverley)[names(waverley) == 'X2070'] <- '2070'
 
-waverley <- arrange(waverley, List, wpw_name)
+write.csv(waverley,"Master_database_output/waverley_council/waverley_suitability.csv", row.names=FALSE)
 
 # WOOLLAHRA
 woollahra <- council_lists_combined %>%
@@ -16902,14 +16908,15 @@ woollahra[[51,7]] <- "SUITABLE"
 
 # join on the traits
 woollahra <- left_join(woollahra, wanted_traits, by = c("wpw_name" = "plant_name"))
+# nothing is a weed in NSW
 
-woollahra <- select(woollahra, Council, List, council_name, wpw_name, "common name", X2030, X2050, X2070, origin, form, biodiversity, "leaf loss", "average height", "average width", "coastal tolerance", "drought tolerance", "shade tolerance", "soil texture", "soil pH", "urban context", uses)
+woollahra <- select(woollahra, Council, List, council_name, wpw_name, "common name", X2030, X2050, X2070, origin, form, shade_index, biodiversity, "leaf loss", "average height", "average width", "coastal tolerance", "drought tolerance", "shade tolerance", "soil texture", "soil pH", "urban context", uses)
 
 names(woollahra)[names(woollahra) == 'X2030'] <- '2030'
 names(woollahra)[names(woollahra) == 'X2050'] <- '2050'
 names(woollahra)[names(woollahra) == 'X2070'] <- '2070'
 
-woollahra <- arrange(woollahra, List, wpw_name)
+write.csv(woollahra,"Master_database_output/waverley_council/woollahra_suitability.csv", row.names=FALSE)
 
 
 
