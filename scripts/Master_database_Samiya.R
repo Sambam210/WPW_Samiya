@@ -14269,7 +14269,7 @@ all_entities_short <- all_entities %>%
   select(scientificNameStd, species, category, exp_tested, trait_name, value) %>%
   distinct(scientificNameStd, species, category, exp_tested, trait_name, value)
 
-check <- distinct(all_entities_short, species) # 2605 entities
+check <- distinct(all_entities_short, species) # 2533 entities
 
 # remove the old height and width dimensions
 
@@ -14277,7 +14277,7 @@ all_entities_short <- all_entities_short %>%
   filter(trait_name != "max_height", trait_name != "height", trait_name != "min_height", 
          trait_name != "max_width", trait_name != "width", trait_name != "min_width")
 
-check <- distinct(all_entities_short, species) # 2605 entities, haven't lost anything
+check <- distinct(all_entities_short, species) # 2533 entities, haven't lost anything
 
 ##### new height and width data
 
@@ -14330,7 +14330,7 @@ height_width$average <- as.numeric(as.character(height_width$average))
 
 filter(height_width, range < 0) # no mistakes
 
-names <- distinct(height_width, species) # 2605, am not missing anything!
+names <- distinct(height_width, species) # 2533, am not missing anything!
 
 # write.csv(height_width, "Master_database_output/final_data/height_width_all_ST_5Mar2021.csv", row.names = FALSE)
 
@@ -14362,7 +14362,7 @@ height_width_long$value <- as.character(height_width_long$value)
 all_entities_short <- bind_rows(all_entities_short, height_width_long)
 all_entities_short <- arrange(all_entities_short, scientificNameStd, species, trait_name, value)
 
-check <- distinct(all_entities_short, species) # 2605 entities, haven't lost anything
+check <- distinct(all_entities_short, species) # 2533 entities, haven't lost anything
 
 ### do drought classifications
 
@@ -14378,7 +14378,7 @@ drought$value <- gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", drought$value
 drought_summary <- drought %>%
   group_by(scientificNameStd, species) %>%
   summarise(number_records = n())
-# 1799 records
+# 2232 records
 
 drought["number"] <- 1 # add new column populated by '1'
 
@@ -14436,7 +14436,7 @@ frost$value <- gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", frost$value, pe
 frost_summary <- frost %>%
   group_by(scientificNameStd, species) %>%
   summarise(number_records = n())
-# 1875 records
+# 2298 records
 
 frost["number"] <- 1 # add new column populated by '1'
 
@@ -14489,7 +14489,7 @@ coastal$value <- gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2", coastal$value
 coastal_summary <- coastal %>%
   group_by(scientificNameStd, species) %>%
   summarise(number_records = n())
-# 945 records
+# 1567 records
 
 coastal["number"] <- 1 # add new column populated by '1'
 
@@ -14534,7 +14534,7 @@ plant_type_origin <- all_entities %>%
   filter(Min_5_traits == "TRUE") %>%
   filter(Include_in_tool == "Yes") %>%
   select(species, plantType, origin) %>%
-  distinct(species, plantType, origin) # 2605 entities
+  distinct(species, plantType, origin) # 2533 entities
 
 # join to main dataset
 all_entities_short <- left_join(all_entities_short, plant_type_origin, by = "species")
@@ -14811,7 +14811,7 @@ all_entities_short <- arrange(all_entities_short, entity, trait_name, value)
 syn <- all_entities_short %>%
   filter(family == "") %>%
   select(entity) %>%
-  distinct(entity) # 17
+  distinct(entity) # 16
 
 # find and fix (also includes Gwilym corrections)
 
@@ -14971,7 +14971,7 @@ all_entities_short <- arrange(all_entities_short, entity, trait_name, value)
 
 check_syn <- all_entities_short %>%
   filter(synonym != "NA") %>%
-  distinct(entity) # 162 synonyms which is 164 from original minus the two species I combined
+  distinct(entity) # 151 synonyms which is 151 from original minus the one species I combined
 
 # change entity to plant name
 names(all_entities_short)[names(all_entities_short) == 'entity'] <- 'plant_name'
@@ -14982,14 +14982,14 @@ names(all_entities_short)[names(all_entities_short) == 'entity'] <- 'plant_name'
 
 species <- all_entities_short %>%
   distinct(plant_name)
-# 2593 entities
+# 2523 entities
 
 traits <- all_entities_short %>%
   distinct(plant_name, trait_name) %>%
   group_by(trait_name) %>%
   summarise(frequency = n()) %>%
   arrange(desc(frequency)) %>%
-  mutate(percent_completeness = (frequency/2593)*100) # all relevant traits still 100%
+  mutate(percent_completeness = (frequency/2523)*100) # all relevant traits still 100%
 
 # remove medicinal from usage
 
@@ -15003,7 +15003,7 @@ traits <- all_entities_short %>%
   group_by(trait_name) %>%
   summarise(frequency = n()) %>%
   arrange(desc(frequency)) %>%
-  mutate(percent_completeness = (frequency/2593)*100) # usage still 100%
+  mutate(percent_completeness = (frequency/2523)*100) # usage still 100%
 
 # check apiary
 
@@ -15017,7 +15017,7 @@ traits <- no_apiary %>%
   group_by(trait_name) %>%
   summarise(frequency = n()) %>%
   arrange(desc(frequency)) %>%
-  mutate(percent_completeness = (frequency/2593)*100) # usage still 100%
+  mutate(percent_completeness = (frequency/2523)*100) # usage still 100%
 
 # remove apiary from dataset as a usage
 all_entities_short <- all_entities_short %>%
@@ -15176,7 +15176,7 @@ gh <- all_entities_short %>%
   distinct(plant_name, exp_tested) %>%
   group_by(exp_tested) %>%
   summarise(frequency = n())
-# 116 plants from glasshouse
+# 114 plants from glasshouse (original 116 but Gwilym said to remove Pyrus calleryana D6 and Ficus microcarpa (Ficus microcarpa Hillii))
 
 # remove plantType column
 
@@ -15641,24 +15641,9 @@ all_entities_short <- all_entities_short %>%
 #   distinct(scientificNameStd, plant_name, .keep_all = TRUE) %>%
 #   select(scientificNameStd, plant_name, tree, height_min, height_max, width_min, width_max, canopy_cover, shade_value, shade_index, carbon_value, carbon_index)
 # 
-# write.csv(co_benefit,"Master_database_output/Ale/co_benefit_analysis_ST_21.6.2021.csv",row.names = FALSE)
+# write.csv(co_benefit,"Master_database_output/Ale/co_benefit_analysis_ST_24.9.2021.csv",row.names = FALSE)
 
-categories <- read.csv("Master_database_input/Ale/co_benefit_analysis_ST_21.6.2021_AO.csv")
-
-# change some names, this will become redundant with a newer version of Ale's data
-categories[] <- lapply(categories, gsub, pattern = "Fagus sylvatica orientalis", replacement = "Fagus sylvatica Orientalis")
-categories[] <- lapply(categories, gsub, pattern = "Ceanothus Blue Pacific", replacement = "Ceanothus spp. Blue Pacific")
-categories[] <- lapply(categories, gsub, pattern = "Citrus Sunrise Lime", replacement = "Citrus spp. Sunrise Lime")
-categories[] <- lapply(categories, gsub, pattern = "Grevillea Ivanhoe", replacement = "Grevillea spp. Ivanhoe")
-categories[] <- lapply(categories, gsub, pattern = "Prunus Elvins", replacement = "Prunus spp. Elvins")
-categories[] <- lapply(categories, gsub, pattern = "Ulmus Sapporo Autumn Gold", replacement = "Ulmus spp. Sapporo Autumn Gold")
-categories[] <- lapply(categories, gsub, pattern = "Camellia sasangua", replacement = "Camellia sasanqua")
-categories[] <- lapply(categories, gsub, pattern = "Eucalyptus erythronema var marginata", replacement = "Eucalyptus erythronema var. marginata")
-categories[] <- lapply(categories, gsub, pattern = "Pittosporum phillyraeoides var microcarpa", replacement = "Pittosporum phillyraeoides var. microcarpa")
-categories[] <- lapply(categories, gsub, pattern = "Platanus orientalis var insularis", replacement = "Platanus orientalis Insularis")
-categories[] <- lapply(categories, gsub, pattern = "Platanus orientalis var insularis Autumn Glory", replacement = "Platanus orientalis Insularis Autumn Glory")
-categories[] <- lapply(categories, gsub, pattern = "Melia azedarach var australasica", replacement = "Melia azedarach var. australasica")
-categories[] <- lapply(categories, gsub, pattern = "Carya illinoiensis", replacement = "Carya illinoinensis")
+categories <- read.csv("Master_database_input/Ale/co_benefit_analysis_ST_24.9.2021_AO.csv")
 
 # join to main database
 all_entities_short <- select(all_entities_short, -shade_index, -carbon_index)
@@ -15683,21 +15668,11 @@ all_entities_short <- all_entities_short %>%
 taxonomy <- read.csv("Master_database_output/taxonomy_checks/taxonstandcheck_ST_1.3.2021.csv")
 
 taxonomy <- taxonomy %>% 
-  select(Taxon, Taxonomic.status, New.Genus, New.Species) %>%
-  filter(Taxonomic.status == "Synonym") %>%
-  mutate(synonym = paste0(New.Genus, " ", New.Species)) %>%
-  select(Taxon, synonym)
-
-taxonomy <- taxonomy %>% 
   select(Taxon, Taxonomic.status, New.Genus, New.Species, New.Infraspecific.rank, New.Infraspecific) %>%
   filter(Taxonomic.status == "Synonym") %>%
   mutate(synonym = if_else(New.Infraspecific.rank != "", paste0(New.Genus, " ", New.Species, " ", New.Infraspecific.rank, " ",
                                                                 New.Infraspecific), paste0(New.Genus, " ", New.Species))) %>%
   select(Taxon, synonym)
-
-# remove the dots
-taxonomy[] <- lapply(taxonomy, gsub, pattern = "var.", replacement = "var")
-taxonomy[] <- lapply(taxonomy, gsub, pattern = "subsp.", replacement = "subsp")
 
 # make sure the synonyms are not actually species
 
@@ -15845,7 +15820,7 @@ synonym_names <- select(gbif_synonyms, canonicalName)
 synonym_names <- distinct(synonym_names) # two different species can have the same synonym, why are they not syns of each other?
 
 same <- inner_join(plant_name_database, synonym_names, by = c("plant_name" = "canonicalName"))  
-# 16 differ
+# 15 differ
 
 # filter these out
 names(same)[names(same) == 'plant_name'] <- 'canonicalName'
@@ -15864,7 +15839,7 @@ same <- inner_join(plant_name_database, synonym_names, by = c("plant_name" = "ca
 gbif_synonyms_check <- gbif_synonyms %>%
   group_by(canonicalName) %>%
   summarise(frequency = n())
-# I would remove these, there are 39
+# I would remove these, there are 40
 
 gbif_synonyms_remove <- gbif_synonyms_check %>%
   filter(frequency > 1) %>%
@@ -16043,7 +16018,8 @@ gbif_synonyms_add <- gbif_synonyms_add %>%
   add_row(species = "Telopea speciosissima", canonicalName = "Embothrium speciosissimum") %>%
   add_row(species = "Toechima erythrocarpum", canonicalName = "Cupania erythrocarpa") %>%
   add_row(species = "Veronica decorosa", canonicalName = "Derwentia decorosa") %>%
-  add_row(species = "Xerochrysum bracteatum", canonicalName = "Helichrysum bracteatum")
+  add_row(species = "Xerochrysum bracteatum", canonicalName = "Helichrysum bracteatum") %>%
+  add_row(species = "Callistemon viminalis", canonicalName = "Melaleuca viminalis")
   
 gbif_synonyms <- rbind(gbif_synonyms, gbif_synonyms_add)
 gbif_synonyms <- arrange(gbif_synonyms, species, canonicalName)
@@ -16055,7 +16031,7 @@ gbif_synonyms_join <- gbif_synonyms %>%
   group_by(species) %>%
   mutate(synonyms = paste0(canonicalName, collapse = ", ")) %>%
   distinct(species, synonyms)
-# we have synonyms for 1294/1914 species!!!!
+# we have synonyms for 1297/1846 species!!!!
 
 # join to master database
 names(gbif_synonyms_join)[names(gbif_synonyms_join) == 'species'] <- 'plant_name'
@@ -16189,6 +16165,37 @@ check <- all_entities_short %>%
   distinct(plant_name)
 
 # write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_30.8.2021_vers1.8TEST.csv",row.names=FALSE)
+
+
+
+
+
+### DATABASE SUMMARIES
+##  How many species, cultivars, etc.
+
+final_species_summary <- all_entities_short %>%
+  select(plant_name, category) %>%
+  distinct(plant_name, category) %>%
+  group_by(category) %>%
+  summarise(frequency = n()) # seems to all be there
+# 2523 entities
+
+##  Trait coverage
+
+final_trait_summary <- all_entities_short %>%
+  distinct(plant_name, trait_name) %>%
+  group_by(trait_name) %>%
+  summarise(frequency = n()) %>%
+  arrange(desc(frequency)) %>%
+  mutate(percent_completeness = (frequency/2523)*100) # all relevant traits still 100%
+
+# write.csv(final_trait_summary,"Master_database_output/final_data/final_trait_summary_ST_24092021.csv",row.names=FALSE)
+
+# biodiversity summary for michelle
+bio_sum <- all_entities_short %>%
+  distinct(plant_name, bird, insect, mammal_lizard, animal_pollinated, habitat, biodiversity_value)
+
+# write.csv(bio_sum,"Master_database_output/final_data/biodiversity_summary_ST_24092021.csv",row.names=FALSE)
 
 
 
@@ -16807,6 +16814,7 @@ randwick[[7,7]] <- "MARGINAL"
 
 # join on the traits
 randwick <- left_join(randwick, wanted_traits, by = c("wpw_name" = "plant_name"))
+# no species is a weed in NSW
 
 randwick <- select(randwick, Council, List, council_name, wpw_name, "common name", X2030, X2050, X2070, origin, form, biodiversity, "leaf loss", "average height", "average width", "coastal tolerance", "drought tolerance", "shade tolerance", "soil texture", "soil pH", "urban context", uses)
 
