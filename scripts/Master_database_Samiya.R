@@ -16197,6 +16197,13 @@ bio_sum <- all_entities_short %>%
 
 # write.csv(bio_sum,"Master_database_output/final_data/biodiversity_summary_ST_24092021.csv",row.names=FALSE)
 
+# species list for farzin
+
+farzin_list <- all_entities_short %>%
+  distinct(scientificNameStd) 
+
+# write.csv(farzin_list,"Master_database_output/Farzin/species_list_ST_28Sept2021.csv",row.names=FALSE)
+
 
 
 
@@ -16918,8 +16925,21 @@ names(woollahra)[names(woollahra) == 'X2070'] <- '2070'
 
 write.csv(woollahra,"Master_database_output/waverley_council/woollahra_suitability.csv", row.names=FALSE)
 
+##############################################################################################################################################################################################################################################################################################################################
+## photo check
 
+database <- all_entities_short %>%
+  distinct(plant_name) # 2523
 
+photos <- read.csv("Master_database_input/photos/photo_check_28Sept2021.csv")
+
+photos <- photos %>%
+  distinct(plant_name) # 2523
+
+diff <- setdiff(photos, database)
+diff2 <- setdiff(database, photos)
+
+##############################################################################################################
 
 
 
