@@ -16204,10 +16204,13 @@ farzin_list <- all_entities_short %>%
 
 # write.csv(farzin_list,"Master_database_output/Farzin/species_list_ST_28Sept2021.csv",row.names=FALSE)
 
-
-
-
-
+# check cultivars for Janine
+cults <- all_entities_short %>%
+  filter(category == "CULVAR") %>%
+  distinct(scientificNameStd, plant_name) %>%
+  group_by(scientificNameStd) %>%
+  summarise(frequency = n()) %>%
+  arrange(frequency)
 
 #################################################################
 ## extract data for Gwilym
