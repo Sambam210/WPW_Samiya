@@ -16943,12 +16943,75 @@ diff <- setdiff(photos, database)
 diff2 <- setdiff(database, photos)
 
 ##############################################################################################################
+# extract lists for PlantSure (state lists vs environmental weeds)
 
+# extract species on state lists
+state <- all_entities_short %>%
+  filter(trait_name == "weed status in Australia") %>%
+  distinct(family, plant_name)
 
+# extract species that are environmental weeds (from the beta version)
 
-
-
+beta <- read.csv("Master_database_output/FINAL/trait_database_ST_FINAL_18.6.2021_vers1.7.csv")
   
-  
+# extract species on environmental lists
+enviro <- beta %>%
+  filter(trait_name == "weed status in Australia") %>%
+  distinct(family, plant_name)
+
+### need to only select the ones that appear in ver1.8 of database (some were removed)
+vers1.8 <- all_entities_short %>%
+  distinct(family, plant_name)
+
+enviro <- inner_join(enviro, vers1.8, by = c("family", "plant_name"))
+
+# find the plants that are in both lists
+same <- inner_join(state, enviro, by = c("plant_name", "family"))
+
+# add columns
+same$state_list <- "yes"
+same$environmental_weed <- "yes"
+
+# find the diff between the state and enviro list
+diff_state <- setdiff(state, enviro)
+# add columns
+diff_state$state_list <- "yes"
+diff_state$environmental_weed <- "no"
+
+# find the diff between the enviro and state list
+diff_enviro <- setdiff(enviro, state)
+# add columns
+diff_enviro$state_list <- "no"
+diff_enviro$environmental_weed <- "yes"
+
+# join the lists together
+weeds <- same %>%
+  rbind(diff_enviro) %>%
+  rbind(diff_state)
+
+# extract the species that are not weeds
+species <- all_entities_short %>%
+  distinct(family, plant_name)
+
+weed_names <- select(weeds, family, plant_name)
+
+not_weeds <- setdiff(species, weed_names)
+
+not_weeds$state_list <- "no"
+not_weeds$environmental_weed <- "no"
+
+# join together
+plantsurelist <- rbind(weeds, not_weeds)
+
+write.csv(plantsurelist,"Master_database_output/weeds/plantsurelist_ST_04112021.csv", row.names=FALSE)
+
+
+
+
+
+
+
+
+
 
 
