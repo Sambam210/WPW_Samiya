@@ -18947,8 +18947,43 @@ final_trait_summary <- all_entities_short %>%
   arrange(desc(frequency)) %>%
   mutate(percent_completeness = (frequency/2523)*100) # all relevant traits still 100%
 
+###########################################################################
+# website checks
 
+## check WSUD species for Michelle
+WSUD <- all_entities_short %>%
+  filter(value == "Water Sensitive Urban Design") %>%
+  distinct(plant_name)
 
+# photo check
+
+C8_photos <- read.csv("Master_database_input/photos/C8_photo_check_11Nov2021.csv")
+
+C8_photos <- C8_photos %>%
+  distinct(plant_name) #1958
+
+species <- all_entities_short %>%
+  distinct(plant_name)
+
+samiya_missing_images <- setdiff(species, C8_photos)
+# 565 photos missing
+
+C8_list <- read.csv("Master_database_input/photos/C8_missing_images.csv")
+# 627 photos missing
+
+# what's the diff
+
+samiya_missing_images <- data.frame(tolower(samiya_missing_images$plant_name))
+names(samiya_missing_images)[names(samiya_missing_images) == 'tolower.samiya_missing_images.plant_name.'] <- 'plant_name'
+
+diff <- setdiff(C8_list, samiya_missing_images)
+diff2 <- setdiff(samiya_missing_images, C8_list)
+
+# C8 HAVE INCLUDED SPECIES THAT HAVE BEEN REMOVED!!!
+# GO WITH MY OWN CALCULATED MISSING SPECIES LIST FOR IMAGES
+
+#################################################################################
+  
 
 
 
