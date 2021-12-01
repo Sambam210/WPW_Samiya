@@ -17011,13 +17011,23 @@ write.csv(plantsurelist,"Master_database_output/weeds/plantsurelist_ST_04112021.
 #### Version 1.9
 ## What has changed?
 # David's 4 heat tolerance rankings instead of 3
-
+# removed species:
+# Abrus precatorius
+# Acacia nyssophylla
+# Acacia tortilis
+# Acaena inermis
+# Acaena inermis Purpurea
+# Calamagrostis arundinacea
+# Calamagrostis x acutiflora Karl Foerster
+# Gleditsia triacanthos
+# " " enermis Elegantissima, enermis Lime Green, enermis Ruby Lace, 
+# enermis Shademaster, enermis Speczam Spectrum, enermis Sunburst
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_23Sep2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_01Dec2021.csv")
 
-everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_23Sep2021.csv")
+everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_01Dec2021.csv")
 
 all_entities <- bind_rows(everything, everything_gh)
 
@@ -18984,8 +18994,13 @@ diff2 <- setdiff(samiya_missing_images, C8_list)
 
 #################################################################################
   
+# another weed check for Michelle
 
+# extract a list of species
+wpw_species_list <- all_entities_short %>%
+  distinct(plant_name)
 
+write.csv(wpw_species_list,"Master_database_output/weeds/wpw_species_list.csv",row.names=FALSE)
 
 
 
