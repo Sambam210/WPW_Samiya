@@ -18932,7 +18932,7 @@ all_entities_short[] <- lapply(all_entities_short, gsub, pattern = " spp. ", rep
 check <- all_entities_short %>%
   distinct(plant_name)
 
-# write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_29.9.2021_vers1.9.csv",row.names=FALSE)
+write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_11.01.2022_vers1.9.csv",row.names=FALSE)
 
 
 
