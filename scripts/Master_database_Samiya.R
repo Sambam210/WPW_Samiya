@@ -17025,7 +17025,7 @@ write.csv(plantsurelist,"Master_database_output/weeds/plantsurelist_ST_04112021.
 
 library(tidyverse)
 
-everything <- read.csv("Master_database_input/EVERYTHING_traits_01Dec2021.csv")
+everything <- read.csv("Master_database_input/EVERYTHING_traits_11March2022.csv")
 
 everything_gh <- read.csv("Master_database_input/EVERYTHING_gh_01Dec2021.csv")
 
@@ -18932,7 +18932,7 @@ all_entities_short[] <- lapply(all_entities_short, gsub, pattern = " spp. ", rep
 check <- all_entities_short %>%
   distinct(plant_name)
 
-write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_11.01.2022_vers1.9.csv",row.names=FALSE)
+write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_11.03.2022_vers1.9.csv",row.names=FALSE)
 
 
 
@@ -18946,7 +18946,7 @@ final_species_summary <- all_entities_short %>%
   distinct(plant_name, category) %>%
   group_by(category) %>%
   summarise(frequency = n()) # seems to all be there
-# 2523 entities
+# 2508 entities
 
 ##  Trait coverage
 
@@ -18955,7 +18955,32 @@ final_trait_summary <- all_entities_short %>%
   group_by(trait_name) %>%
   summarise(frequency = n()) %>%
   arrange(desc(frequency)) %>%
-  mutate(percent_completeness = (frequency/2523)*100) # all relevant traits still 100%
+  mutate(percent_completeness = (frequency/2508)*100) # all relevant traits still 100%
+
+## how many families?
+
+final_families <- all_entities_short %>%
+  select(family) %>%
+  distinct(family) %>%
+  arrange(family) %>%
+  na.omit
+  
+## how many genera?
+
+final_genera <- all_entities_short %>%
+  select(genus) %>%
+  distinct(genus) %>%
+  arrange(genus) %>%
+  na.omit
+
+## how many native and exotic
+
+final_origin <- all_entities_short %>%
+  select(plant_name, origin) %>%
+  distinct(plant_name, origin) %>%
+  group_by(origin) %>%
+  summarise(frequency = n())
+
 
 ###########################################################################
 # website checks
