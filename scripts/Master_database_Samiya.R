@@ -18932,7 +18932,7 @@ all_entities_short[] <- lapply(all_entities_short, gsub, pattern = " spp. ", rep
 check <- all_entities_short %>%
   distinct(plant_name)
 
-write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_11.03.2022_vers1.9.csv",row.names=FALSE)
+write.csv(all_entities_short,"Master_database_output/FINAL/trait_database_ST_FINAL_25.03.2022_vers1.9.csv",row.names=FALSE)
 
 
 
@@ -19027,7 +19027,19 @@ wpw_species_list <- all_entities_short %>%
 
 write.csv(wpw_species_list,"Master_database_output/weeds/wpw_species_list.csv",row.names=FALSE)
 
+######################################################################################
 
+# photo check
 
+species <- all_entities_short %>%
+  distinct(plant_name)
 
+photos <- read.csv("Master_database_input/photos/photo_check_25March2022.csv")
 
+photos <- distinct(photos, plant_name)
+
+# what's the diff
+
+diff1 <- setdiff(species, photos)
+diff2 <- setdiff(photos, species)
+# no differences!!!!
