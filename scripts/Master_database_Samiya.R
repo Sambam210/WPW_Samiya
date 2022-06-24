@@ -19043,3 +19043,42 @@ photos <- distinct(photos, plant_name)
 diff1 <- setdiff(species, photos)
 diff2 <- setdiff(photos, species)
 # no differences!!!!
+
+########################################################################################
+### fuzzy match Central Coast Council species list with
+### wpw species list
+
+wpw_species <- all_entities_short %>%
+  distinct(plant_name)
+
+centralcoast <- read.csv("Master_database_input/council_species_lists/centralcoast.csv")
+
+# remove white space
+# https://stackoverflow.com/questions/20760547/removing-whitespace-from-a-whole-data-frame-in-r
+glimpse(waverley)
+# change to character (https://stackoverflow.com/questions/2851015/convert-data-frame-columns-from-factors-to-characters)
+waverley[] <- lapply(waverley, as.character)
+
+waverley <- waverley %>%
+  mutate_if(is.character, str_trim)
+
+# install.packages("fuzzyjoin")
+library(fuzzyjoin)
+
+centralcoast_fuzzy <- stringdist_join(centralcoast, wpw_species, 
+                                  by = "plant_name",
+                                  mode = "left",
+                                  ignore_case = FALSE, 
+                                  method = "jw", 
+                                  max_dist = 99, 
+                                  distance_col = "dist") 
+
+# 0.000 is a perfect match
+centralcoast_fuzzy_filtered <- filter(centralcoast_fuzzy, dist < 0.04) # can adjust based on the amount of similarity you want, I think this number works best for the central coast list
+colnames(centralcoast_fuzzy_filtered) <- c("centralcoast_list", "wpw_list", "dist")
+
+write.csv(centralcoast_fuzzy_filtered,"Master_database_output/council_species_lists/centralcoast_list.csv",row.names=FALSE)
+
+############################################################################################
+
+
