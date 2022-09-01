@@ -18981,6 +18981,21 @@ final_origin <- all_entities_short %>%
   group_by(origin) %>%
   summarise(frequency = n())
 
+## how many of each growth form?
+
+# change 'grass-like' to 'grass'
+names(all_entities_short)[names(all_entities_short) == 'grass-like'] <- 'grass'
+
+growth_form <- all_entities_short %>%
+  distinct(plant_name, climber, cycad, fern, grass, 
+         herbaceous, palm, shrub, succulent, tree) %>%
+  select(-plant_name)
+
+glimpse(growth_form)
+
+growth_form <- sapply(growth_form, as.numeric)
+
+colSums(growth_form)
 
 ###########################################################################
 # website checks
